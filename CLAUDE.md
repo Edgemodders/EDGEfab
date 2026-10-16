@@ -19,7 +19,15 @@ EDGEfab is the EDGE asset maker for Cyberpunk 2077: a standalone VS Code extensi
 | REDnode | The running game: hot load, spawn, equip. Its MCP server reads the running game (`rednode` in Claude Code) |
 | EDGEbuilder | Places objects in the world |
 
-Open requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16: REDcode #6 (viewer material hook, appearance switching), and the custom-asset requests to REDcode, REDbridge, REDnode and EDGEbuilder (see EDGEmat's design, "Requests this implies").
+Open requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled `request`):
+
+| Repo | Issue | For |
+|---|---|---|
+| REDcode | #6 | The viewer: EDGEmat's material hook, appearance switching, a GLB's own textures |
+| REDcode | #7 | "Pack and try" (hot load) and "Edit in Blender" |
+| REDbridge | #5 | Mesh import for a new asset: from a GLB, or over a template mesh |
+| REDnode | #12 | Hot-load archives in the running game; refresh what uses them |
+| EDGEbuilder | #1 | Index mod archives, so custom objects can be placed |
 
 ## Conventions
 
