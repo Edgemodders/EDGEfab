@@ -4,14 +4,14 @@ EDGEfab is the EDGE asset maker for Cyberpunk 2077, a VS Code extension with an 
 
 | Document | What it covers |
 |---|---|
-| [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, its shape, the MCP server, proposed phases, open questions. Draft 0.1, a brief |
+| [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, clothing fitted to the body, Blender and Blender MCP, its shape, the MCP server, proposed phases, open questions. Draft 0.1, a brief, extended 2026-10-19 |
 | [Dev setup](dev-setup.html) | What a PC needs to work on EDGEfab |
 | [EDGEmat docs](https://edgemodders.github.io/EDGEmat/) | Materials and looks, which EDGEfab builds on |
 | [REDcode docs](https://edgemodders.github.io/REDcode/) | The editor extensions and the bridge EDGEfab builds on |
 
 ## Roadmap status
 
-As of 2026-10-16.
+As of 2026-10-19. F1 and F3 need EDGEmat's M4 Make (materials for new meshes).
 
 | Phase | Status |
 |---|---|

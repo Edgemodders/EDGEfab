@@ -6,13 +6,15 @@ EDGEfab is the EDGE asset maker for Cyberpunk 2077: a standalone VS Code extensi
 
 - Scaffold created 2026-10-16 by the EDGEmat session: README, license, docs site (HUD layout, dev setup), brand sources and images (icon "EF", activity bar icon), Pages workflow. No code.
 - **Design draft 0.1 is a brief, not decisions.** Written from the custom-asset goals the owner set on 2026-10-16 (EDGEmat's design, "Custom assets") and what EDGEmat's M0 learned against the game.
+- **Extended 2026-10-19** by the EDGEmat session at the owner's request: clothing fitted to the body (the game's body types, the body dummies and refitters in WolvenKit's Blender add-on, fitting steps), Blender MCP servers, and materials from EDGEmat's new **M4 Make** (generated from words through an AI image service, or picked from the game). EDGEmat moved M4 Make ahead of its preview for EDGEfab.
 - **Next: F0.** Work through the design with the owner: the boundaries with EDGEmat and REDcode, the open questions, the phases. Study how working custom-item and custom-object mods are built, in our own words.
 
 ## The EDGE family, as it touches EDGEfab
 
 | Tool | Role for EDGEfab |
 |---|---|
-| EDGEmat | Materials and looks (a mesh's appearances). EDGEfab calls its API and MCP tools; it does not edit materials itself |
+| EDGEmat | Materials and looks (a mesh's appearances): generated, from a model's textures, or picked from the game (its M4 Make). EDGEfab calls its API and MCP tools; it does not edit materials itself |
+| Blender (not EDGE) | Modeling, fitting and weights, with WolvenKit's Blender add-on (body dummies, refitters). An assistant can drive it through a Blender MCP server |
 | REDcode | The project, the 3D viewer, packing. `REDcodeApi` version 1, extension `edgemodders.redcode-cyberpunk` |
 | REDbridge | Every game file read and write, as a separate process |
 | REDdeck | Deploying to the game; writes `modlist.txt` |
