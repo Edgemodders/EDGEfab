@@ -93,9 +93,9 @@ Proposed for F3, unverified until tried:
 |---|---|---|
 | 1. A body to fit to | V's `pma` or `pwa` body from the game as a GLB, or an installed body mod's body | EDGEfab (`fab_body`) |
 | 2. The garment | Modeled around the body in Blender: by hand, by an assistant through a Blender MCP server, or from an AI model service | Blender |
-| 3. Fit | Sits on the body without poking through | Blender |
-| 4. Weights | Copied from the body to the garment (Blender's Data Transfer), so it moves with V's rig | Blender |
-| 5. The other body | The add-on's `VanillaFemToMasc` or `VanillaMascToFem` refitter, then checked | Blender, with the add-on |
+| 3. Fit | Sits on the body without poking through | EDGEfab's Blender steps (`fab_fit`), or by hand in Blender |
+| 4. Weights | Copied from the body to the garment (Blender's Data Transfer), so it moves with V's rig | EDGEfab's Blender steps (`fab_fit`) |
+| 5. The other body | Fitted again to that body, or the add-on's `VanillaFemToMasc` or `VanillaMascToFem` refitter, then checked | EDGEfab's Blender steps (`fab_refit`) |
 | 6. Body mods | Variants: fitted to the body mod's own mesh, or moved by the add-on's refitters | Blender; EDGEfab gives the body |
 | 7. Layering | Garment support | Blender, with the add-on |
 | 8. Materials | Generated or picked from the game, one submesh per part ([below](#materials-from-edgemat)) | EDGEmat |
@@ -130,9 +130,30 @@ An assistant can drive Blender through an MCP server, so "model a cropped jacket
 |---|---|
 | Safety | Both run Python that the AI writes inside Blender, without guards. Blender Lab suggests a virtual machine or a PC without sensitive data. EDGE's docs say so plainly |
 | Telemetry | mcp-for-blender sends it unless turned off; EDGE's docs say how |
-| Repeatable steps | Freshly written code each time is hard to trust. EDGEfab could ship a small set of named Blender operations (load a body, transfer weights, refit, export GLB) that an assistant runs through the server's run-Python tool. Open |
+| Repeatable steps | Freshly written code each time is hard to trust. Answered by EDGEfab's own Blender steps ([below](#two-layers-edgefabs-own-blender-steps-and-a-blender-mcp-server)) |
 | Model quality | AI-made models are often heavy, with messy geometry and lighting baked into the textures; they need cleaning before the game (general experience, untested here) |
 | Clothing | The add-on's refitters and garment support are Blender operators, so an assistant could run them through a Blender MCP server (unverified) |
+
+### Two layers: EDGEfab's own Blender steps, and a Blender MCP server
+
+**Agreed with the owner on 2026-10-19** as the proposed approach, for F0 to confirm.
+
+**Can the servers be bundled?** Not as they are, for three reasons. An MCP server is started by the assistant's app from its server list, not by EDGEfab; EDGEfab or EDGEchat can only put it on that list. The server only relays to an add-on inside a running Blender, and EDGE does not bundle Blender (large, GPL, and the modder's own). And mcp-for-blender is Python, while EDGEfab is Node. So EDGEfab installs and registers instead of bundling.
+
+| Layer | What | How it runs | Why |
+|---|---|---|---|
+| **1. EDGEfab's own Blender steps** | The fixed steps of clothing: load a body, fit, copy weights, refit to another body, garment support, export GLB | EDGEfab starts Blender in the background (`blender --background`) with its own script, as REDcode's Edit in Blender starts Blender. No AI-written code runs. Exposed as named MCP tools (`fab_body`, `fab_fit`, `fab_refit`) and as buttons | Safe, repeatable (the same steps give the same result), and no third-party server needed. Most modders only need this layer |
+| **2. A Blender MCP server** | Free-form modeling by an assistant: "model a cropped jacket around V's body" | Opt-in. A **Set Up Blender for AI** command finds Blender, installs the add-ons (WolvenKit's IO Suite, the MCP add-on), and registers the server with Claude Code (or EDGEchat lists it). A visible Blender, so the modder watches the work | The AI writes code there, so it stays a choice, with the safety and telemetry notes above |
+
+| Part | Bundled with EDGEfab? |
+|---|---|
+| EDGEfab's Blender script (layer 1) | Yes, its own MIT code. It calls WolvenKit's add-on operators when the add-on is installed, never copies them |
+| WolvenKit's Blender add-on | No. Installed into the modder's Blender on request, from its own release (license unverified, likely GPL) |
+| mcp-for-blender | No. Installed on request with `uvx mcp-for-blender`, a one-time download the modder agrees to. MIT, so bundling stays possible later |
+| Blender Lab's server | No. Installed on request (license unverified) |
+| Blender | No. EDGEfab finds an installed Blender, or points the modder to blender.org |
+
+Unverified until F0 and F3: whether Blender in the background runs WolvenKit's add-on operators; whether EDGEfab can reuse the Blender that REDcode's Edit in Blender finds (through `REDcodeApi`, or its own search); and which Blender versions the add-ons need (Blender Lab's needs 5.1 or later).
 
 ## Shape
 
@@ -163,6 +184,8 @@ Intent, not plumbing. Proposed names, settled in F0:
 | `fab_check` | Checks the asset's files against each other and names what is wrong in plain words |
 | `fab_try` | Packs, deploys, hot-loads, and spawns the object or puts the clothing on V |
 | `fab_body` | Exports a body as a GLB, to model and fit a garment around: V's masculine or feminine body from the game, or the body of an installed body mod |
+| `fab_fit` | Fits a garment to a body in Blender, run in the background by EDGEfab's own script: fit, copy the body's weights, garment support |
+| `fab_refit` | Moves a fitted garment to another body: fitted again to that body's mesh, or through WolvenKit's add-on refitters |
 
 ## Phases (proposed)
 
@@ -173,7 +196,7 @@ For the first session to agree with the owner. Objects come before clothing, bec
 | **F0 Decisions** | Study how working custom-item and custom-object mods are built (their file sets, not their code), check REDbridge's mesh import for a new asset, agree the boundaries with EDGEmat and REDcode, the phases | The owner agrees the design |
 | **F1 Object** | Extension and MCP skeletons, the activity bar container. A GLB becomes a placeable object with its textures, or with a material from EDGEmat | A model from Blender or an AI service shows in the game, placed with EDGEbuilder. A simple prop that Claude makes in Blender through a Blender MCP server, with a material Claude asks EDGEmat for, gets there too |
 | **F2 Try it** | Pack, deploy, hot load, spawn | A change to the object shows in the running game without a restart |
-| **F3 Clothing** | An item for a slot and both body types, its looks, name and icon. [Fitting to the body](#clothing-fitting-to-the-body): V's bodies as dummies (`fab_body`), weights and refitting through Blender and WolvenKit's add-on, by hand or through a Blender MCP server. Materials from EDGEmat | A new jacket V can wear, with two looks, from the inventory, on both bodies. One of them modeled and fitted by Claude in Blender, with a generated material and a game material |
+| **F3 Clothing** | An item for a slot and both body types, its looks, name and icon. [Fitting to the body](#clothing-fitting-to-the-body): V's bodies and modded bodies as dummies (`fab_body`); fitting, weights and refitting by EDGEfab's own Blender steps (`fab_fit`, `fab_refit`); free-form modeling through a Blender MCP server, set up by Set Up Blender for AI. Materials from EDGEmat | A new jacket V can wear, with two looks, from the inventory, on both bodies. One of them modeled and fitted by Claude in Blender, with a generated material and a game material |
 | **F4 Ship** | Docs, the MCP package, Open VSX and Marketplace, the EDGEkit bundle | A non-coder makes an object and a garment from the docs alone |
 
 ## Open questions
@@ -185,7 +208,7 @@ For the first session to agree with the owner. Objects come before clothing, bec
 | Rigging | Clothing must be weighted to the player rig and fit both body types. Blender with WolvenKit's add-on today (its refitters, garment support); what EDGE can automate, and whether through named Blender operations, is open ([Fitting](#fitting-step-by-step)) |
 | The body dummies | **Decided 2026-10-19:** the game's own bodies first, exported through REDbridge. Open: whether the export keeps the rig, and whether V's breast-size variants and first-person meshes need their own garment variants |
 | Body mods | **Decided 2026-10-19:** supported. Open: which files each body mod replaces, how EDGEfab spots the installed ones, fitting to the mod's own mesh or refitting, and how variants are packaged |
-| A Blender MCP server | Blender Lab's or mcp-for-blender, or both; tried in F1 |
+| A Blender MCP server | Blender Lab's or mcp-for-blender, or both, for layer 2; tried in F1 |
 | AI model services | Opt-in, with the modder's own account, as EDGEwave does for voice. Which services, and whether textures come back usable. mcp-for-blender's `generate_3d` already reaches Tripo, Hunyuan3D, Hyper3D Rodin and Meshy |
 | Hot loading | RED Hot Tools first (unverified on the dev PC), else an EDGE hot loader in REDnode. See EDGEmat's design, "Hot-loading archives" |
 | The shared viewer and bridge client | Shared packages for the EDGE tools later; EDGEfab copies or depends on REDcode's until then |
