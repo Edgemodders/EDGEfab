@@ -63,6 +63,18 @@ Garment meshes in the game's `garment` folders, by body code: `ma` 504, `wa` 389
 
 ### The body dummies
 
+**Decided with the owner on 2026-10-19:** the game's own bodies come first, pulled straight into EDGEfab; modded bodies are supported too, since many players use one.
+
+| Order | Source | How EDGEfab gets it |
+|---|---|---|
+| 1 | **The game's own bodies**, V's `pma` and `pwa` (the table above) | Exported to GLB from the game through REDbridge, as the modding wiki's refit guide does with WolvenKit. Exactly V's body, and no add-on needed. Whether the export keeps the rig is unverified |
+| 2 | **Modded bodies** (Hyst, Lush, Solo, VTK and others) | Read from the body mod's own `.archive` in the game's mod folder through REDbridge (`archive.openMod`, `archive.extractFromMod`, which EDGEmat already uses), then exported the same way. Which game files each body mod replaces, and how EDGEfab spots an installed one, is for F0 to find (unverified) |
+| 3 | The add-on's rigs | A fallback, inside Blender ([below](#wolvenkits-blender-add-on)) |
+
+A garment fitted to one body reaches the others in two ways: fitted again to that body's own mesh (exact, more work), or moved by the add-on's refitters (quick, for the bodies it knows). Which is the default, and how body-mod variants ship (community practice uses ArchiveXL, unverified), is open.
+
+### WolvenKit's Blender add-on
+
 The owner's lead: the dummies used in Blender come from the community tools. Confirmed in **WolvenKit's Blender add-on**, the Cyberpunk 2077 IO Suite ([github.com/WolvenKit/Cyberpunk-Blender-add-on](https://github.com/WolvenKit/Cyberpunk-Blender-add-on), version 2.0.0, 2026-06-07):
 
 | It carries | Use for EDGEfab |
@@ -70,8 +82,6 @@ The owner's lead: the dummies used in Blender come from the community tools. Con
 | Rigged bodies in `resources/rigs`: `man_base_full.glb`, `woman_base_full.glb`, `man_big_full.glb`, `man_fat_full.glb`, and named characters (Judy, Panam, Jackie and others) | Dummies to model and fit around. Whether `man_base` and `woman_base` match V's `pma` and `pwa` exactly is unverified |
 | Lattice refitters in `resources/refitters`, chosen in its Mesh Tools panel (the "AKL autofitter", from AllKnowingLion's work) | Moves a fitted garment to another body: `VanillaFemToMasc` and `VanillaMascToFem` between V's bodies, the feminine body's big and small chest, and popular body mods (Hyst EBB and RB, Lush, Solo Ultimate, Adonis, Gymfiend, Fryja, Elegy, Flat Chest) |
 | Garment support on import and export | Layering: how a garment squashes under the one worn over it. The modding wiki calls it experimental |
-
-The other source is the game itself: the base body meshes above, exported to GLB through REDbridge, as the modding wiki's refit guide does with WolvenKit. That needs no add-on, and is exactly V's body. EDGEfab can offer both.
 
 The add-on's license is unverified (Blender add-ons are usually GPL). EDGEfab uses it inside Blender, as a tool the modder installs, and never copies its code or data.
 
@@ -81,12 +91,12 @@ Proposed for F3, unverified until tried:
 
 | Step | How | Who |
 |---|---|---|
-| 1. A body to fit to | V's `pma` or `pwa` body from the game as a GLB, or the add-on's dummy | EDGEfab (`fab_body`), or the add-on |
+| 1. A body to fit to | V's `pma` or `pwa` body from the game as a GLB, or an installed body mod's body | EDGEfab (`fab_body`) |
 | 2. The garment | Modeled around the body in Blender: by hand, by an assistant through a Blender MCP server, or from an AI model service | Blender |
 | 3. Fit | Sits on the body without poking through | Blender |
 | 4. Weights | Copied from the body to the garment (Blender's Data Transfer), so it moves with V's rig | Blender |
 | 5. The other body | The add-on's `VanillaFemToMasc` or `VanillaMascToFem` refitter, then checked | Blender, with the add-on |
-| 6. Body mods | Optional variants through the add-on's refitters | Blender, with the add-on |
+| 6. Body mods | Variants: fitted to the body mod's own mesh, or moved by the add-on's refitters | Blender; EDGEfab gives the body |
 | 7. Layering | Garment support | Blender, with the add-on |
 | 8. Materials | Generated or picked from the game, one submesh per part ([below](#materials-from-edgemat)) | EDGEmat |
 | 9. Into the game | A mesh per body, entity, `.app`, item record, name, icon; then Try it | EDGEfab |
@@ -111,6 +121,8 @@ An assistant can drive Blender through an MCP server, so "model a cropped jacket
 |---|---|---|---|
 | [Blender Lab's MCP server](https://www.blender.org/lab/mcp-server/) | Blender's own developers | A plain-language interface to Blender's Python API | Add-on 1.0.3, Blender 5.1 or later. Installs as an `.mcpb` bundle or from source |
 | [mcp-for-blender](https://github.com/ahujasid/blender-mcp) (was `blender-mcp`) | Community, MIT, the most used | Runs Python in Blender, renders views (`look`), scene info, `generate_3d` (Tripo, Hunyuan3D, Hyper3D Rodin, Meshy), assets from Poly Haven, Sketchfab and Poly Pizza | `uvx mcp-for-blender`. Sends telemetry unless turned off with its own tool |
+
+**Both run on the modder's PC**, not on the internet: an add-on inside Blender, and a small server that the assistant's app (such as Claude Code) starts, talking to each other on the PC. What leaves the PC: the conversation with the AI model, including scene details and the code it writes (unless a local model is used, which Blender Lab mentions); the online tools of mcp-for-blender (`generate_3d`, Poly Haven, Sketchfab, Poly Pizza), only when called; and its telemetry, unless turned off.
 
 **How it fits.** EDGEfab does not connect to Blender. The assistant connects to both servers: it models or edits in Blender and exports a GLB, then asks EDGEfab's MCP server to make it a game asset and EDGEmat's for materials. EDGEchat, the Claude Code plugin for the EDGE tools, could list a Blender server as a recommended companion.
 
@@ -150,7 +162,7 @@ Intent, not plumbing. Proposed names, settled in F0:
 | `fab_describe` | An asset in plain words: what it is, its looks, what is missing |
 | `fab_check` | Checks the asset's files against each other and names what is wrong in plain words |
 | `fab_try` | Packs, deploys, hot-loads, and spawns the object or puts the clothing on V |
-| `fab_body` | Exports V's masculine or feminine body from the game as a GLB, to model and fit a garment around |
+| `fab_body` | Exports a body as a GLB, to model and fit a garment around: V's masculine or feminine body from the game, or the body of an installed body mod |
 
 ## Phases (proposed)
 
@@ -171,8 +183,8 @@ For the first session to agree with the owner. Objects come before clothing, bec
 | Mesh import for a new asset | WolvenKit's importer appears to import over an existing `.mesh` ("keeps the replaced file's settings"). A new asset may need a template mesh. Requested from REDbridge |
 | The modern recipe for a new item | ArchiveXL dynamic appearances and TweakXL records are community practice; F0 studies working mods and writes the recipe in its own words |
 | Rigging | Clothing must be weighted to the player rig and fit both body types. Blender with WolvenKit's add-on today (its refitters, garment support); what EDGE can automate, and whether through named Blender operations, is open ([Fitting](#fitting-step-by-step)) |
-| The body dummies | The game's own bodies exported through REDbridge, or the add-on's rigs: whether they match, and which to offer first. Whether V's breast-size variants and first-person meshes need their own garment variants |
-| Body mods | Many players use body mods (Hyst, Lush, Solo and others); the add-on's refitters cover them. Whether EDGEfab offers body-mod variants, and how they are packaged, is open |
+| The body dummies | **Decided 2026-10-19:** the game's own bodies first, exported through REDbridge. Open: whether the export keeps the rig, and whether V's breast-size variants and first-person meshes need their own garment variants |
+| Body mods | **Decided 2026-10-19:** supported. Open: which files each body mod replaces, how EDGEfab spots the installed ones, fitting to the mod's own mesh or refitting, and how variants are packaged |
 | A Blender MCP server | Blender Lab's or mcp-for-blender, or both; tried in F1 |
 | AI model services | Opt-in, with the modder's own account, as EDGEwave does for voice. Which services, and whether textures come back usable. mcp-for-blender's `generate_3d` already reaches Tripo, Hunyuan3D, Hyper3D Rodin and Meshy |
 | Hot loading | RED Hot Tools first (unverified on the dev PC), else an EDGE hot loader in REDnode. See EDGEmat's design, "Hot-loading archives" |
