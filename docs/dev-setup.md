@@ -20,6 +20,7 @@ git clone https://github.com/Edgemodders/EDGEfab.git
 cd EDGEfab
 git config user.name  "CyberbuildsAI"
 git config user.email "340969962+CyberbuildsAI@users.noreply.github.com"
+git config credential.https://github.com.username CyberbuildsAI
 ```
 
 ## 3. Game access for checks
