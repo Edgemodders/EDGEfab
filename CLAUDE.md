@@ -17,19 +17,19 @@ EDGEfab is the EDGE asset maker for Cyberpunk 2077: a standalone VS Code extensi
 | Blender (not EDGE) | Modeling, fitting and weights, with WolvenKit's Blender add-on (body dummies, refitters). An assistant can drive it through a Blender MCP server |
 | REDcode | The project, the 3D viewer, packing. `REDcodeApi` version 1, extension `edgemodders.redcode-cyberpunk` |
 | REDbridge | Every game file read and write, as a separate process |
-| REDdeck | Deploying to the game; writes `modlist.txt` |
+| EDGEdeck | Deploying to the game; writes `modlist.txt`. Renamed from REDdeck on 2026-10-17 (`edgemodders.edgedeck`) |
 | REDnode | The running game: hot load, spawn, equip. Its MCP server reads the running game (`rednode` in Claude Code) |
 | EDGEbuilder | Places objects in the world |
 
-Open requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled `request`):
+Requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled `request`; state checked 2026-10-24):
 
-| Repo | Issue | For |
-|---|---|---|
-| REDcode | #6 | The viewer: EDGEmat's material hook, appearance switching, a GLB's own textures |
-| REDcode | #7 | "Pack and try" (hot load) and "Edit in Blender" |
-| REDbridge | #5 | Mesh import for a new asset: from a GLB, or over a template mesh |
-| REDnode | #12 | Hot-load archives in the running game; refresh what uses them |
-| EDGEbuilder | #1 | Index mod archives, so custom objects can be placed |
+| Repo | Issue | For | State |
+|---|---|---|---|
+| REDcode | #6 | The viewer: EDGEmat's material hook, appearance switching, a GLB's own textures | Closed: shipped in REDcode 0.10.0 (the EDGEmat hook untested against EDGEmat) |
+| REDcode | #7 | "Pack and try" (hot load) and "Edit in Blender" | Closed: shipped in REDcode 0.10.0 |
+| REDbridge | #5 | Mesh import for a new asset: from a GLB, or over a template mesh | Closed: `project.import` with a `template`, REDbridge 0.9.0 |
+| REDnode | #12 | Hot-load archives in the running game; refresh what uses them | Open. `archives.reload` (REDnode 0.26.0) and worn clothing refresh (0.26.20) shipped; world objects wait for H2c |
+| EDGEbuilder | #1 | Index mod archives, so custom objects can be placed | Open |
 
 ## Conventions
 

@@ -29,7 +29,7 @@ EDGEfab is the orchestrator of asset creation. It owns the step no other EDGE to
 | **The game asset**: entity, item appearances (`.app`), factory and `.xl`, TweakXL item record, localized text, inventory icon, garment layering; checked against each other | **EDGEfab** | Its core |
 | Viewing a mesh and switching its looks | REDcode's viewer, with materials from EDGEmat | Embeds or opens it |
 | Placing an object in the world | EDGEbuilder | Hands the object over |
-| Packing, deploying, hot loading, trying in game | REDcode (pack), REDdeck (deploy), REDnode (hot load, spawn, equip) | One "Try it" action that calls them |
+| Packing, deploying, hot loading, trying in game | REDcode (pack), EDGEdeck (deploy), REDnode (hot load, spawn, equip) | One "Try it" action that calls them |
 | Generic editing of any file | REDcode's CR2W editor | Opens files there for raw edits |
 
 ## What a game asset is made of
@@ -43,7 +43,7 @@ From EDGEmat's M0 check against the game (confirmed rows) and community practice
 | A new item, the modern way | An ArchiveXL `.xl` file that registers a factory CSV and localization, and a TweakXL record that creates the item | Community practice; unverified here. The `.xl` format seen in an installed mod: `factories`, `localization`, `overrides: tags` |
 | A world object | A mesh with an appearance placed by a streaming sector (`worldMeshNode`), or an entity; EDGEbuilder bakes sectors | From EDGEbuilder's design |
 | Replacing a game `.mlsetup` in place | Has no effect without the Material Texture Override mod. New assets use their own paths, so they are not affected | Confirmed 2026-10-15 (EDGEmat spec section 6) |
-| Load order | `archive\pc\mod\modlist.txt`, written by REDdeck, lists archives first in its order; the earlier archive wins | Confirmed behavior with REDdeck's fix, 2026-10-15 |
+| Load order | `archive\pc\mod\modlist.txt`, written by EDGEdeck, lists archives first in its order; the earlier archive wins | Confirmed behavior with the fix in EDGEdeck (then REDdeck), 2026-10-15 |
 
 ## Clothing: fitting to the body
 
@@ -170,8 +170,8 @@ The same shape as EDGEmat, so the family stays one pattern.
 |---|---|
 | REDcode | Optional but expected. Through `REDcodeApi` version 1 (`edgemodders.redcode-cyberpunk`): game folder, bridge, open project, pack. Never imports its code |
 | EDGEmat | Through EDGEmat's API and its MCP tools. Planned in EDGEmat **M4 Make**: materials from a textured model, Generate a material, game materials on a new mesh, the Looks editor; and **M5 Preview**: `renderMaterials` (EDGEmat's roadmap, revised 2026-10-19) |
-| REDdeck, REDnode, EDGEbuilder | Through their APIs and MCP servers; requests as issues |
-| EDGEkit, EDGEplugin | Bundled, and taught to the assistant, once released |
+| EDGEdeck, REDnode, EDGEbuilder | Through their APIs and MCP servers; requests as issues |
+| EDGEkit, EDGEchat (the Claude Code plugin) | Bundled, and taught to the assistant, once released |
 
 ## The MCP server
 
@@ -203,14 +203,14 @@ For the first session to agree with the owner. Objects come before clothing, bec
 
 | Question | Notes |
 |---|---|
-| Mesh import for a new asset | WolvenKit's importer appears to import over an existing `.mesh` ("keeps the replaced file's settings"). A new asset may need a template mesh. Requested from REDbridge |
+| Mesh import for a new asset | WolvenKit's importer appears to import over an existing `.mesh` ("keeps the replaced file's settings"). A new asset may need a template mesh. Requested from REDbridge (#5), and shipped in REDbridge 0.9.0 (2026-10-16): `project.import` takes a `template` (a game path or a `.mesh` on disk) and imports the GLB over it. Whether the game loads such meshes as expected is untested |
 | The modern recipe for a new item | ArchiveXL dynamic appearances and TweakXL records are community practice; F0 studies working mods and writes the recipe in its own words |
 | Rigging | Clothing must be weighted to the player rig and fit both body types. Blender with WolvenKit's add-on today (its refitters, garment support); what EDGE can automate, and whether through named Blender operations, is open ([Fitting](#fitting-step-by-step)) |
 | The body dummies | **Decided 2026-10-19:** the game's own bodies first, exported through REDbridge. Open: whether the export keeps the rig, and whether V's breast-size variants and first-person meshes need their own garment variants |
 | Body mods | **Decided 2026-10-19:** supported. Open: which files each body mod replaces, how EDGEfab spots the installed ones, fitting to the mod's own mesh or refitting, and how variants are packaged |
 | A Blender MCP server | Blender Lab's or mcp-for-blender, or both, for layer 2; tried in F1 |
 | AI model services | Opt-in, with the modder's own account, as EDGEwave does for voice. Which services, and whether textures come back usable. mcp-for-blender's `generate_3d` already reaches Tripo, Hunyuan3D, Hyper3D Rodin and Meshy |
-| Hot loading | RED Hot Tools first (unverified on the dev PC), else an EDGE hot loader in REDnode. See EDGEmat's design, "Hot-loading archives" |
+| Hot loading | Settled in REDnode (its issue #12, still open for refreshing world objects): `archives.reload` and the MCP tool `archives_reload` swap a changed archive into the running game through RED Hot Tools (REDnode 0.26.0 on), and refresh the clothing V wears (0.26.20 on). The Edgemodders build of RED Hot Tools (`v1.3.0+edgemodders.1`, fork CyberbuildsAI/cp2077-red-hot-tools) fixes swaps of archives with capitals in their names. Objects already in the world are not refreshed yet: that is REDnode's H2c, planned. See EDGEmat's design, "Hot-loading archives" |
 | The shared viewer and bridge client | Shared packages for the EDGE tools later; EDGEfab copies or depends on REDcode's until then |
 
 ## Sources

@@ -30,6 +30,8 @@ Through REDcode's MCP server, as in [EDGEmat's dev setup](https://edgemodders.gi
 claude mcp add redcode -- node "E:\Modding\Cyberpunk 2077\REDcode\packages\redcode-mcp\dist\server.cjs"
 ```
 
+Or install [EDGEchat](https://github.com/Edgemodders/EDGEchat), the EDGE plugin for Claude Code, which sets up `redcode`, `rednode`, `edgedeck` and `edgemat` together. In Claude Code: `/plugin marketplace add Edgemodders/EDGEchat`, then `/plugin install edge@edgemodders`, then `/edge:setup` to check each connection. Do not also add by hand a server the plugin already has: it would show twice.
+
 ## 4. Docs site and brand images
 
 The site at https://edgemodders.github.io/EDGEfab/ is built by `.github/workflows/pages.yml` on every push to `main`. **Settings > Pages > Source** must be **GitHub Actions**.
