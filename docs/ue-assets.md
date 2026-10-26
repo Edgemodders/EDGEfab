@@ -4,7 +4,7 @@ title: UE5 assets
 
 # Unreal Engine 5 assets in Cyberpunk 2077: research
 
-**Status: research.** Asked for by the owner on 2026-10-25 (written in a REDnode session, moved here the same day). Nothing is built. This work belongs to EDGEfab: its phases F5 to F7 in the [build plan](plan.html). The goal is to bring free and royalty-free Unreal Engine assets into the game. This page asks how feasible it is to take Unreal Engine 5.x assets (props, NPCs, their materials, rigs and animations) into Cyberpunk 2077 through the EDGE tools, how much work it is, and what it costs in quality. Facts not checked against the game or the tools are marked unverified.
+**Status: research.** Asked for by the owner on 2026-10-25 (written in a REDnode session, moved here the same day). Nothing is built. This work belongs to EDGEfab: mainly its phase F8, with U4 in F7, in the [build plan](plan.html). The goal is to bring free and royalty-free Unreal Engine assets into the game. This page asks how feasible it is to take Unreal Engine 5.x assets (props, NPCs, their materials, rigs and animations) into Cyberpunk 2077 through the EDGE tools, how much work it is, and what it costs in quality. Facts not checked against the game or the tools are marked unverified.
 
 ## The short answer
 
@@ -154,7 +154,7 @@ Doing the retarget **inside UE** is the key choice: its IK Retargeter is better 
 
 ## What EDGEfab would build
 
-One step at a time, each with an in-game test. In the [build plan](plan.html), U0 runs in F0 as a check, U1 and U2 are **F5**, U4 is part of **F6**, U3 is **F7**, and U5 stays research. U1 reuses F3's object path (REDbridge import, collision, LODs, materials from EDGEmat), so it is smaller once F3 exists.
+One step at a time, each with an in-game test. In the [build plan](plan.html), U0 runs in F0 as a check, U1 to U3 are **F8**, U4 is part of **F7**, and U5 stays research. U1 reuses F1's prop path (REDbridge import, collision, LODs, materials from EDGEmat), and U3 reuses F5 and F6's character path, so both are smaller by then.
 
 | Step | What | Rough effort (Claude building, the owner testing) | Proves |
 |---|---|---|---|
