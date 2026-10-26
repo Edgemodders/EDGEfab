@@ -2,7 +2,7 @@
 
 EDGEfab makes new things for Cyberpunk 2077: clothes and objects, from a 3D model to something that works in the game. A modder brings a model from Blender or an AI model service; EDGEfab guides it into a finished asset, with its materials, its looks, the files the game needs to know it exists, and a quick way to try it in the game. Or the modder asks REDagent or Claude: "make this model a jacket V can wear".
 
-**Status: draft 0.1, a starting brief.** Written on 2026-10-16 by the EDGEmat session, from the custom-asset goals the owner set for the EDGE platform ([EDGEmat design, "Custom assets"](https://edgemodders.github.io/EDGEmat/design.html#custom-assets-from-a-model-to-the-game)) and from what EDGEmat's M0 learned against the real game. It is a brief for EDGEfab's own first session, not agreed decisions: everything marked *open* or *unverified* is for that session to settle with the owner. **Extended 2026-10-19** by the EDGEmat session at the owner's request: [clothing fitted to the body](#clothing-fitting-to-the-body), [Blender and Blender MCP](#blender-and-blender-mcp), and materials from EDGEmat's new M4 Make. Next: F0.
+**Status: draft 0.1, a starting brief.** Written on 2026-10-16 by the EDGEmat session, from the custom-asset goals the owner set for the EDGE platform ([EDGEmat design, "Custom assets"](https://edgemodders.github.io/EDGEmat/design.html#custom-assets-from-a-model-to-the-game)) and from what EDGEmat's M0 learned against the real game. It is a brief for EDGEfab's own first session, not agreed decisions: everything marked *open* or *unverified* is for that session to settle with the owner. **Extended 2026-10-19** by the EDGEmat session at the owner's request: [clothing fitted to the body](#clothing-fitting-to-the-body), [Blender and Blender MCP](#blender-and-blender-mcp), and materials from EDGEmat's new M4 Make. **Changed 2026-10-25** by the owner's vision: EDGEfab becomes a workspace where a mesh and its materials are changed by prompts, with its own agent connecting to EDGEmat, Tripo, Blender and Unreal Engine. See the [build plan](plan.html), whose phases replace the ones below, and [UE5 assets](ue-assets.html). Next: F0.
 
 ## Mission
 
@@ -124,7 +124,7 @@ An assistant can drive Blender through an MCP server, so "model a cropped jacket
 
 **Both run on the modder's PC**, not on the internet: an add-on inside Blender, and a small server that the assistant's app (such as Claude Code) starts, talking to each other on the PC. What leaves the PC: the conversation with the AI model, including scene details and the code it writes (unless a local model is used, which Blender Lab mentions); the online tools of mcp-for-blender (`generate_3d`, Poly Haven, Sketchfab, Poly Pizza), only when called; and its telemetry, unless turned off.
 
-**How it fits.** EDGEfab does not connect to Blender. The assistant connects to both servers: it models or edits in Blender and exports a GLB, then asks EDGEfab's MCP server to make it a game asset and EDGEmat's for materials. EDGEchat, the Claude Code plugin for the EDGE tools, could list a Blender server as a recommended companion.
+**How it fits** (draft 0.1; the 2026-10-25 vision changes it: EDGEfab's own agent connects to a Blender MCP server as its client, see the [build plan](plan.html#what-changes-in-the-design)). EDGEfab does not connect to Blender. The assistant connects to both servers: it models or edits in Blender and exports a GLB, then asks EDGEfab's MCP server to make it a game asset and EDGEmat's for materials. EDGEchat, the Claude Code plugin for the EDGE tools, could list a Blender server as a recommended companion.
 
 | Caveat | What it means |
 |---|---|
@@ -189,7 +189,7 @@ Intent, not plumbing. Proposed names, settled in F0:
 
 ## Phases (proposed)
 
-For the first session to agree with the owner. Objects come before clothing, because clothing needs rigging. F1 and F3 need materials on new meshes from **EDGEmat M4 Make**.
+**Replaced on 2026-10-25 by the [build plan](plan.html)** (F0 to F8). Kept here as draft 0.1 had them. For the first session to agree with the owner. Objects come before clothing, because clothing needs rigging. F1 and F3 need materials on new meshes from **EDGEmat M4 Make**.
 
 | Phase | Builds | The test proves |
 |---|---|---|

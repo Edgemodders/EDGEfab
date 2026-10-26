@@ -1,24 +1,32 @@
 # EDGE<span class="y">fab</span> docs
 
-EDGEfab is the EDGE asset maker for Cyberpunk 2077, a VS Code extension with an MCP server: bring a 3D model, and turn it into a new object or piece of clothing that works in the game, or ask an assistant to do it.
+EDGEfab is the EDGE asset maker for Cyberpunk 2077, a VS Code extension with an MCP server: bring a 3D model, and turn it into a new object or piece of clothing that works in the game, or ask an assistant to do it. Right-click a mesh, **Open in EDGEfab**, and change it and its materials by prompts: "make the jacket green and the sleeves red", "make an old worn trenchcoat", "animate the pinwheel".
 
 | Document | What it covers |
 |---|---|
-| [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, clothing fitted to the body, Blender and Blender MCP, its shape, the MCP server, proposed phases, open questions. Draft 0.1, a brief, extended 2026-10-19 |
+| [Build plan](plan.html) | The owner's vision (2026-10-25), what it changes in the design, the decisions for F0, the phases F0 to F8, what other repos are asked for. Proposed |
+| [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, clothing fitted to the body, Blender and Blender MCP, its shape, the MCP server, open questions. Draft 0.1, a brief, extended 2026-10-19 |
+| [UE5 assets](ue-assets.html) | Research: Unreal Engine 5 props and characters, with materials, rigs and animations, into the game; driving Unreal headless and through its MCP server; feasibility, effort, tradeoffs |
+| [Tests](testing.html) | Every test with its steps and results. None yet |
+| [Changelog](changelog.html) | Changes a modder would notice. Nothing yet |
 | [Dev setup](dev-setup.html) | What a PC needs to work on EDGEfab |
 | [EDGEmat docs](https://edgemodders.github.io/EDGEmat/) | Materials and looks, which EDGEfab builds on |
 | [REDcode docs](https://edgemodders.github.io/REDcode/) | The editor extensions and the bridge EDGEfab builds on |
 
 ## Roadmap status
 
-As of 2026-10-19. F1 and F3 need EDGEmat's M4 Make (materials for new meshes).
+As of 2026-10-25. The phases are proposals until F0 ([build plan](plan.html)).
 
 | Phase | Status |
 |---|---|
 | F0 Decisions | Next |
-| F1 Object | Not started |
-| F2 Try it | Not started |
-| F3 Clothing | Not started |
-| F4 Ship | Not started |
+| F1 Workspace | Not started |
+| F2 Prompted looks (first preview) | Not started |
+| F3 New objects | Not started |
+| F4 Clothing | Not started |
+| F5 Unreal props | Not started |
+| F6 Animation | Not started |
+| F7 Unreal characters | Not started |
+| F8 Ship | Not started |
 
 Source code and issues: [github.com/Edgemodders/EDGEfab](https://github.com/Edgemodders/EDGEfab)

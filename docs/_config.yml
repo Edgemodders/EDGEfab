@@ -22,8 +22,16 @@ defaults:
 nav:
   - title: Docs
     url: /
+  - title: Build plan
+    url: /plan.html
   - title: Design
     url: /design.html
+  - title: UE5 assets
+    url: /ue-assets.html
+  - title: Tests
+    url: /testing.html
+  - title: Changelog
+    url: /changelog.html
   - title: Dev setup
     url: /dev-setup.html
   - title: EDGEmat

@@ -14,10 +14,12 @@ The EDGE asset maker for Cyberpunk 2077, a VS Code extension in the EDGE family.
 
 EDGEfab orchestrates the other EDGE tools: [EDGEmat](https://github.com/Edgemodders/EDGEmat) for materials and looks, [REDcode](https://github.com/Edgemodders/REDcode) for the project and the 3D viewer, [REDbridge](https://github.com/Edgemodders/REDbridge) for game files, [EDGEdeck](https://github.com/Edgemodders/EDGEdeck) and [REDnode](https://github.com/Edgemodders/REDnode) to try the result, and [EDGEbuilder](https://github.com/Edgemodders/EDGEbuilder) to place objects in the world.
 
-**[Read the docs](https://edgemodders.github.io/EDGEfab/)** &middot; [Design](docs/design.md) &middot; [Dev setup](docs/dev-setup.md)
+Right-click a mesh and **Open in EDGEfab** to change it and its materials by prompts, in one place: "make the jacket green and the sleeves red" (through EDGEmat), "make an old worn trenchcoat" (through a text-to-3D service such as Tripo), "animate the pinwheel" (through Blender or Unreal Engine). In time, EDGEfab also brings free and royalty-free Unreal Engine assets into the game.
+
+**[Read the docs](https://edgemodders.github.io/EDGEfab/)** &middot; [Build plan](docs/plan.md) &middot; [Design](docs/design.md) &middot; [UE5 assets](docs/ue-assets.md) &middot; [Dev setup](docs/dev-setup.md)
 
 > [!NOTE]
-> **Status: scaffold.** The repository, the branding, the docs site and a design brief (draft 0.1) exist; there is no code yet. Next: F0, decisions with the owner.
+> **Status: scaffold.** The repository, the branding, the docs site, a design brief (draft 0.1) and a proposed build plan exist; there is no code yet. Next: F0, decisions with the owner.
 
 ## Repository layout
 

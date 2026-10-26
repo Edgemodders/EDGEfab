@@ -1,13 +1,18 @@
 # EDGEfab: notes for Claude sessions
 
-EDGEfab is the EDGE asset maker for Cyberpunk 2077: a standalone VS Code extension in the EDGE family (`edgemodders.edgefab`) and an MCP server. It turns a 3D model into a new object or piece of clothing that works in the game, orchestrating the other EDGE tools. Read [docs/design.md](docs/design.md) first.
+EDGEfab is the EDGE asset maker for Cyberpunk 2077: a standalone VS Code extension in the EDGE family (`edgemodders.edgefab`) and an MCP server. It turns a 3D model into a new object or piece of clothing that works in the game, orchestrating the other EDGE tools. Read [docs/plan.md](docs/plan.md) (the owner's vision and the proposed phases) and [docs/design.md](docs/design.md) first.
+
+## Requests from other repos
+
+Open issues labelled `request` at https://github.com/Edgemodders/EDGEfab/issues?q=is%3Aissue+is%3Aopen+label%3Arequest are needs from other EDGE tools. Read them at the start of a session and pick them up when the current phase is done; close each with a note on what shipped.
 
 ## Status and next step
 
 - Scaffold created 2026-10-16 by the EDGEmat session: README, license, docs site (HUD layout, dev setup), brand sources and images (icon "EF", activity bar icon), Pages workflow. No code.
 - **Design draft 0.1 is a brief, not decisions.** Written from the custom-asset goals the owner set on 2026-10-16 (EDGEmat's design, "Custom assets") and what EDGEmat's M0 learned against the game.
 - **Extended 2026-10-19** by the EDGEmat session at the owner's request: clothing fitted to the body (the game's body types, the body dummies and refitters in WolvenKit's Blender add-on, fitting steps), Blender MCP servers, and materials from EDGEmat's new **M4 Make** (generated from words through an AI image service, or picked from the game). EDGEmat moved M4 Make ahead of its preview for EDGEfab.
-- **Next: F0.** Work through the design with the owner: the boundaries with EDGEmat and REDcode, the open questions, the phases. Study how working custom-item and custom-object mods are built, in our own words.
+- **The owner's vision, 2026-10-25** (given in a REDnode session, written up there into [docs/plan.md](docs/plan.md)): EDGEfab is the place to change a mesh and its materials by prompts, and in the end to prompt new mesh-based assets. **Open in EDGEfab** on a `.mesh` (REDcode's viewer stays the default on click) opens a workspace. Its own agent connects as a client to EDGEmat ("make the jacket green and the sleeves red"), Tripo for text to mesh ("make an old worn trenchcoat"), and Blender or Unreal Engine through their MCP servers ("animate the pinwheel"). The long-term goal is to bring free and royalty-free Unreal Engine assets into the game: research in [docs/ue-assets.md](docs/ue-assets.md) (moved from REDnode). This changes draft 0.1's "EDGEfab does not connect to Blender". The plan's phases (F0 to F8) replace draft 0.1's and are proposals until F0.
+- **Next: F0.** Agree [docs/plan.md](docs/plan.md) with the owner: the agent (recommended: Claude Agent SDK with the modder's own key, as REDagent), Tripo through its REST API, the two layers for Blender and Unreal, Open in EDGEfab beside EDGEmat's Open in EDGEmat, the phases. Then the checks F0 lists, and the study of how working custom-item and custom-object mods are built, in our own words.
 
 ## The EDGE family, as it touches EDGEfab
 
@@ -43,4 +48,10 @@ Requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled 
 - Keep `extensions/edgefab/src/core` free of VS Code imports; the MCP server bundles it.
 - **House style** is the HUD look from REDnode's design doc; the REDnode HUD theme in REDcode is the default theme for any VS Code UI.
 - **Docs site:** `docs/` is published by GitHub Pages through `.github/workflows/pages.yml`. `docs/index.md` is the landing page (document ledger and roadmap status); add every page to `nav` in `docs/_config.yml`. Brand images come from `tools/brand/render.ps1`. Record every tool install in `docs/dev-setup.md`, with versions and exact commands.
-- **In-game tests:** test archives go in a test project's `tests` folder, never its `packed` folder (WolvenKit's Pack clears it).
+- **In-game tests:** test archives go in a test project's `tests` folder, never its `packed` folder (WolvenKit's Pack clears it). Steps start with REDnode's Test timer (Start, then one Mark per numbered step).
+- **Tests:** `docs/testing.md` lists every test with steps to rerun it, expected results and each run's result. Add a test there when it is first run. Stop after each phase for the owner's test.
+- **Changelog:** `docs/changelog.md` is the one changelog, kept as REDnode's and EDGEmat's are: each change a modder would notice gets a line under **Unreleased** (**New**, **Changed**, **Fixed**, **Other**) in the same commit. Release notes come from it (`tools/release/notes.mjs`, copied from EDGEmat with the release workflow in F1).
+- **Release gate (the owner's rule):** no release (Make a release, a Marketplace, Open VSX, npm or Nexus upload) until every test in `docs/testing.md` for the builds since the last release has passed. Untested or failed stops it: say what is still open, even when asked to release.
+- **Starting a release:** Claude starts a release run only when the owner asks in chat (`gh workflow run release.yml --ref main -f release=true -f nexus=true` once the workflow exists); the owner may also start it by hand.
+- **Release workflow and Nexus Mods:** copy EDGEmat's `.github/workflows/release.yml`, `tools/release/` and `tools/nexus/` (the Nexus scripts are REDnode's; keep the copies the same) when the first code lands. EDGEfab is a VS Code extension, so its Nexus upload has **Mod Manager Download off** (`"modManager": false`, `"primary": false` in `nexus/nexus.json`). The page is created by the owner by hand; then `npm run nexus:pull`. Never print the Nexus key or put it on a command line. No credit to the owner's own account (Cyberbuilds) in the page's credits.
+- **AI services and keys:** every AI service (Anthropic for the agent, Tripo, others) uses the modder's own key, stored in VS Code's secret storage, and is called only after the modder sets it up. Record each asset's source and license (Fab listing, Tripo plan, own work) in the project and the packed mod's credits.
