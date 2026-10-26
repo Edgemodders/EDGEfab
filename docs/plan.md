@@ -4,7 +4,7 @@ title: Build plan
 
 # EDGE<span class="y">fab</span> build plan
 
-**Status: proposed, 2026-10-25.** Written from the owner's vision of 2026-10-25 (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
+**Status: proposed, 2026-10-25; extended 2026-10-26** (Blender assets beside Unreal's, animation as a key focus). Written from the owner's vision (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
 
 ## The vision
 
@@ -28,7 +28,11 @@ Blender, Unreal, Tripo and EDGEmat are tools EDGEfab orchestrates. EDGEfab itsel
 | "Give this NPC a deeper voice and a leather coat" | **EDGEwave** for the voice, EDGEfab's clothing for the coat | The same NPC, changed |
 | "Bring in this Fab prop" | **Unreal Engine** (export, bake), then Blender, then REDbridge | A placeable prop ([UE5 assets](ue-assets.html)) |
 
-The long-term goals: bring free and royalty-free Unreal Engine assets into the game, and prompt new assets from nothing.
+The long-term goals: bring free and royalty-free Unreal Engine and Blender assets into the game, and prompt new assets from nothing.
+
+The owner, 2026-10-26:
+
+> Import the same kinds of assets from Blender as from Unreal: meshes, materials, rigs, animations, the things the RED engine naturally accepts. Exotic assets unique to Blender or Unreal and not native to the RED engine are left aside for now. The Cyberpunk modding community strongly wants easy tooling for importing or generating animations, so animation is a key focus. An animation is almost always attached to something, so the something usually comes first, and the modder sees what the thing is.
 
 ## What changes in the design
 
@@ -59,6 +63,7 @@ Draft 0.1 said "EDGEfab does not connect to Blender: the assistant connects to b
 | Tripo | **EDGEfab's own client for Tripo's REST API**, with the modder's own key, the same way EDGEmat calls its image services | Tripo has no official MCP server (community ones exist). The REST API covers text and image to 3D, decimation, texturing and rigging. One client is easier to guard than a third-party server |
 | Other text-to-mesh services | Later, behind the same interface (Meshy, Hunyuan3D, Rodin) | One service first |
 | Open in EDGEfab beside Open in EDGEmat | Both stay: EDGEmat for editing a material by hand, EDGEfab for the whole asset, which calls EDGEmat | To confirm with the owner |
+| Where animation sits | **Split F7**: animated props (F7a) right after F2, character animation (F7b) right after F5, ahead of F6 | Animation is a key focus, and each half needs only its subject in the view: a prop (F1, F2) or a whole character (F5). See "Animation: a key focus" |
 
 ### Words to parts
 
@@ -68,24 +73,55 @@ Draft 0.1 said "EDGEfab does not connect to Blender: the assistant connects to b
 
 Every asset EDGEfab brings in records where it came from and under what terms: a Fab listing and its license, a Tripo task and the modder's plan, a UE project of the modder's own. The record goes into the project's manifest and into a credits file in the packed mod. Tripo's terms for free-plan outputs are contested between its own help pages and third-party summaries: paid plans grant commercial rights, while the free plan may keep rights with Tripo or require credit. EDGEfab shows the modder the terms of the plan they use and never decides for them.
 
+### Blender and Unreal, the same kinds of asset
+
+EDGEfab imports the same kinds of asset from Blender as from Unreal: **what the RED engine accepts natively**. Blender is the easier source, since Cyberpunk modders already use it with WolvenKit's Blender add-on and it runs headless with no project. Unreal needs its export step first ([UE5 assets](ue-assets.html)).
+
+| Kind | From Blender | From Unreal | In the game |
+|---|---|---|---|
+| Static mesh with textures | A `.blend`, or GLB/FBX it exported | A Static Mesh, exported by EDGEfab's script | `.mesh` over a template, `.xbm` textures |
+| Materials | Principled BSDF: base color, normal, roughness, metallic | Material inputs, or baked (UE5 assets, U2) | The game's material templates (through EDGEmat) |
+| Skinned mesh on the game's rig | An armature with the game's bone names | A Skeletal Mesh moved onto the game's rig | `.mesh` with skinning, `.rig` |
+| A small rig of its own (a prop that moves) | An armature | A skeleton | `.rig` and `.anims` on an entity |
+| Animation | Actions | Animation Sequences, retargeted in Unreal | `.anims`, played by the entity or a workspot |
+| Shape keys / morph targets | Shape keys | Morph targets | `.morphtarget` (WolvenKit import unverified) |
+| LODs, collision | Lower-detail copies; simple shapes | LODs; simple collision | Mesh LODs; the entity's physics |
+
+**Left aside for now** (not native to the RED engine): Blender's geometry nodes, particles and hair systems, simulations, drivers and constraints, procedural shaders; Unreal's Blueprints, Niagara, Control Rig, Chaos, Groom, Substrate's layered materials and MetaHuman's facial rig logic. EDGEfab says so plainly when a source holds them, and bakes what it can (a procedural shader into textures, a simulation into an animation, a constraint into keys) only where the result is a plain asset.
+
+Blender sources arrive with each asset kind: `.blend` props in F1, clothing in F4, animation in F7. Unreal keeps its own phase (F8) for its export step.
+
+### Animation: a key focus
+
+The modding community wants easy tooling for importing and generating animations, and today it means WolvenKit, Blender and many manual steps. EDGEfab makes it a key focus, built on one rule: **the subject comes first**. An animation is almost always attached to something, so EDGEfab opens the thing (a prop, an NPC, V's body) and shows it in the 3D view before any animation work starts. Then:
+
+| Step | What the modder does | What EDGEfab does |
+|---|---|---|
+| See the subject | Open in EDGEfab on the prop or NPC | Shows it on its rig, with the animations it already has, playable |
+| Bring in | Drop a Blender `.blend` action, an FBX or GLB clip, an Unreal sequence (F8) | Checks the bones against the subject's rig, retargets what it can (in Blender's or Unreal's background), says what it cannot |
+| Generate (later) | "Make him lean on the wall and check his phone" | A text-to-motion service behind the same interface as Tripo; candidates unverified, chosen when the phase starts |
+| Preview | Scrub and loop it on the subject | Plays it in the 3D view |
+| Use it | "Play it when he stands here", "loop it", "add it to his idles" | Writes the `.anims`, the entity or workspot, the records; Try it in the running game |
+
 ## Phases
 
 Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
 
 | Phase | Builds | The test proves |
 |---|---|---|
-| **F0 Decisions** | The decisions above. A study of how working custom-prop, custom-item and custom-NPC mods are built (their file sets, not their code). Checks: REDbridge's import over a template (#5), the Claude Agent SDK inside an extension host, Tripo's API with a test key, Blender and Unreal background runs, and what REDbridge can export of a whole character (entity, appearance parts, rig, animations) | The owner agrees this plan |
-| **F1 Props** | The extension and MCP skeletons, the activity bar container. A model (GLB or FBX, with its textures) becomes a **placeable prop**: mesh imported over a template, textures, a material from EDGEmat (the model's own textures, or a game material), an entity, simple collision, LODs. The asset view: the prop and the files that make it, in plain words, with checks. The release workflow copied from EDGEmat. Needs EDGEbuilder's **B2c** (its #1: mod archives and the open project in Browse) | **A simple textured prop is placed in a scene with EDGEbuilder** and stays after a restart. **First preview**, if the owner wants a release here |
+| **F0 Decisions** | The decisions above. A study of how working custom-prop, custom-item and custom-NPC mods are built (their file sets, not their code). Checks: REDbridge's import over a template (#5), the Claude Agent SDK inside an extension host, Tripo's API with a test key, Blender and Unreal background runs, what REDbridge can export of a whole character (entity, appearance parts, rig, animations), and the animation round trip: a game animation out to Blender and a Blender action back in as `.anims`. A look at how animation mods are made today, to find the steps EDGEfab removes | The owner agrees this plan |
+| **F1 Props** | The extension and MCP skeletons, the activity bar container. A model (a `.blend`, GLB or FBX, with its textures) becomes a **placeable prop**: mesh imported over a template, textures, a material from EDGEmat (the model's own textures, or a game material), an entity, simple collision, LODs. The asset view: the prop and the files that make it, in plain words, with checks. The release workflow copied from EDGEmat. Needs EDGEbuilder's **B2c** (its #1: mod archives and the open project in Browse) | **A simple textured prop is placed in a scene with EDGEbuilder** and stays after a restart. **First preview**, if the owner wants a release here |
 | **F2 Workspace and prompts** | **Open in EDGEfab** on a `.mesh`, `.ent` or `.app` (REDcode's Game Assets and Project views, the Explorer, the editor's title menu, as EDGEmat's Open in EDGEmat is). The 3D view, parts and the part map, looks, history with undo. The agent and the prompt bar, with EDGEmat's tools. **Try it**: pack, hot load (REDnode), put it on V or spawn it | "Make the jacket green and the sleeves red" shows on V in the running game |
 | **F3 Generated props** | The Tripo client (text or image to 3D, decimation), clean-up in Blender's background (scale, triangles under 65,535 per mesh, submeshes), then F1's path | "Make a rusty oil drum" ends up in an EDGEbuilder scene |
 | **F4 Clothing** | Fitting to V's bodies and body mods ([design, "Clothing: fitting to the body"](design.html#clothing-fitting-to-the-body)): `fab_body`, `fab_fit`, `fab_refit`. The item record, name, icon, both bodies | "Make an old worn trenchcoat" can be worn by V from the inventory, on both bodies |
 | **F5 Characters, whole** | Open in EDGEfab on an NPC: from its `Character` record, entity or appearance, EDGEfab assembles **the full character**: body, head, hair and clothes from its appearance parts, on its rig, playing its animations (idle and others from its animation sets), its **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
 | **F6 Characters, edited** | Every aspect changed by orchestrating the EDGE tools: looks (EDGEmat), clothes swapped or made (F4), hair and head from the game's parts, animations (Blender, Unreal), voice (EDGEwave), records (TweakDB through TweakXL). A new NPC made from an existing one. Placed through EDGEbuilder's `npc` scene kind (its B3c, on REDnode's `world.load`) | "Make a new fixer from this one, in a leather coat, with a deeper voice" stands in a scene in the game |
-| **F7 Animation** | Animated props through Blender or Unreal ("animate the pinwheel"): a small rig, a looping `.anims`, the entity that plays it. Humanoid animations retargeted in Unreal (U4 of [UE5 assets](ue-assets.html)), played through workspots | The pinwheel turns in the game. An Unreal idle plays on an NPC |
+| **F7a Animated props** (a key focus; proposed right after F2) | The prop in the view first, then "animate the pinwheel": a small rig and a looping `.anims` made in Blender's background, or a Blender action brought in; the entity that plays it | The pinwheel turns in the game |
+| **F7b Character animation** (a key focus; proposed right after F5) | The character in the view first (F5), then animations brought in from Blender (actions on the game's rig, or retargeted) and played through workspots or added to its idles; text to motion behind one interface once a service is chosen. Unreal clips join in F8 (U4 of [UE5 assets](ue-assets.html)) | A Blender idle plays on an NPC in the game, previewed on that NPC in EDGEfab first |
 | **F8 Unreal assets** | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop, a garment and an NPC from the docs alone |
 
-Talking faces for Unreal characters (U5) stay research. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split, the proposed order is F0, F1, F2, F7a, F3, F4, F5, F7b, F6, F8, F9. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What EDGEfab needs from other repos
 
@@ -96,7 +132,7 @@ Filed as `request` issues when its phase starts, with the shape that would work:
 | EDGEbuilder | Its B2c: Browse indexes mod archives and the open project, so EDGEfab's props can be placed (its #1, open since 2026-10-16) | F1 |
 | EDGEmat | Its API and MCP tools on an asset EDGEfab has open: list parts and layers, apply colors or a material per part, save a look; a render per part for the part map | F1, F2 |
 | REDcode | The 3D view embeddable in another extension's webview (or a shared viewer package), with several meshes on one rig and animation playback; stable context values for `.mesh`, `.ent` and `.app` in its views | F2, F5 |
-| REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. Anything F0's checks find missing (collision, LODs, `.anims` import) | F1, F5, F7 |
+| REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. `.anims` import from GLB onto a game rig or a prop's own rig, and `.morphtarget` import. Anything F0's checks find missing (collision, LODs) | F1, F5, F7a, F7b |
 | EDGEwave | A character's voice lines: list them, play them, and replace them in a voice the modder chooses | F5, F6 |
 | REDnode | `world.spawn` and `world.load` of a project's prop or NPC after a hot load (H2c), equip on V | F2, F6 |
 | EDGEbuilder | Its B3c: the `npc` scene kind | F6 |

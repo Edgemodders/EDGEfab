@@ -4,7 +4,7 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 | Document | What it covers |
 |---|---|
-| [Build plan](plan.html) | The owner's vision (2026-10-25), what it changes in the design, the decisions for F0, the phases F0 to F9, what other repos are asked for. Proposed |
+| [Build plan](plan.html) | The owner's vision (2026-10-25 and 26), what it changes in the design, Blender and Unreal assets alike, animation as a key focus, the decisions for F0, the phases F0 to F9, what other repos are asked for. Proposed |
 | [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, clothing fitted to the body, Blender and Blender MCP, its shape, the MCP server, open questions. Draft 0.1, a brief, extended 2026-10-19 |
 | [UE5 assets](ue-assets.html) | Research: Unreal Engine 5 props and characters, with materials, rigs and animations, into the game; driving Unreal headless and through its MCP server; feasibility, effort, tradeoffs |
 | [Tests](testing.html) | Every test with its steps and results. None yet |
@@ -26,7 +26,8 @@ As of 2026-10-25. The phases are proposals until F0 ([build plan](plan.html)).
 | F4 Clothing | Not started |
 | F5 Characters, whole | Not started |
 | F6 Characters, edited | Not started |
-| F7 Animation | Not started |
+| F7a Animated props (a key focus) | Not started |
+| F7b Character animation (a key focus) | Not started |
 | F8 Unreal assets | Not started |
 | F9 Ship | Not started |
 
