@@ -8,4 +8,4 @@ Every change a modder would notice, newest first. Kept as REDnode's and EDGEmat'
 
 ## Unreleased
 
-Nothing yet: there is no code. The first preview is planned after F2 ([build plan](plan.html)).
+Nothing yet: there is no code. The first preview is planned at step V6 of version 1, once a Library prop is placed with EDGEbuilder ([design](design.html#build-plan-for-version-1)).

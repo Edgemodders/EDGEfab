@@ -19,7 +19,7 @@ EDGEfab is a fabricator, not a mesh editor: its goal is the whole game asset. Pr
 **[Read the docs](https://edgemodders.github.io/EDGEfab/)** &middot; [Build plan](docs/plan.md) &middot; [Design](docs/design.md) &middot; [UE5 assets](docs/ue-assets.md) &middot; [Dev setup](docs/dev-setup.md)
 
 > [!NOTE]
-> **Status: scaffold.** The repository, the branding, the docs site, a design brief (draft 0.1) and a proposed build plan exist; there is no code yet. Next: F0, decisions with the owner.
+> **Status: scaffold.** The repository, the branding, the docs site, a design brief and a proposed build plan exist; there is no code yet. **Version 1 is set** ([design](docs/design.md#version-1-props)): game props, imported from a GLB or made from words through Tripo, kept on a Desk and in a Library that EDGEbuilder places in the game. Next: V0, its checks.
 
 ## Repository layout
 

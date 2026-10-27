@@ -4,7 +4,7 @@ title: Build plan
 
 # EDGE<span class="y">fab</span> build plan
 
-**Status: proposed, 2026-10-25; extended 2026-10-26** (Blender assets beside Unreal's, animation as a key focus). Written from the owner's vision (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
+**Status: proposed, 2026-10-25; extended 2026-10-26** (Blender assets beside Unreal's, animation as a key focus). **Version 1 set by the owner on 2026-10-27:** props, imported or made from words through Tripo, with a Desk, a Library that EDGEbuilder reads and Game Assets with kind filters. It brings F1 and F3 together and has its own steps, V0 to V8, in the design's [Version 1](design.html#version-1-props). Written from the owner's vision (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
 
 ## The vision
 
@@ -105,7 +105,7 @@ The modding community wants easy tooling for importing and generating animations
 
 ## Phases
 
-Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
+**Version 1 comes first** and covers F1 and F3, with a part of F2 (Open in EDGEfab, the asset page on REDcode's 3D view): its goal, views and steps (V0 to V8) are in the design's [Version 1](design.html#version-1-props). The rest of F2 (the agent, the prompt bar, Try it on V) follows it. Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
 
 | Phase | Builds | The test proves |
 |---|---|---|
@@ -121,7 +121,7 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F8 Unreal assets** | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop, a garment and an NPC from the docs alone |
 
-Talking faces for Unreal characters (U5) stay research. With F7 split, the proposed order is F0, F1, F2, F7a, F3, F4, F5, F7b, F6, F8, F9. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split and version 1 set, the proposed order is F0, version 1 (F1 and F3), F2, F7a, F4, F5, F7b, F6, F8, F9. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What EDGEfab needs from other repos
 

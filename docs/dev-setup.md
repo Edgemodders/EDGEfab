@@ -10,7 +10,7 @@ What a Windows PC needs to work on EDGEfab. The shared tools are the same as in 
 | nvm for Windows and Node.js | as REDcode (Node 24) | The tool will be TypeScript, as the rest of the ecosystem | `winget install --id CoreyButler.NVMforWindows -e`, then `nvm install 24` and `nvm use 24` |
 | Python | 3.10 or later | Brand tooling | |
 | Chrome or Edge | any | Renders the brand images | Already present on Windows |
-| REDbridge | 0.8.0 or later | Reads and writes game files (0.8.0 adds TweakDB reading) | See [REDbridge's setup guide](https://edgemodders.github.io/REDbridge/dev-setup.html) |
+| REDbridge | 0.11.0 or later | Reads and writes game files (0.9.0 adds mesh import over a template, 0.11.0 texture import presets) | See [REDbridge's setup guide](https://edgemodders.github.io/REDbridge/dev-setup.html) |
 | Blender | to record in F0 | Making and rigging models; converting FBX and OBJ to GLB | To record in F0 |
 
 ## 2. Repository and GitHub
