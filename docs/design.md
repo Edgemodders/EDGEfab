@@ -31,6 +31,7 @@ EDGE brings modding to everyone, especially non-coders: easy, fun and fast. A ne
 | Import a GLB or glTF with its textures | FBX, OBJ and `.blend`, which need Blender's background ([Blender layer 1](#two-layers-edgefabs-own-blender-steps-and-a-blender-mcp-server)); next after version 1 |
 | Text to 3D through Tripo, in takes; Tripo's own edits on a take | Other services (Meshy, Hunyuan3D, Rodin). Image to 3D: the same task flow with an uploaded image, so it can follow soon after |
 | The Desk, the Library, Game Assets with kind filters | |
+| Changing a prop or its parts: size and placement on the asset page, by hand in Blender, by an assistant through a Blender MCP server, or by Tripo; each change a version that can be undone ([below](#changing-a-prop-on-the-page-in-blender-by-an-assistant)) | A Blender bundled with EDGEfab. EDGEfab finds the modder's own |
 | Add to Project; the Library in the game for EDGEbuilder | Collision: V walks through a version 1 prop, and the asset page says so. Animated props (plan F7a) |
 | A prop in named parts (Tripo's segmentation), and a **material planner** that picks a material for each part, made and put on by EDGEmat ([below](#parts-and-materials-the-planner)) | |
 | An MCP tool for every action | EDGEfab's own agent and prompt bar (plan F2). Claude Code drives version 1 through EDGEfab's MCP server. The material planner is one AI call, not the agent |
@@ -194,6 +195,43 @@ Tripo's API has two ways to give a prompt's model in parts (its V2 docs, read 20
 
 So version 1's planner works with what EDGEmat has when V8 starts. Tripo's textures converted, and game surfaces, are the minimum. New materials from words come with EDGEmat's Generate and Compose.
 
+### Changing a prop: on the page, in Blender, by an assistant
+
+**Added by the owner on 2026-10-30.** A prop from Tripo or a file is rarely right the first time. It may be the wrong size, have holes or loose bits, or need a design change: "make the lid thinner", "add a handle on each side", "the latches should be round". EDGEfab offers four ways to change a prop or one of its parts. All four keep the parts and their material plan.
+
+| Way | For | How it runs | Needs |
+|---|---|---|---|
+| **1. On the asset page** | Size and placement: "1.2 m tall", turn by 90°, sit it on the ground, centre it | EDGEfab core, on the model: a uniform scale to a size typed in metres (or "as tall as a door", from game props of that kind), a turn, the origin to the bottom centre. Instant, no Blender | Nothing |
+| **2. Fixed Blender steps** | Mesh errors: holes, flipped faces, loose bits, doubled vertices, parts with no UVs | **Fix Mesh** and **Unwrap Part** buttons. EDGEfab runs its own script in Blender's background (`blender --background`): no AI-written code, the same result every time. The checks on the asset page offer the fix they need ("the lid has 3 holes: Fix Mesh") | The modder's Blender, found as REDcode finds it (`redcode.blenderPath`) |
+| **3. By hand in Blender** | Anything a modder can do in Blender | **Edit in Blender** on the asset page or a part: Blender opens with the prop, each part an object named after it. Each save comes back as a new version, Make Game-Ready runs again and the materials go back on. As REDcode's **Edit in Blender** does for a project's model (`editInBlender`, REDcode 0.10.0), so EDGEfab uses it rather than a copy ([below](#what-version-1-needs-from-other-repos)) | Blender |
+| **4. By an assistant in Blender** | A design change in words: "make it 20% shorter", "fill the hole in the lid", "add a handle on each side", "make the latches round" | An assistant connected to EDGEfab's MCP server and to a **Blender MCP server** (opt-in, [layer 2](#two-layers-edgefabs-own-blender-steps-and-a-blender-mcp-server)) does the work in a visible Blender, so the modder watches. `fab_edit_begin` gives it the prop (or one part) and a short brief; `fab_edit_end` brings the result back as a new version. In version 1 the assistant is Claude Code with EDGEchat (or REDagent): EDGEfab's own agent and prompt bar come after version 1 (plan F2) and get the same tools, so "add a handle" can then be typed on the asset page | Blender, a Blender MCP server set up by **Set Up Blender for AI**, an assistant |
+
+Tripo's own edits (**Ask Tripo...**: new textures, fewer faces, [Text to 3D](#text-to-3d-takes)) are the fifth way, and follow the same rules.
+
+**Versions.** Every change, from any of the five ways, makes a new version of the Desk entry or Library item. The asset page lists them ("v3: Edit in Blender, 14:02", "v4: assistant: handles added") with **Undo** to the one before and **Compare** (before and after, side by side in the 3D view). Before an assistant's Blender work starts, the current version is kept, so a bad edit is one click back. Stored in the entry's folder: `versions\<n>\` holds that version's GLB and a note of what made it. The last 20 are kept (proposed).
+
+**Parts and materials survive a change.** In Blender each part is an object named after it, and EDGEfab reads the names back:
+
+| After the change | EDGEfab |
+|---|---|
+| A part kept its name | Keeps its row in the material plan and its material |
+| A part was renamed | Asks whether it is the same part, then keeps its row |
+| A new part (a handle added) | A new row in the plan, marked "needs a material"; the planner can fill it |
+| A part removed | Its row goes |
+| A part's shape changed | Its material stays. If its UVs no longer cover it, the check says so and offers **Unwrap Part**. A tiling game surface fits any new UVs; Tripo's painted texture does not, so that part is offered a game surface or new textures from Tripo |
+| The size changed | Bounds, triangle budget and LODs are worked out again by Make Game-Ready |
+
+**The brief for an assistant** (in EDGEfab's MCP server instructions, and returned by `fab_edit_begin`): the file to open and where to save it; units are metres, and the prop stands on the ground at the origin; keep each part one object and keep its name; a new part gets a plain name ("left handle"); keep UVs where the shape allows; stay within the triangle budget given; save as glTF to the path given, never over the original. EDGEfab's fixed import and export script ships with it, so the assistant runs that script in Blender rather than writing its own import and export.
+
+**Safety.** Ways 1 to 3 run no AI-written code. Way 4 does, inside Blender, through the Blender MCP server the modder chose to set up, with the caveats in [Blender and Blender MCP](#blender-and-blender-mcp) (no guards on that code; mcp-for-blender's telemetry is on unless turned off). Which server **Set Up Blender for AI** installs by default, Blender Lab's (Blender 5.1 or later) or mcp-for-blender, is a V0 choice.
+
+| Tool | Does |
+|---|---|
+| `fab_change` | Size, turn, ground, centre (way 1) |
+| `fab_fix` | Fix Mesh and Unwrap Part, in Blender's background (way 2) |
+| `fab_edit_begin`, `fab_edit_end` | Hand the prop or a part to Blender and take the result back as a version (ways 3 and 4) |
+| `fab_versions` | List, undo to, compare |
+
 ### Into the game: the Library in EDGEbuilder
 
 EDGEbuilder runs in the game as a REDnode app. Its Browse reads only the game's archives today ([EDGEbuilder #1](https://github.com/Edgemodders/EDGEbuilder/issues/1), its B2c). Version 1's last step is the owner's test, so this path decides when version 1 is done.
@@ -221,16 +259,17 @@ New paths are not in WolvenKit's hash list, so a mod archive's file list shows t
 | Parts and materials | Tripo's segmentation into named parts; EDGEfab plans a material per part in words; EDGEmat makes and puts on each one | EDGEfab knows the parts, EDGEmat knows materials; neither repeats the other |
 | Tripo's textures or the game's | Keep Tripo's where it holds detail of its own; game surfaces for plain materials; the modder decides per part | Game surfaces respond to the game's lighting; Tripo's prints and stencils have no game equivalent |
 | Keys | The EDGE tools' shared key store (REDnode #23), as EDGEmat since 2026-10-30 | One key for every EDGE tool and its MCP server |
-| Agent | Not in version 1. Claude Code drives EDGEfab through its MCP server | Version 1 is the path into the game; the agent (plan F2) builds on it |
-| Version number | Previews 0.x during the build; **1.0** when V9 passes | The release gate holds for each |
+| Changing a prop | Four ways (on the page, fixed Blender steps, by hand in Blender, an assistant through a Blender MCP server) plus Tripo's edits; every change a version with undo; parts kept by object name | Sizing needs no Blender; mesh fixes need no AI; design changes can be by hand or in words |
+| Agent | Not in version 1. Claude Code drives EDGEfab through its MCP server, and drives Blender through a Blender MCP server for design changes | Version 1 is the path into the game; the agent (plan F2) builds on it |
+| Version number | Previews 0.x during the build; **1.0** when V10 passes | The release gate holds for each |
 
 ### Build plan for version 1
 
-Each step ends with a test the owner runs, added to [Tests](testing.html). Steps V3 to V6 make the imported path whole. V7 to V9 add Tripo, parts and the material planner on top of it, so a generated prop takes the same path as an imported one.
+Each step ends with a test the owner runs, added to [Tests](testing.html). Steps V3 to V6 make the imported path whole. V7 to V9 add Tripo, parts, the material planner and changes on top of it, so a generated prop takes the same path as an imported one.
 
 | Step | Builds | The test proves |
 |---|---|---|
-| **V0 Checks** | The unverified facts in this section: REDcode's viewer mounted from another extension's webview; a textured cube GLB through `project.import` with a template, textures and a `.mi`, spawned in the game (axes, scale, normal map direction, template choice); triangle and texture budgets from game props by size; the Game Assets kind rules and their counts; Tripo's V3 API with a test key (what V3 changes from V2; P1's GLB and PBR textures through Make Game-Ready; edits; balance; terms); Tripo's segmentation v2 on V3 (task name, inputs, cost, where part names and descriptions arrive); EDGEmat's tools on a Desk entry's folder; the Library contract agreed with EDGEbuilder's session; requests filed ([below](#what-version-1-needs-from-other-repos)) | The owner agrees version 1. A hand-made textured cube stands in the game, right way up, at the right size |
+| **V0 Checks** | The unverified facts in this section: REDcode's viewer mounted from another extension's webview; a textured cube GLB through `project.import` with a template, textures and a `.mi`, spawned in the game (axes, scale, normal map direction, template choice); triangle and texture budgets from game props by size; the Game Assets kind rules and their counts; Tripo's V3 API with a test key (what V3 changes from V2; P1's GLB and PBR textures through Make Game-Ready; edits; balance; terms); Tripo's segmentation v2 on V3 (task name, inputs, cost, where part names and descriptions arrive); EDGEmat's tools on a Desk entry's folder; Blender's background running EDGEfab's script, and a GLB with named parts through Blender and back with names and UVs kept; a Blender MCP server with Claude Code editing a part; the Library contract agreed with EDGEbuilder's session; requests filed ([below](#what-version-1-needs-from-other-repos)) | The owner agrees version 1. A hand-made textured cube stands in the game, right way up, at the right size |
 | **V1 Skeleton** | `extensions/edgefab` and `packages/edgefab-mcp` in EDGEmat's shape (npm workspaces, esbuild, TypeScript 5.9, `src/core` without VS Code imports), the activity bar container with the three views empty and their welcome text, the MCP server registered, the release workflow and tools copied from EDGEmat | EDGEfab installs beside REDcode and EDGEmat; the views show; Claude Code lists EDGEfab's tools |
 | **V2 Game Assets** | The kind index, the Show checkboxes and Kinds list, the filter, View in 3D, `fab_find` | Each kind lists its assets with the V0 counts; "crate" with only Props on finds the game's crates; one opens in 3D |
 | **V3 Desk and asset page** | The Desk (storage, entries, rename, take off, clear), Import Model and Open in EDGEfab on a GLB, the asset page with REDcode's viewer and EDGEfab's buttons, the facts and checks beside it, `fab_desk` | A GLB with textures goes on the Desk and shows with its own textures; it is still there after VS Code restarts |
@@ -239,7 +278,8 @@ Each step ends with a test the owner runs, added to [Tests](testing.html). Steps
 | **V6 Placed with EDGEbuilder** | Nothing new in EDGEfab beyond fixes. EDGEbuilder's Library tab and REDbridge's mod-archive reads, from their sessions | **The goal:** the crate from the Library is placed in a scene with EDGEbuilder in the running game, and the scene saves with it. **First preview release**, if the owner wants one here |
 | **V7 Tripo takes** | The Tripo client, the key commands, the New Prop page, takes on disk, Put on the Desk, `fab_generate`, `fab_takes`, `fab_pick`. Whole models, with Tripo's textures; parts come in V8 | "A battered olive military crate with stencils" gives two takes; one goes on the Desk, Make Game-Ready, into the Library, and is placed with EDGEbuilder |
 | **V8 Parts and materials** | Split into Parts (Tripo's segmentation), parts to submeshes, the part map, the parts list on the asset page, Plan Materials (one Claude call, the brief, EDGEmat's candidates), the plan table, Apply through EDGEmat, `fab_parts`, `fab_plan`, `fab_apply_plan` | **From a prompt:** "a rusty bicycle with a leather seat" comes back from Tripo as named parts; the plan keeps Tripo's texture on the seat, gives the handlebars a chrome and the tyres a rubber from the game; after Apply it shows that way in the game. **From an import:** a downloaded GLB in one piece is split into parts and planned the same way. Routes A and B compared and the default set |
-| **V9 Tripo edits and ship** | Ask Tripo on a take (new textures, fewer faces), `fab_tripo_edit`; the docs pages for version 1 (a tutorial for each way to make a prop); the changelog | A take is retextured from a new prompt and replaces the Desk entry's look; a non-coder makes a prop each way from the docs alone. **EDGEfab 1.0**, after the release gate |
+| **V9 Changes** | Versions with Undo and Compare; size and placement on the asset page; Fix Mesh and Unwrap Part in Blender's background; Edit in Blender (through REDcode's); `fab_edit_begin` and `fab_edit_end` with the brief and the import and export script; Set Up Blender for AI; Ask Tripo (new textures, fewer faces); `fab_change`, `fab_fix`, `fab_versions`, `fab_tripo_edit` | The bicycle from V8 is made 1.1 m tall on the page; a hole is fixed with Fix Mesh; the seat is reshaped by hand in Blender; Claude Code adds a basket through the Blender MCP server, which gets a material from the planner; the materials stay on the other parts; Undo goes back a step; the result shows in the game |
+| **V10 Ship** | The docs pages for version 1 (a tutorial for each way to make and change a prop); the changelog | A non-coder makes a prop from words and from a file, and changes one, from the docs alone. **EDGEfab 1.0**, after the release gate |
 
 What comes after version 1 is the plan's F2 (the agent and prompt bar, on this asset page), F7a (animated props, on this Desk) and F4 (clothing, in the Library's next folder), in the [build plan](plan.html)'s order.
 
@@ -249,6 +289,7 @@ Filed as `request` issues in V0, with the shape that would work. EDGEfab does no
 
 | Repo | Need | For |
 |---|---|---|
+| REDcode | `editInBlender` on any `.glb` or `.gltf` on disk, not only the open project's, with an event when a save comes back (so EDGEfab makes a version and runs Make Game-Ready), and the Blender it found (`blenderPath()` in its API), for EDGEfab's background steps | V9 |
 | REDcode | The mesh viewer as a contract for other extensions: where its script and styles are (an API call such as `meshViewer()` returning their URIs and a version), `mount` and `MountOptions` documented with `actions` kept, and a `snapshot()` on the view returning a PNG (Library thumbnails). Optional: a size readout in metres and a person-sized figure for scale | V3, V5 |
 | EDGEmat | "Materials from a textured model" (its M4) in its API and MCP: a model's textures (or a GLB's material) in, a textured `.mi` out, set on a mesh's look | V4 |
 | EDGEmat | For the planner: an API call (and MCP tool) that takes a mesh, a material slot and a material asked for in words or by name (a game surface with a color and finish, a game `.mi`, or "make this"), and makes and puts it on; a search that returns candidates for a part's words; both on a Desk entry's folder, not only a project. Builds on its Game materials on a new mesh, Generate and Compose | V8 |

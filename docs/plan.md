@@ -4,7 +4,7 @@ title: Build plan
 
 # EDGE<span class="y">fab</span> build plan
 
-**Status: proposed, 2026-10-25; extended 2026-10-26** (Blender assets beside Unreal's, animation as a key focus). **Version 1 set by the owner on 2026-10-27:** props, imported or made from words through Tripo, in named parts with a material per part, with a Desk, a Library that EDGEbuilder reads and Game Assets with kind filters. It brings F1 and F3 together and has its own steps, V0 to V9, in the design's [Version 1](design.html#version-1-props). Written from the owner's vision (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
+**Status: proposed, 2026-10-25; extended 2026-10-26** (Blender assets beside Unreal's, animation as a key focus). **Version 1 set by the owner on 2026-10-27:** props, imported or made from words through Tripo, in named parts with a material per part, with a Desk, a Library that EDGEbuilder reads and Game Assets with kind filters. It brings F1 and F3 together and has its own steps, V0 to V10, in the design's [Version 1](design.html#version-1-props). Written from the owner's vision (below), on top of [design draft 0.1](design.html). Nothing is built. F0 agrees this plan with the owner. Until then every phase, name and order here is a proposal. Anything not yet checked is marked unverified.
 
 ## The vision
 
@@ -105,7 +105,7 @@ The modding community wants easy tooling for importing and generating animations
 
 ## Phases
 
-**Version 1 comes first** and covers F1 and F3, with a part of F2 (Open in EDGEfab, the asset page on REDcode's 3D view): its goal, views and steps (V0 to V9) are in the design's [Version 1](design.html#version-1-props). The rest of F2 (the agent, the prompt bar, Try it on V) follows it. Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
+**Version 1 comes first** and covers F1 and F3, with a part of F2 (Open in EDGEfab, the asset page on REDcode's 3D view): its goal, views and steps (V0 to V10) are in the design's [Version 1](design.html#version-1-props). The rest of F2 (the agent, the prompt bar, Try it on V) follows it. Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
 
 | Phase | Builds | The test proves |
 |---|---|---|
