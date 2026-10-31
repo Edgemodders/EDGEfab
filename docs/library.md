@@ -36,12 +36,12 @@ The owner, 2026-10-31: the modder makes the Library's folders, and they need not
 | The folders are the modder's | EDGE tools never create `meshes/` or game-path folders in the Library. They offer the folder the modder last used |
 | Game paths live only inside an asset item | An item's `source/archive` holds its files at their game paths. That is internal, and the Library view shows the item as one object with its name |
 | Plain files are items too | A GLB, FBX, `.blend` or images that the modder keeps to convert later sit in any folder as they are, known by their extension, as the Library's rules allow |
-| An asset item is what EDGE tools make | A game asset with the files it needs, or a converted prop, is a `.asset` folder (below), because one game object is several files |
+| An asset item is what EDGE tools make | A game asset with the files it needs, or a converted prop, is a `<name>.<kind>.asset` folder (below), because one game object is several files |
 
 | Kept in the Library | Becomes |
 |---|---|
-| A third-party `model.glb` in `Development/Meshes` | EDGEfab's **Make a prop** on it writes a `.asset` next to it, or in a folder the modder picks (`Production/Meshes`). The GLB stays, and the asset records it as its source |
-| A game mesh added from REDcode | A `.asset` with the mesh, its materials and textures, in the folder the modder picks |
+| A third-party `model.glb` in `Development/Meshes` | EDGEfab's **Make a prop** on it writes `model.prop.asset` next to it, or in a folder the modder picks (`Production/Meshes`). The GLB stays, and the asset records it as its source |
+| A game mesh added from REDcode | `comfy_rocker.mesh.asset`, with the mesh, its materials and textures, in the folder the modder picks |
 
 ## The flow
 
@@ -61,7 +61,7 @@ The owner, 2026-10-31: the modder makes the Library's folders, and they need not
 A folder that describes itself, laid out like a small project:
 
 ```
-<name>.asset/
+<name>.<kind>.asset/      for example rusty_oil_drum.prop.asset, comfy_rocker.mesh.asset
   asset.json
   source/archive/...   the game files, at their game paths
   source/raw/...       what they were made from: the GLB, images, exports
@@ -69,15 +69,18 @@ A folder that describes itself, laid out like a small project:
 
 - **The same layout as a REDcode project's**, and as EDGEmat's Desk entries (`desk\items\<id>\source\archive`), though the Desk is scratch and the Library is the long-term store. So each tool's project code works on an asset as it is.
 - **REDbridge works on it as it is.** Its `project.import` takes any `rawDir` and `archiveDir`. That was read from REDbridge's code, not yet tried.
-- **The `.asset` suffix marks the kind**, as `.bake` does for EDGEbuilder's bakes, since the modder's folders are free.
+- **The name carries the kind** (owner, 2026-10-31): `<name>.<kind>.asset`. A search or filter for `mesh` finds every mesh asset, in any folder, as `.glb` finds the model files. The `.asset` ending marks an item, as `.bake` does for EDGEbuilder's bakes, since the modder's folders are free.
+- **Kinds:** a game asset takes its main file's type (`mesh`, `ent`, `app`, `mi`, `mlsetup`, `xbm`). EDGEfab's own kinds are `prop`, later `garment`, `character`. Lowercase, one word.
+- **When the kind changes** (a game mesh made into a prop), the tool renames the folder (`comfy_rocker.mesh.asset` to `comfy_rocker.prop.asset`) and sets `kind` to match. Projects find it again by its `id`, not its folder.
 
 ### `asset.json`
 
 | Field | Holds |
 |---|---|
 | `format` | 1 |
+| `id` | A random id, made once and never changed, so projects and other assets find the item after it is renamed or moved |
 | `name` | The modder's name for it, such as "Rusty oil drum" |
-| `kind` | `mesh`, `prop`, later `garment`, `character` ... The kind can change: a game mesh becomes a prop |
+| `kind` | The same as in the folder name. If the two differ, the folder name wins and the tool fixes the file |
 | `main` | The game path of the file a tool opens or places (a prop's `.ent`, a mesh's `.mesh`) |
 | `version` | A whole number, raised by each change |
 | `from` | Where it started: a game path and game version, a file, a Tripo task (id, prompt, plan), another asset |
@@ -85,7 +88,7 @@ A folder that describes itself, laid out like a small project:
 | `history` | One line per change: the tool, what it did, the date |
 | `tools` | The game, REDbridge and tool versions of the last build |
 
-A project's note of what it took, in its own folder (proposed): `source/library.json`, with each asset's path relative to the Library root, its version, and the files copied. The Library page's rule that "came from" notes are relative to the root keeps them working after a Relocate.
+A project's note of what it took, in its own folder (proposed): `source/library.json`, with each asset's `id`, its path relative to the Library root (a hint, for speed), its version, and the files copied. The Library page's rule that "came from" notes are relative to the root keeps them working after a Relocate.
 
 ### Game paths
 
@@ -109,7 +112,6 @@ A project's note of what it took, in its own folder (proposed): `source/library.
 
 | Question | Notes |
 |---|---|
-| One generic `.asset` item, or a kind per tool (`.prop`, `.garment`) | Proposed: one, with `kind` inside, because an asset changes kind as tools work on it (a game mesh found in REDcode becomes EDGEfab's prop) |
 | Variations | EDGEmat's Desk keeps variations of one mesh. In the Library, a variation could be a copy of the asset made by the modder, or a field. Proposed: a copy, so each stays simple |
 | Rewriting references when an asset becomes new | Unverified; F0 checks it with REDbridge |
 | What Add to Library takes along from the game | A mesh's materials and textures, yes. Game-wide shared files (base materials, templates) stay in the game and are referred to, not copied (proposed) |

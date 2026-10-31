@@ -133,7 +133,7 @@ The owner: the Library is a key shared resource for working across the tools, be
 
 | In F1 | |
 |---|---|
-| Made assets | A prop made from a GLB or by Tripo is an asset in the Library (`<name>.asset/` with `asset.json`, laid out like a small project), when a Library root is set |
+| Made assets | A prop made from a GLB or by Tripo is an asset in the Library (`<name>.prop.asset/` with `asset.json`, laid out like a small project; the kind in the name, owner 2026-10-31), when a Library root is set |
 | EDGEfab's Library view | The modder's own folders (not game paths), with their assets and model files (GLBs kept to convert later); open, Make a prop, Add to Project, Refresh from Library |
 | Add to Project | Copies the asset's game files into the project with a note of where they came from |
 | Without a Library | Add to Project builds straight into the project |
