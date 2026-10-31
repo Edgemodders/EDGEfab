@@ -14,6 +14,19 @@ The owner, 2026-10-31:
 
 The Library itself is [EDGEbuilder's Library](https://edgemodders.github.io/EDGEbuilder/library.html), agreed there on 2026-10-29. It's one root folder for the EDGE platform, kept in `%APPDATA%\EDGE\library.json` (`{ "root": ... }`), with the modder's own folders. Its items describe themselves, and anything copied into a project records where it came from. EDGEbuilder keeps scenes and bakes there. This page adds **assets**: meshes, props and later garments and characters, which several tools find, make and change.
 
+## Desk and Library
+
+The owner, 2026-10-31: a Desk is one tool's own scratch workspace. The Library is the long-term store of reusable objects, shared across tools and projects.
+
+| | A Desk | The Library |
+|---|---|---|
+| What it is | One tool's scratch workspace for the work in hand | The modder's long-term store of reusable objects |
+| Shared | No: each tool's own (EDGEmat has one; other tools may get one, not decided) | Yes: one root for every EDGE tool |
+| Lasts | Across restarts, but not organised or kept for good | For good, in the modder's own folders |
+| Feeds | A project, or the Library | Any number of projects |
+
+So an asset item only borrows the Desk's folder layout (below); it is not a Desk entry. Whether EDGEfab gets a Desk of its own is open, as for the other tools.
+
 ## The flow
 
 | Step | Where | What happens |
@@ -38,7 +51,7 @@ A folder that describes itself, laid out like a small project:
   source/raw/...       what they were made from: the GLB, images, exports
 ```
 
-- **The same layout as a REDcode project's**, and as EDGEmat's Desk entries (`desk\items\<id>\source\archive`). So each tool's project code works on an asset as it is.
+- **The same layout as a REDcode project's**, and as EDGEmat's Desk entries (`desk\items\<id>\source\archive`), though the Desk is scratch and the Library is the long-term store. So each tool's project code works on an asset as it is.
 - **REDbridge works on it as it is.** Its `project.import` takes any `rawDir` and `archiveDir`. That was read from REDbridge's code, not yet tried.
 - **The `.asset` suffix marks the kind**, as `.bake` does for EDGEbuilder's bakes, since the modder's folders are free.
 
