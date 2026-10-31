@@ -26,6 +26,8 @@ nav:
     url: /plan.html
   - title: Design
     url: /design.html
+  - title: Library
+    url: /library.html
   - title: UE5 assets
     url: /ue-assets.html
   - title: Tests
