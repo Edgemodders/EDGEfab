@@ -104,8 +104,8 @@ A project's note of what it took, in its own folder (proposed): `source/library.
 | Tool | Its part | How |
 |---|---|---|
 | **EDGEfab** | Asset items: make, change, its Library view (the modder's folders with their assets and model files, open, Make a prop, Add to Project, Refresh). The first tool to need the Library may ask where to put it, offering `Documents\EDGE Library` | F1 |
-| **REDcode** | **Add to Library** on a file in Game Assets or a project, with the files it needs | A `request` issue, not filed yet. Doesn't block F1: F1's assets come from GLBs |
-| **EDGEbuilder** | Keeps the Library's shared rules (its Library page says they move to the platform's wiki once a second tool uses the Library; EDGEfab is the second). Its scenes and bakes; later its Browse and sector view may list Library assets | A note on its Library page, not filed yet |
+| **REDcode** | **Add to Library** on a file in Game Assets or a project, with the files it needs | [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31. Doesn't block F1: F1's assets come from GLBs |
+| **EDGEbuilder** | Keeps the Library's shared rules (its Library page says they move to the platform's wiki once a second tool uses the Library; EDGEfab is the second). Its scenes and bakes; later its Browse and sector view may list Library assets | [EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31: assets in the shared rules, one came-from note per project |
 | **EDGEmat** | Later: a Desk entry saved to the Library, and new materials and looks on a Library asset | When EDGEmat gets there |
 
 ## Open

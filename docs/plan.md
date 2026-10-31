@@ -137,7 +137,7 @@ The owner: the Library is a key shared resource for working across the tools, be
 | EDGEfab's Library view | The modder's own folders (not game paths), with their assets and model files (GLBs kept to convert later); open, Make a prop, Add to Project, Refresh from Library |
 | Add to Project | Copies the asset's game files into the project with a note of where they came from |
 | Without a Library | Add to Project builds straight into the project |
-| Not in F1 | REDcode's **Add to Library** on game assets (a request to REDcode), changing an asset that came from the game (F2, with Open in EDGEfab) |
+| Not in F1 | REDcode's **Add to Library** on game assets ([REDcode #19](https://github.com/Edgemodders/REDcode/issues/19)), changing an asset that came from the game (F2, with Open in EDGEfab) |
 
 ## Phases
 
@@ -168,8 +168,8 @@ Filed as `request` issues when its phase starts, with the shape that would work:
 | EDGEbuilder | Its B2c: Browse indexes mod archives and the open project, so EDGEfab's props can be placed (its #1). **Built in EDGEbuilder 0.4.0 on 2026-10-30**; it asked back for an entity with collision per prop ([EDGEfab #2](https://github.com/Edgemodders/EDGEfab/issues/2)) | F1 |
 | EDGEmat | **Materials from a textured model**: a GLB's PBR textures to `.xbm` and a `.mi`, in its API and as MCP `mat_from_model` ([EDGEmat #4](https://github.com/Edgemodders/EDGEmat/issues/4), filed 2026-10-30) | F1 |
 | EDGEmat | Its API and MCP tools on an asset EDGEfab has open: list parts and layers, apply colors or a material per part, save a look; a render per part for the part map | F2 |
-| REDcode | **Add to Library** on a file in Game Assets or a project, with the files it needs ([Library assets](library.html)). Not filed yet | F2 |
-| EDGEbuilder | The Library's shared rules gain assets ([Library assets](library.html)); EDGEfab is the second tool to use the Library, which its Library page says moves the rules to the platform's wiki. Not filed yet | F1 |
+| REDcode | **Add to Library** on a file in Game Assets or a project, with the files it needs ([Library assets](library.html); [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31) | F2 |
+| EDGEbuilder | The Library's shared rules gain assets ([Library assets](library.html)); EDGEfab is the second tool to use the Library, which its Library page says moves the rules to the platform's wiki ([EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31) | F1 |
 | REDcode | The 3D view embeddable in another extension's webview (or a shared viewer package), with several meshes on one rig and animation playback; stable context values for `.mesh`, `.ent` and `.app` in its views | F2, F5 |
 | REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. `.anims` import from GLB onto a game rig or a prop's own rig, and `.morphtarget` import. Anything F0's checks find missing (collision, LODs) | F1, F5, F7a, F7b |
 | EDGEwave | A character's voice lines: list them, play them, and replace them in a voice the modder chooses | F5, F6 |
