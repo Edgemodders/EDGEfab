@@ -41,3 +41,30 @@ What Tripo returns for a prop, so F1's prepare step and EDGEmat #4 are built for
 - The textures are the set EDGEmat #4 asks for. The normal map is OpenGL (green up), as Tripo's name for it says.
 
 **Also found:** Tripo's v2 API shuts down on 2026-10-31. Only v3 (`openapi.tripo3d.ai`, `/v3/...`) is used. Its model names for text to model: `v3.1-20260211`, `v3.0-20250812`, `v2.5-20250123`, `P1-20260311`, `P2-20260801` (from Tripo's MIT Python SDK, `docs/API.md`). **Terms:** the owner is on Tripo's Pro plan, a paid plan, so the models are the owner's ([plan](plan.html#licenses-travel-with-the-asset), read 2026-11-01). **Still open:** the price of a task with `texture_quality` `detailed`.
+
+## F0 check: a GLB imported over a game prop
+
+Whether WolvenKit's importer (through REDbridge) makes a game mesh from a Tripo GLB, with LODs, over a game prop's mesh; and how game props get their collision. Not a release test. Done without the game; the in-game part is still open.
+
+**Steps.** Scripts in a session's scratchpad, outside the repo:
+
+1. `prep.mjs` (glTF-Transform 4.5.1, mikktspace 1.1.1, meshoptimizer 1.3.0, all MIT) on run 2's GLB (19,021 triangles): bake the node transform, put the base at height 0 and centre it, make LODs by simplifying (`submesh_00_LOD_1` full, `LOD_2` 50 %, `LOD_4` 20 %), generate MikkTSpace tangents.
+2. REDbridge 0.11.0 (WolvenKit 10.0.0, game 2.5) `project.import` of the GLB into a scratch project, with `template` `base\environment\decoration\containers\barrel\drum\barrel_drum_a.mesh`. `bridge-call.mjs` runs REDbridge directly, so its log shows (the MCP tool shows only `ok`).
+3. Read the new `.mesh` with `cr2w_read`; read three game props' `.ent` files and the barrel's `.mesh`.
+
+**Expected.** A `.mesh` with three LOD submeshes at the GLB's size, standing on its base.
+
+### Run 1, 2026-11-01: passed (without the game)
+
+| Found | Detail |
+|---|---|
+| **Tangents are required** | Tripo's GLB as it comes is refused: "One or more geometry entries in GLTF do not contain Tangents data" (the MCP tool returned `ok: false` and the template copied, nothing more). The prepare step must make tangents |
+| **Node transforms are ignored** | The importer reads vertex positions as they are and only turns Y up into Z up. `auto_size`'s scale on the node is lost unless the prepare step bakes it |
+| **One primitive per mesh**, and the limit is **65,535 vertices per submesh** (not triangles) | Read from WolvenKit's importer. Each GLB mesh becomes one submesh; a mesh's name and its node's name should match |
+| **LODs come from the names** | A mesh named with `LOD_1`, `LOD_2`, `LOD_4` or `LOD_8` (one bit per level; `LOD_1` required). Result: 3 submeshes, LOD masks 1, 2, 4 (10,980, 6,307, 3,151 vertices). The template's LOD distances are kept (0, 8, 20 m), cut or extended to the number of levels |
+| **The pivot** | Tripo's model is centred. Moved so its base is at 0: bounding box Z 0 to 0.65 m, X and Y ±0.21 m |
+| **The template's leftovers** | The barrel's two material entries (multilayered, `ml_barrel_drum_a_masksset` and a clean one), its two appearances and its collision stay. Every submesh uses the barrel's material, which would draw wrongly on Tripo's UVs, so Add to Project must replace the materials (EDGEmat #4) and remove the collision parameter |
+| **Garment support** | On by default in WolvenKit's import arguments and not exposed by REDbridge; with no garment data it only warns. Harmless for props |
+| **How game props are solid** | Three game prop entities (`sq021_barrels.ent`, `mq034_barrel.ent`, `q105_fluff_barrels.ent`) use an `entMeshComponent` and an **`entColliderComponent` with a `physicsColliderBox`** (preset "Device solid visible" or "World Dynamic", `Kinematic`). One (`q301__barrel_drum_destroyed.ent`) uses an `entPhysicalMeshComponent`, which takes its shape from the mesh's `meshMeshParamPhysics`: there, a `physicsColliderConvex` held only as cooked PhysX data (`compiledGeometryBuffer`, 692 bytes, no plain vertices) |
+
+**What it decides for F1:** the prepare step does tangents, transforms, pivot, LOD names and the vertex limit. EDGEfab cannot cook PhysX shapes, so collision is made of shapes that need no cooking (box, capsule, sphere), fitted to the model. **Still open, in the game:** which of two ways is solid when spawned and when baked by EDGEbuilder: (A) an `entColliderComponent` with a fitted box, as the game's props do, or (B) an `entPhysicalMeshComponent` whose mesh's physics data holds a fitted box instead of the template's cooked shape (EDGEfab #2's shape). And whether the mesh looks right and switches LODs.
