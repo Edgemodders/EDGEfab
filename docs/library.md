@@ -31,10 +31,13 @@ So an asset item only borrows the Desk's folder layout (below); it is not a Desk
 
 The owner, 2026-10-31: the modder makes the Library's folders, and they need not follow game paths. For example, `Production/Meshes` and `Development/Meshes`, holding reusable meshes: game assets, or third-party meshes to convert later.
 
+And, the same day: when adding an asset to the Library (any tool's Library), the modder can choose to **use the asset's game path as its folder**, created if it is missing, so the Library can be browsed in the computer's file system the same way as the game's files.
+
 | Rule | In practice |
 |---|---|
-| The folders are the modder's | EDGE tools never create `meshes/` or game-path folders in the Library. They offer the folder the modder last used |
-| Game paths live only inside an asset item | An item's `source/archive` holds its files at their game paths. That is internal, and the Library view shows the item as one object with its name |
+| The folders are the modder's | EDGE tools never create `meshes/` or game-path folders in the Library on their own. They offer the folder the modder last used |
+| **Use the game path**, the modder's choice | Every Add to Library (REDcode, EDGEfab, and any other tool that adds items with game paths) offers it beside the folder picker. The item goes in the folders of its main file's game path, under the folder picked (the root unless another is picked), each folder made if missing: `base\gameplay\...\comfy_rocker.mesh` becomes `<folder>\base\gameplay\...\comfy_rocker.mesh.asset\`. The tool remembers the choice for next time. Items without a game path (plain model files, scenes, bakes) don't offer it |
+| Game paths inside an asset item | An item's `source/archive` holds its files at their game paths, whichever folder it sits in. The Library view shows the item as one object with its name |
 | Plain files are items too | A GLB, FBX, `.blend` or images that the modder keeps to convert later sit in any folder as they are, known by their extension, as the Library's rules allow |
 | An asset item is what EDGE tools make | A game asset with the files it needs, or a converted prop, is a `<name>.<kind>.asset` folder (below), because one game object is several files |
 
@@ -42,6 +45,8 @@ The owner, 2026-10-31: the modder makes the Library's folders, and they need not
 |---|---|
 | A third-party `model.glb` in `Development/Meshes` | EDGEfab's **Make a prop** on it writes `model.prop.asset` next to it, or in a folder the modder picks (`Production/Meshes`). The GLB stays, and the asset records it as its source |
 | A game mesh added from REDcode | `comfy_rocker.mesh.asset`, with the mesh, its materials and textures, in the folder the modder picks |
+| The same, with **Use the game path** | The same item, in `base\...\` folders matching the mesh's game path, under the folder picked |
+| A made prop, with **Use the game path** | Its new game path (`<modder>\<asset>\...`, below) gives the folders. If the item's game path changes later (a game asset made new), the tool offers to move the item to match |
 
 ## The flow
 
@@ -104,8 +109,8 @@ A project's note of what it took, in its own folder (proposed): `source/library.
 | Tool | Its part | How |
 |---|---|---|
 | **EDGEfab** | Asset items: make, change, its Library view (the modder's folders with their assets and model files, open, Make a prop, Add to Project, Refresh). The first tool to need the Library may ask where to put it, offering `Documents\EDGE Library` | F1 |
-| **REDcode** | **Add to Library** on a file in Game Assets or a project, with the files it needs | [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31. Doesn't block F1: F1's assets come from GLBs |
-| **EDGEbuilder** | Keeps the Library's shared rules (its Library page says they move to the platform's wiki once a second tool uses the Library; EDGEfab is the second). Its scenes and bakes; later its Browse and sector view may list Library assets | [EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31: assets in the shared rules, one came-from note per project |
+| **REDcode** | **Add to Library** on a file in Game Assets or a project, with the files it needs, and the **Use the game path** choice | [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31. Doesn't block F1: F1's assets come from GLBs |
+| **EDGEbuilder** | Keeps the Library's shared rules (its Library page says they move to the platform's wiki once a second tool uses the Library; EDGEfab is the second). Its scenes and bakes; later its Browse and sector view may list Library assets | [EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31: assets in the shared rules, one came-from note per project; the **Use the game path** choice added there on 2026-10-31 |
 | **EDGEmat** | Later: a Desk entry saved to the Library, and new materials and looks on a Library asset | When EDGEmat gets there |
 
 ## Open
