@@ -12,7 +12,12 @@
     "smoke": "npm run smoke --workspace extensions/edgefab --",
     "edgefab:package": "node -e \"require('fs').mkdirSync('dist',{recursive:true})\" && cd extensions/edgefab && vsce package --no-dependencies --out ../../dist/",
     "mcp:build": "npm run build --workspace packages/edgefab-mcp",
-    "mcp:start": "node packages/edgefab-mcp/dist/server.cjs"
+    "mcp:start": "node packages/edgefab-mcp/dist/server.cjs",
+    "release:notes": "node tools/release/notes.mjs",
+    "release:nexus": "node tools/release/nexus-zip.mjs",
+    "nexus:pull": "node tools/nexus/nexus.mjs pull",
+    "nexus:status": "node tools/nexus/nexus.mjs status",
+    "release": "gh workflow run release.yml --ref main -f release=true"
   },
   "devDependencies": {
     "@vscode/vsce": "^4.0.0",

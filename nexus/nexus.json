@@ -1,0 +1,11 @@
+{
+  "page": null,
+  "upload": {
+    "name": "EDGEfab",
+    "category": "main",
+    "primary": false,
+    "modManager": false,
+    "archivePrevious": true,
+    "description": "EDGEfab {version}, the VS Code extension and its MCP server. A preview: turns a textured 3D model into a prop for the game. Extract, then in VS Code: Extensions view, ..., Install from VSIX. Not a game mod: no Vortex."
+  }
+}

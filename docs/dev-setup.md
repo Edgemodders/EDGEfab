@@ -46,6 +46,8 @@ F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.jso
 
 All are bundled into the extension and the server, so neither ships `node_modules`. glTF-Transform's texture compression needs `sharp`, a native library EDGEfab doesn't use: the build leaves it out.
 
+Packaging and releasing work as EDGEmat's (copied in F1): `npm run edgefab:package` makes `dist/edgefab-<version>.vsix` (it writes the extension's `CHANGELOG.md` from `docs/changelog.md` and its `THIRD-PARTY-NOTICES.txt` from the bundles' source maps); `node tools/version.mjs <version>` raises the extension's and the server's one version; `.github/workflows/release.yml` builds and, with **Make a release**, publishes. No release until every test since the last one has passed (CLAUDE.md, release gate). `tools/nexus/` is REDnode's, copied unchanged; the Nexus page isn't made yet (`nexus/README.md`). `tools/build/plugins.mjs` holds the build's two esbuild plugins: sharp left out, and mikktspace's WebAssembly put inside each bundle, so the MCP server is one file.
+
 ## 4. Game access for checks
 
 Through REDcode's MCP server, as in [EDGEmat's dev setup](https://edgemodders.github.io/EDGEmat/dev-setup.html#3-game-access-for-spec-checks): `redcode-mcp` for the game's files, and REDnode's MCP server (`rednode` in Claude Code) for the running game.
