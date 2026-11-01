@@ -40,4 +40,4 @@ What Tripo returns for a prop, so F1's prepare step and EDGEmat #4 are built for
 - Apply the node transforms when preparing, since `auto_size` puts the real size on the node.
 - The textures are the set EDGEmat #4 asks for. The normal map is OpenGL (green up), as Tripo's name for it says.
 
-**Also found:** Tripo's v2 API shuts down on 2026-10-31. Only v3 (`openapi.tripo3d.ai`, `/v3/...`) is used. Its model names for text to model: `v3.1-20260211`, `v3.0-20250812`, `v2.5-20250123`, `P1-20260311`, `P2-20260801` (from Tripo's MIT Python SDK, `docs/API.md`). **Still open:** Tripo's terms for the owner's plan, and the price of a task with `texture_quality` `detailed`.
+**Also found:** Tripo's v2 API shuts down on 2026-10-31. Only v3 (`openapi.tripo3d.ai`, `/v3/...`) is used. Its model names for text to model: `v3.1-20260211`, `v3.0-20250812`, `v2.5-20250123`, `P1-20260311`, `P2-20260801` (from Tripo's MIT Python SDK, `docs/API.md`). **Terms:** the owner is on Tripo's Pro plan, a paid plan, so the models are the owner's ([plan](plan.html#licenses-travel-with-the-asset), read 2026-11-01). **Still open:** the price of a task with `texture_quality` `detailed`.

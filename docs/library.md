@@ -89,7 +89,7 @@ A folder that describes itself, laid out like a small project:
 | `main` | The game path of the file a tool opens or places (a prop's `.ent`, a mesh's `.mesh`) |
 | `version` | A whole number, raised by each change |
 | `from` | Where it started: a game path and game version, a file, a Tripo task (id, prompt, plan), another asset |
-| `license` | The terms it carries: the game's (for modding), the Tripo plan's, the modder's own work, a Fab listing |
+| `license` | The terms it carries: the game's (for modding), Tripo's (paid plan: the modder's own; free plan: Tripo's), the modder's own work, a Fab listing |
 | `history` | One line per change: the tool, what it did, the date |
 | `tools` | The game, REDbridge and tool versions of the last build |
 
