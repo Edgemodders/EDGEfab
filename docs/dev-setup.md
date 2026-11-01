@@ -40,6 +40,7 @@ F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.jso
 |---|---|---|---|
 | `@gltf-transform/core`, `functions`, `extensions` | 4.5.1 | MIT | Reading, changing and writing glTF in Node: transforms, welding, simplifying, tangents |
 | `meshoptimizer` | 1.3.0 | MIT | The simplifier behind the levels of detail (WebAssembly, bundled) |
+| `gl-matrix` | 3.4.4 | MIT | Not used directly: glTF-Transform carries a copy of it. Installed so its license goes into the notices |
 | `mikktspace` | 1.1.1 | MIT | MikkTSpace tangents, as Blender makes them; WolvenKit needs tangents. Its `.wasm` is copied beside each bundle by the build |
 | `@modelcontextprotocol/sdk`, `zod` | 1.32, 3.25 | MIT | The MCP server, as EDGEmat's |
 | `esbuild`, `typescript`, `@types/*` | 0.28, 5.9 | MIT, Apache-2.0 | Building and type checks |

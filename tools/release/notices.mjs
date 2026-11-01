@@ -26,11 +26,16 @@ for (const map of maps) {
     const parts = file.split(sep);
     // The innermost node_modules with a package in it: a package's own source map can name paths from its
     // build machine (gl-matrix's name node_modules/.deno/...), which exist nowhere here.
-    for (let at = parts.lastIndexOf("node_modules"); at >= 0; at = parts.lastIndexOf("node_modules", at - 1)) {
-      const dir = parts.slice(0, at + (parts[at + 1]?.startsWith("@") ? 3 : 2)).join(sep);
-      if (existsSync(join(dir, "package.json"))) {
-        packages.set(dir, true);
-        break;
+    // Failing that, the package by its name in the workspace's own node_modules.
+    let found = false;
+    for (let at = parts.lastIndexOf("node_modules"); at >= 0 && !found; at = parts.lastIndexOf("node_modules", at - 1)) {
+      const name = parts.slice(at + 1, at + (parts[at + 1]?.startsWith("@") ? 3 : 2));
+      for (const dir of [parts.slice(0, at + 1 + name.length).join(sep), join(root, "node_modules", ...name)]) {
+        if (name.length && !name[0].startsWith(".") && existsSync(join(dir, "package.json"))) {
+          packages.set(dir, true);
+          found = true;
+          break;
+        }
       }
     }
   }
