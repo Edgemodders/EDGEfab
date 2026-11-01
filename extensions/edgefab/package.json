@@ -1,0 +1,212 @@
+{
+  "name": "edgefab",
+  "displayName": "EDGEfab",
+  "description": "The EDGE asset maker for Cyberpunk 2077: turn a textured 3D model, your own or made by Tripo from your words, into a prop the game can use.",
+  "publisher": "edgemodders",
+  "version": "0.1.0",
+  "license": "MIT",
+  "preview": true,
+  "galleryBanner": {
+    "color": "#08090d",
+    "theme": "dark"
+  },
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Edgemodders/EDGEfab.git",
+    "directory": "extensions/edgefab"
+  },
+  "homepage": "https://edgemodders.github.io/EDGEfab/",
+  "bugs": {
+    "url": "https://github.com/Edgemodders/EDGEfab/issues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "cyberpunk",
+    "cyberpunk2077",
+    "modding",
+    "3d",
+    "glb",
+    "tripo",
+    "wolvenkit"
+  ],
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:edgefab.made",
+    "onCommand:edgefab.importGlb",
+    "onCommand:edgefab.generate",
+    "onCommand:edgefab.setTripoKey",
+    "onCommand:edgefab.clearTripoKey",
+    "onCommand:edgefab.tripoPlan",
+    "onCommand:edgefab.connectAssistant",
+    "onCommand:edgefab.showLog"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "edgefab",
+          "title": "EDGEfab",
+          "icon": "images/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "edgefab": [
+        {
+          "id": "edgefab.made",
+          "name": "Made"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "edgefab.made",
+        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate with Tripo...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. Putting it into your project comes next."
+      }
+    ],
+    "commands": [
+      {
+        "command": "edgefab.importGlb",
+        "title": "Import a GLB...",
+        "category": "EDGEfab",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "edgefab.generate",
+        "title": "Generate with Tripo...",
+        "category": "EDGEfab",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "edgefab.setTripoKey",
+        "title": "Set Tripo Key",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.clearTripoKey",
+        "title": "Clear Tripo Key",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.tripoPlan",
+        "title": "Set Tripo Plan (Paid or Free)",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.connectAssistant",
+        "title": "Connect an Assistant (MCP)...",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.showLog",
+        "title": "Show Log",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.refresh",
+        "title": "Refresh",
+        "category": "EDGEfab",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "edgefab.reveal",
+        "title": "Reveal in File Explorer",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.openPreview",
+        "title": "Open Tripo's Preview",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.delete",
+        "title": "Delete",
+        "category": "EDGEfab"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "edgefab.importGlb",
+          "when": "view == edgefab.made",
+          "group": "navigation@1"
+        },
+        {
+          "command": "edgefab.generate",
+          "when": "view == edgefab.made",
+          "group": "navigation@2"
+        },
+        {
+          "command": "edgefab.refresh",
+          "when": "view == edgefab.made",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "edgefab.openPreview",
+          "when": "view == edgefab.made && viewItem == made.preview",
+          "group": "1@1"
+        },
+        {
+          "command": "edgefab.reveal",
+          "when": "view == edgefab.made && viewItem =~ /^made/",
+          "group": "1@2"
+        },
+        {
+          "command": "edgefab.delete",
+          "when": "view == edgefab.made && viewItem =~ /^made/",
+          "group": "2@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "edgefab.refresh",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.reveal",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.openPreview",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.delete",
+          "when": "false"
+        }
+      ]
+    },
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "edgefab.mcp",
+        "label": "EDGEfab"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "node ../../tools/release/notes.mjs --extension && node esbuild.mjs && node ../../tools/release/notices.mjs --extension",
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "@types/node": "^24.0.0",
+    "@types/vscode": "1.70.0",
+    "esbuild": "^0.28.2",
+    "meshoptimizer": "1.3.0",
+    "mikktspace": "1.1.1",
+    "typescript": "~5.9.3"
+  }
+}

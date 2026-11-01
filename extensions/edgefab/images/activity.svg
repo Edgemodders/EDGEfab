@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+  <!-- HUD brackets with a cube, an asset being made: the EDGEfab activity bar icon. Monochrome, uses currentColor. -->
+  <path d="M3 8V3h5"/>
+  <path d="M21 16v5h-5"/>
+  <path d="M12 6.5l5 2.75v5.5L12 17.5l-5-2.75v-5.5z"/>
+  <path d="M7 9.25l5 2.75 5-2.75M12 12v5.5"/>
+</svg>

@@ -16,12 +16,12 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-10-30. The first build (F1) is agreed; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F4, F5, F7b, F6, F8, F9.
+As of 2026-11-01. The first build (F1) is agreed and started; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F4, F5, F7b, F6, F8, F9.
 
 | Phase | Status |
 |---|---|
-| F0 Decisions | Next: the checks F1 needs |
-| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Agreed 2026-10-30. Not started |
+| F0 Decisions | Tripo and the GLB import over a game prop checked; open: which collision is solid in the game |
+| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested). Next: Add to Project, after the in-game collision check |
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |
