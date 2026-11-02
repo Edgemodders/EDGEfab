@@ -11,9 +11,10 @@ export function dataDir(): string {
   return path.join(base, "EDGEfab");
 }
 
-/** Where a made model is prepared until it goes into a project or the Library. */
-export function workDir(): string {
-  return path.join(dataDir(), "work");
+/** The Desk: EDGEfab's own scratch workspace, kept across restarts, where made models wait until they go into
+ *  a project or the Library (owner, 2026-11-02). Its items have the Library's asset shape, so moving one is a copy. */
+export function deskDir(): string {
+  return path.join(dataDir(), "desk");
 }
 
 /** Whether the modder's Tripo plan is paid (the models are theirs) or free (they are Tripo's), from Tripo's terms 5.2. */

@@ -1,4 +1,4 @@
-// EDGEfab's VS Code side: the Made view and its commands. Making and preparing live in core (no VS Code),
+// EDGEfab's VS Code side: the Desk view and its commands. Making and preparing live in core (no VS Code),
 // which the MCP server shares.
 
 import * as vscode from "vscode";
@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { checkKey, makeModel, readSettings, sharedKeys, tripoBalance, writeSettings, DefaultFaceLimit, type MadeModel, type TripoPlan } from "./core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
-import { entryOf, MadeView } from "./madeView";
+import { entryOf, DeskView } from "./deskView";
 
 declare const __VERSION__: string;
 
@@ -63,7 +63,7 @@ function report(made: MadeModel): void {
   for (const n of p.notes) log(`  Note: ${n}`);
 }
 
-async function make(run: (progress: (step: string) => void, signal: AbortSignal) => Promise<MadeModel>, view: MadeView): Promise<void> {
+async function make(run: (progress: (step: string) => void, signal: AbortSignal) => Promise<MadeModel>, view: DeskView): Promise<void> {
   try {
     const made = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "EDGEfab", cancellable: true }, (progress, token) => {
       const abort = new AbortController();
@@ -74,7 +74,7 @@ async function make(run: (progress: (step: string) => void, signal: AbortSignal)
     view.refresh();
     const lods = new Set(made.prepared.submeshes.map((s) => s.lod)).size;
     const pick = await vscode.window.showInformationMessage(
-      `EDGEfab made ${made.name}: ${made.prepared.size.height.toFixed(2)} m tall, ${lods} levels of detail, ready for the game.${made.prepared.notes.length ? " See its notes in the Made view." : ""}`,
+      `EDGEfab made ${made.name}: ${made.prepared.size.height.toFixed(2)} m tall, ${lods} levels of detail, ready for the game.${made.prepared.notes.length ? " See its notes on the Desk." : ""}`,
       ...(made.preview ? ["Open Preview"] : []),
       "Reveal",
     );
@@ -91,12 +91,12 @@ export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
-  const view = new MadeView();
+  const view = new DeskView();
 
   installServer(context.extensionPath, log);
   context.subscriptions.push(
     output,
-    vscode.window.registerTreeDataProvider("edgefab.made", view),
+    vscode.window.registerTreeDataProvider("edgefab.desk", view),
     ...registerWithEditor(version, log),
 
     vscode.commands.registerCommand("edgefab.importGlb", async () => {

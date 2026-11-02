@@ -37,7 +37,7 @@
   },
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onView:edgefab.made",
+    "onView:edgefab.desk",
     "onCommand:edgefab.importGlb",
     "onCommand:edgefab.generate",
     "onCommand:edgefab.setTripoKey",
@@ -59,15 +59,15 @@
     "views": {
       "edgefab": [
         {
-          "id": "edgefab.made",
-          "name": "Made"
+          "id": "edgefab.desk",
+          "name": "Desk"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "edgefab.made",
-        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate with Tripo...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. Putting it into your project comes next."
+        "view": "edgefab.desk",
+        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate with Tripo...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project or your Library (coming next)."
       }
     ],
     "commands": [
@@ -134,34 +134,34 @@
       "view/title": [
         {
           "command": "edgefab.importGlb",
-          "when": "view == edgefab.made",
+          "when": "view == edgefab.desk",
           "group": "navigation@1"
         },
         {
           "command": "edgefab.generate",
-          "when": "view == edgefab.made",
+          "when": "view == edgefab.desk",
           "group": "navigation@2"
         },
         {
           "command": "edgefab.refresh",
-          "when": "view == edgefab.made",
+          "when": "view == edgefab.desk",
           "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
           "command": "edgefab.openPreview",
-          "when": "view == edgefab.made && viewItem == made.preview",
+          "when": "view == edgefab.desk && viewItem == desk.preview",
           "group": "1@1"
         },
         {
           "command": "edgefab.reveal",
-          "when": "view == edgefab.made && viewItem =~ /^made/",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "1@2"
         },
         {
           "command": "edgefab.delete",
-          "when": "view == edgefab.made && viewItem =~ /^made/",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "2@1"
         }
       ],

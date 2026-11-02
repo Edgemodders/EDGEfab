@@ -1,6 +1,6 @@
 // EDGEfab as an MCP server over stdio, for AI assistants such as Claude Code and REDagent: make a prop from a
 // textured GLB, or from words through Tripo with the modder's own key, prepared for the game. Every tool is the
-// twin of a part of the extension's UI; both share EDGEfab's work folder (%LOCALAPPDATA%\EDGEfab\work).
+// twin of a part of the extension's UI; both share EDGEfab's Desk (%LOCALAPPDATA%\EDGEfab\desk).
 //
 //   edgefab-mcp
 //
@@ -13,7 +13,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
-import { hasKey, makeModel, readSettings, tripoBalance, workDir, writeSettings, DefaultFaceLimit, type MadeModel } from "../../../extensions/edgefab/src/core";
+import { hasKey, makeModel, readSettings, tripoBalance, deskDir, writeSettings, DefaultFaceLimit, type MadeModel } from "../../../extensions/edgefab/src/core";
 
 declare const __VERSION__: string;
 
@@ -60,7 +60,7 @@ server.registerTool(
       "Makes a prop for Cyberpunk 2077 from a textured 3D model and prepares it for the game: real size, standing on its base, three levels of detail (full, half, a fifth), MikkTSpace tangents, " +
       "parts under the game's 65,535 vertices, and its textures written out for its materials. from 'file' takes a .glb or .gltf on disk. from 'tripo' asks Tripo to make the model from words, " +
       "with the modder's own Tripo key: it costs about 20 Tripo credits and takes about 2 minutes, so confirm with the user first. Tripo needs to know whether the modder's plan is paid or free " +
-      "(on a free plan Tripo keeps the rights to the model): pass plan, or set it once with fab_tripo. Returns the asset folder, size, LODs, textures and license. Putting it into a project comes next in EDGEfab.",
+      "(on a free plan Tripo keeps the rights to the model): pass plan, or set it once with fab_tripo. Puts it on the Desk (fab_desk) and returns its folder, size, LODs, textures and license. Putting it into a project comes next in EDGEfab.",
     inputSchema: {
       from: z.enum(["file", "tripo"]),
       file: z.string().optional().describe("For from 'file': the .glb or .gltf."),
@@ -89,18 +89,18 @@ server.registerTool(
 );
 
 server.registerTool(
-  "fab_made",
+  "fab_desk",
   {
-    description: "Lists the props EDGEfab has made (the extension's Made view): each one's folder, name, size, levels of detail, textures and license.",
+    description: "Lists what is on EDGEfab's Desk (the extension's Desk view), its own scratch workspace kept between sessions: each prop's folder, name, size, levels of detail, textures and license. Props wait there until they go into a project or the Library.",
     inputSchema: {},
   },
   async () => {
     try {
-      const base = workDir();
-      const made = fs.existsSync(base) ? fs.readdirSync(base).filter((d) => d.endsWith(".prop.asset")) : [];
+      const base = deskDir();
+      const items = fs.existsSync(base) ? fs.readdirSync(base).filter((d) => d.endsWith(".prop.asset")) : [];
       return text({
         folder: base,
-        made: made.map((dir) => {
+        props: items.map((dir) => {
           const folder = path.join(base, dir);
           const name = dir.slice(0, -".prop.asset".length);
           const asset = readJson(path.join(folder, "asset.json"));
@@ -150,7 +150,7 @@ server.registerTool(
 );
 
 server.connect(new StdioServerTransport()).then(
-  () => log(`ready; work folder ${workDir()}`),
+  () => log(`ready; Desk ${deskDir()}`),
   (e) => {
     log(`could not start: ${e instanceof Error ? e.message : String(e)}`);
     process.exit(1);

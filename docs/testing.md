@@ -20,7 +20,7 @@ The bundled core makes a prop from a GLB on disk, and REDbridge takes the result
 2. Import the prepared GLB (`<out>\<name>.prop.asset\source\raw\<name>\<name>.glb`) with REDbridge's `project.import` over `base\environment\decoration\containers\barrel\drum\barrel_drum_a.mesh`.
 3. The MCP server: `npm run mcp:start`, send `initialize` and `tools/list`.
 
-**Expected.** The smoke test prints `ok`: three LODs, each part with `POSITION`, `NORMAL`, `TEXCOORD_0`, `TANGENT` and at most 65,535 vertices, the base at height 0, three texture files. REDbridge returns `ok: true` with 3 submeshes. The server lists `fab_make`, `fab_made`, `fab_tripo`.
+**Expected.** The smoke test prints `ok`: three LODs, each part with `POSITION`, `NORMAL`, `TEXCOORD_0`, `TANGENT` and at most 65,535 vertices, the base at height 0, three texture files. REDbridge returns `ok: true` with 3 submeshes. The server lists `fab_make`, `fab_desk`, `fab_tripo`.
 
 ### Run 1, 2026-11-01: passed
 
@@ -28,11 +28,11 @@ The bundled core makes a prop from a GLB on disk, and REDbridge takes the result
 |---|---|---|
 | Tripo, `face_limit` 20000 | 0.2 s | 0.65 m tall; LODs 19,021 / 9,510 / 3,794 triangles (10,980 / 6,307 / 3,151 vertices); color, ORM and normal written out. REDbridge: `ok`, 3 submeshes |
 | Tripo, no limit (1,445,348 triangles) | 2.7 s | Simplified to 77,908 triangles (49,850 vertices) to fit, with a note saying so; LODs 77,908 / 38,954 / 15,572 |
-| MCP server | | Started; lists `fab_make`, `fab_made`, `fab_tripo` |
+| MCP server | | Started; lists `fab_make`, `fab_made`, `fab_tripo` (`fab_made` renamed `fab_desk` on 2026-11-02; it answers with an empty Desk) |
 
 Found on the way and fixed before this run: glTF-Transform's `normals()` unwelds every mesh, and `prune()` drops UVs and tangents once the textures are out of the GLB (REDbridge then refused it for missing tangents).
 
-**Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Made view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
+**Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
 ## F0 check: Tripo text to model
 

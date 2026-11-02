@@ -18,14 +18,16 @@ The Library itself is [EDGEbuilder's Library](https://edgemodders.github.io/EDGE
 
 The owner, 2026-10-31: a Desk is one tool's own scratch workspace. The Library is the long-term store of reusable objects, shared across tools and projects.
 
+And on 2026-11-02: EDGEfab has a Desk, and **the Desk becomes a norm for the EDGE tools**: a persistent scratch workspace, where objects in progress are kept and later added to projects or stored in the Library.
+
 | | A Desk | The Library |
 |---|---|---|
 | What it is | One tool's scratch workspace for the work in hand | The modder's long-term store of reusable objects |
-| Shared | No: each tool's own (EDGEmat has one; other tools may get one, not decided) | Yes: one root for every EDGE tool |
+| Shared | No: each tool's own. A norm for the EDGE tools (owner, 2026-11-02); EDGEmat and EDGEfab have one | Yes: one root for every EDGE tool |
 | Lasts | Across restarts, but not organised or kept for good | For good, in the modder's own folders |
-| Feeds | A project, or the Library | Any number of projects |
+| Feeds | A project (Add to Project), or the Library (Add to Library) | Any number of projects |
 
-So an asset item only borrows the Desk's folder layout (below); it is not a Desk entry. Whether EDGEfab gets a Desk of its own is open, as for the other tools.
+EDGEfab's Desk holds asset items in the Library's shape (`%LOCALAPPDATA%\EDGEfab\desk\<name>.prop.asset\`), so Add to Library is a copy into the folder the modder picks. EDGEmat's Desk entries keep their own layout (`desk\items\<id>\source\archive`), which an asset item borrows.
 
 ## Folders and what goes in them
 
@@ -108,7 +110,7 @@ A project's note of what it took, in its own folder (proposed): `source/library.
 
 | Tool | Its part | How |
 |---|---|---|
-| **EDGEfab** | Asset items: make, change, its Library view (the modder's folders with their assets and model files, open, Make a prop, Add to Project, Refresh). The first tool to need the Library may ask where to put it, offering `Documents\EDGE Library` | F1 |
+| **EDGEfab** | Asset items: make them on its Desk, Add to Library from there, change, its Library view (the modder's folders with their assets and model files, open, Make a prop, Add to Project, Refresh). The first tool to need the Library may ask where to put it, offering `Documents\EDGE Library` | F1 |
 | **REDcode** | **Add to Library** on a file in Game Assets or a project, with the files it needs, and the **Use the game path** choice | [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31. Doesn't block F1: F1's assets come from GLBs |
 | **EDGEbuilder** | Keeps the Library's shared rules (its Library page says they move to the platform's wiki once a second tool uses the Library; EDGEfab is the second). Its scenes and bakes; later its Browse and sector view may list Library assets | [EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31: assets in the shared rules, one came-from note per project; the **Use the game path** choice added there on 2026-10-31 |
 | **EDGEmat** | Later: a Desk entry saved to the Library, and new materials and looks on a Library asset | When EDGEmat gets there |

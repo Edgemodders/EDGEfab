@@ -1,12 +1,13 @@
-// The Made view: the models EDGEfab has made and prepared, each an asset folder in EDGEfab's work folder
-// (core/make.ts). Each shows its size, levels of detail, textures and license in plain words.
+// The Desk view: EDGEfab's own scratch workspace, where models it made and prepared wait, each an asset
+// folder (core/make.ts), until they go into a project or the Library. Each shows its size, levels of detail,
+// textures and license in plain words.
 
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { workDir, type PrepareResult } from "./core";
+import { deskDir, type PrepareResult } from "./core";
 
-export interface MadeEntry {
+export interface DeskEntry {
   folder: string;
   name: string;
   title: string;
@@ -16,10 +17,10 @@ export interface MadeEntry {
   preview?: string;
 }
 
-/** Reads the asset folders in the work folder, newest first. */
-export function listMade(base = workDir()): MadeEntry[] {
+/** Reads the asset folders on the Desk, newest first. */
+export function listDesk(base = deskDir()): DeskEntry[] {
   if (!fs.existsSync(base)) return [];
-  const entries: (MadeEntry & { at: number })[] = [];
+  const entries: (DeskEntry & { at: number })[] = [];
   for (const dir of fs.readdirSync(base)) {
     if (!dir.endsWith(".prop.asset")) continue;
     const folder = path.join(base, dir);
@@ -42,11 +43,11 @@ export function listMade(base = workDir()): MadeEntry[] {
   return entries.sort((a, b) => b.at - a.at);
 }
 
-type Item = { kind: "made"; entry: MadeEntry } | { kind: "line"; label: string; detail?: string; icon: string; tooltip?: string };
+type Item = { kind: "desk"; entry: DeskEntry } | { kind: "line"; label: string; detail?: string; icon: string; tooltip?: string };
 
 const metres = (n: number) => (n >= 1 ? `${n.toFixed(2)} m` : `${Math.round(n * 100)} cm`);
 
-export class MadeView implements vscode.TreeDataProvider<Item> {
+export class DeskView implements vscode.TreeDataProvider<Item> {
   private readonly changed = new vscode.EventEmitter<void>();
   readonly onDidChangeTreeData = this.changed.event;
 
@@ -55,8 +56,8 @@ export class MadeView implements vscode.TreeDataProvider<Item> {
   }
 
   getChildren(item?: Item): Item[] {
-    if (!item) return listMade().map((entry) => ({ kind: "made", entry }));
-    if (item.kind !== "made") return [];
+    if (!item) return listDesk().map((entry) => ({ kind: "desk", entry }));
+    if (item.kind !== "desk") return [];
     const { entry } = item;
     const lines: Item[] = [];
     const p = entry.prepared;
@@ -90,10 +91,10 @@ export class MadeView implements vscode.TreeDataProvider<Item> {
     t.description = entry.name;
     t.iconPath = new vscode.ThemeIcon(entry.license?.source === "tripo" ? "sparkle" : "package");
     t.tooltip = new vscode.MarkdownString(`**${entry.title}**\n\n${entry.folder}`);
-    t.contextValue = entry.preview ? "made.preview" : "made";
+    t.contextValue = entry.preview ? "desk.preview" : "desk";
     t.resourceUri = vscode.Uri.file(entry.folder);
     return t;
   }
 }
 
-export const entryOf = (item: unknown): MadeEntry | undefined => (item && typeof item === "object" && (item as Item).kind === "made" ? (item as { entry: MadeEntry }).entry : undefined);
+export const entryOf = (item: unknown): DeskEntry | undefined => (item && typeof item === "object" && (item as Item).kind === "desk" ? (item as { entry: DeskEntry }).entry : undefined);

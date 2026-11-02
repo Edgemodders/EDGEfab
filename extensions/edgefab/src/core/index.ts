@@ -1,6 +1,6 @@
 // EDGEfab's core: everything that is not UI. No VS Code imports, so the MCP server bundles it as it is.
 
-export { dataDir, readSettings, slug, workDir, writeSettings, type SharedSettings, type TripoPlan } from "./config";
+export { dataDir, readSettings, slug, deskDir, writeSettings, type SharedSettings, type TripoPlan } from "./config";
 export { checkKey, envName, hasKey, keysDir, sharedKeys } from "./sharedKeys";
 export {
   DefaultFaceLimit, generateModel, startTextToModel, tripoBalance, tripoTask, waitForTask, TripoError, TripoModel,

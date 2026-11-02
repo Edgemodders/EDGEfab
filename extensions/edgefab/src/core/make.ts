@@ -5,7 +5,7 @@
 import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { readSettings, slug, workDir, type TripoPlan } from "./config";
+import { readSettings, slug, deskDir, type TripoPlan } from "./config";
 import { prepareModel, type PrepareOptions, type PrepareResult } from "./prepare";
 import { generateModel, type TextToModel, type TripoCall, type TripoTask } from "./tripo";
 
@@ -52,7 +52,7 @@ export async function makeModel(
   req: MakeRequest,
   opts: { version: string; base?: string; prepare?: PrepareOptions; call?: TripoCall; onProgress?: (step: string, task?: TripoTask) => void } = { version: "0.0.0" },
 ): Promise<MadeModel> {
-  const base = opts.base ?? workDir();
+  const base = opts.base ?? deskDir();
   const wanted = slug(req.name ?? (req.from === "file" ? path.basename(req.file, path.extname(req.file)) : req.request.prompt));
   const { folder, name } = freeFolder(base, wanted);
   const raw = path.join(folder, "source", "raw", name);
