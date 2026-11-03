@@ -13,7 +13,7 @@ DIM = "#8a93a8"
 COLORS = {"yellow": "#fcee0a", "cyan": "#19f3ff", "green": "#5dffa1"}
 
 BADGES = [
-    ('status', 'status', 'scaffold', 'yellow'),
+    ('status', 'status', 'F1 props', 'yellow'),
     ('game', 'game', 'Cyberpunk 2077', 'cyan'),
     ('makes', 'makes', 'items objects', 'cyan'),
     ('license', 'license', 'MIT', 'green'),
