@@ -10,7 +10,9 @@
 #                                               then publishes the server to npm as
 #                                               @edgemodders/edgefab-mcp with provenance (NPM_TOKEN).
 #                                               Stops first if that tag exists (raise the version with
-#                                               tools/version.mjs), if it is not run on main, or if
+#                                               tools/version.mjs), if it is not run on main, if
+#                                               README.md's status line and status badge do not name
+#                                               the version (tools/release/readme-check.mjs), or if
 #                                               docs/changelog.md has no section for the version (the
 #                                               release notes, tools/release/notes.mjs)
 #   ... and "Update Nexus Mods" ticked          also, after the GitHub release, uploads the Nexus zip
@@ -86,6 +88,10 @@ jobs:
             echo "::error::v${VERSION} is already released. Raise the version with node tools/version.mjs <version>."
             exit 1
           fi
+
+      - name: The README says this release
+        if: inputs.release
+        run: node tools/release/readme-check.mjs --version "${VERSION}"
 
       - name: Release notes from docs/changelog.md
         if: inputs.release
