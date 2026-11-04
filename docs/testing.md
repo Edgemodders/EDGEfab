@@ -46,6 +46,50 @@ Glow: test 8's vending machine with a glow map made from its bright, saturated p
 
 **Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
+## F1: Add to Project (without the game)
+
+A Desk item becomes a prop in a WolvenKit project, through the bundled core, the MCP server's `fab_add` and (not yet tried) the extension's Add to Project. Run after every change to `addToProject.ts`.
+
+**Steps.**
+
+1. `npm run build` in `extensions/edgefab` (it needs EDGEmat's checkout beside this repo, [Dev setup](dev-setup.html)).
+2. With the core (`dist/core.js`): `startBridge`, then `addToProject` on test 8's glowing vending machine (`vending_glow.prop.asset`) into an empty scratch project, once with each `collision`: `physical`, `box`, `none`.
+3. Read the mesh and entity back (`cr2w.read`): material entries, the appearance, the physics data, the entity's components and `compiledData`.
+4. The MCP server: `tools/list`, then `tools/call` `fab_add` with the prop's folder and the project.
+
+**Expected.** Under `source\archive\<project>\props\<name>\`: the `.mesh`, the textures, a `.mi` and the `.ent`; under `source\raw\...`, the prepared GLB and `<name>.edgefab.json`. The mesh has one material entry per model material, pointing at its `.mi`, one appearance `default`, and none of the template's materials. `physical`: the mesh's physics data holds one box the prop's size; the entity has one `entPhysicalMeshComponent`. `box`: no physics data in the mesh; the entity has an `entMeshComponent` and an `entColliderComponent` with the box. `none`: the mesh component alone. Adding again replaces it. `fab_add` answers the same, and its REDbridge stops with the server.
+
+### Run 1, 2026-11-04: passed
+
+Bridge 0.11.0, EDGEmat's core at `a7b66a8`.
+
+| Check | Result |
+|---|---|
+| `physical`, first add | 15.3 s. 10 files: the GLB, the mesh, 5 textures (color, roughness, metal, normal, glow), the `.mi`, the `.ent`, the record. The glow: EV 5.585, white, by its map |
+| The mesh | One entry `vending_glow_00` (local) with `vending_glow_00.mi` as its base; appearance `default` with the material on all 3 levels; the barrel's two materials and second appearance gone; LOD distances 0, 8, 20 m. Physics: one `physicsColliderBox`, half sizes 0.426 × 0.407 × 0.9 m, centred 0.9 m up (the machine is 0.85 × 0.81 × 1.8 m), the template's `metal_hollow.physmat` |
+| The entity | One `entPhysicalMeshComponent`, "Device solid visible", Kinematic; `compiledData` built (2 chunks) |
+| `box`, then `none` | 15.6 s and 15.4 s, both `replaced`; the mesh's physics data removed |
+| `fab_add` | Listed with `fab_make`, `fab_desk`, `fab_tripo`; 20.0 s including REDbridge's start; the same files; no REDbridge left running |
+
+Found on the way: EDGEmat's copy of the REDbridge client is older than REDcode's (its import has no `template`), so EDGEfab calls REDbridge's methods by name through one call function.
+
+## F1 check: an added prop in the game
+
+With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. Not run yet.
+
+**Built.** `Projects\EDGEfab_F1\tests\edgefab_f1_test.archive` (16 files, 19 MB), made by Add to Project: test 8's glowing vending machine twice, `edgefab_f1\props\vending_glow\vending_glow.ent` (`physical`) and `edgefab_f1\props\vending_glow_box\vending_glow_box.ent` (`box`).
+
+**Steps** (Test timer: Start, then Mark after each step).
+
+1. Copy the archive into the game's `archive\pc\mod` with the collision test's, start the game and load a save outdoors. Somewhere dim or at night helps the glow.
+2. Claude spawns both machines three metres in front of V with REDnode, their fronts toward V.
+3. Look at each: its size against V (1.8 m tall), its textures, which way its front (the lit shelves and keypad) faces.
+4. Look at the glow: do the shelves, buttons and trim light up, and the body stay dark? Too bright, too dim?
+5. Walk into each, jump onto each, shoot each.
+6. Walk 25 m away, watching the detail drop.
+
+**Expected.** Both stand on the ground at their size, textured, fronts toward V. The painted lights glow; the body doesn't. The machine whose collision works stops V, holds V on top and takes shots (the same kind as the solid drum). Its detail drops with distance. EDGEmat #6's test is this one: its result goes there.
+
 ## F1 check: Tripo's model and its front
 
 Which Tripo model F1 asks for, and which way Tripo's models face, on a prop with a front. Not a release test.

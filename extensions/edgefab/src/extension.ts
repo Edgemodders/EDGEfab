@@ -4,13 +4,31 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { checkKey, makeModel, readSettings, sharedKeys, tripoBalance, writeSettings, DefaultFaceLimit, type MadeModel, type TripoPlan } from "./core";
+import {
+  addToProject, callOf, checkKey, makeModel, projectFolders, readSettings, sharedKeys, startBridge, tripoBalance, writeSettings,
+  DefaultCollision, DefaultFaceLimit, type Collision, type MadeModel, type ProjectFolders, type TripoPlan,
+} from "./core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, DeskView } from "./deskView";
 
 declare const __VERSION__: string;
 
 const RedcodeId = "edgemodders.redcode-cyberpunk";
+
+/** The parts of REDcode's API (version 1, its docs/api.md) EDGEfab uses; project and packAndTry came after 0.9.0. */
+interface REDcodeApi {
+  readonly apiVersion: 1;
+  bridge(): unknown;
+  project?(): { name: string; dir: string; archive: string } | undefined;
+  packAndTry?(): Promise<"hot" | "installed" | undefined>;
+}
+
+/** REDcode's API, only when REDcode is already active (activating it here could race its own start). */
+function redcode(): REDcodeApi | undefined {
+  const ext = vscode.extensions.getExtension<REDcodeApi>(RedcodeId);
+  const api = ext?.isActive ? ext.exports : undefined;
+  return api?.apiVersion === 1 ? api : undefined;
+}
 
 let output: vscode.OutputChannel;
 const log = (line: string) => output.appendLine(`${new Date().toLocaleTimeString()} ${line}`);
@@ -115,6 +133,66 @@ async function make(run: (progress: (step: string) => void, signal: AbortSignal)
   }
 }
 
+/** The project to add to: REDcode's open one, else one the modder picks. */
+async function pickProject(): Promise<ProjectFolders | undefined> {
+  const open = redcode()?.project?.();
+  const fromRedcode = open ? projectFolders(open.dir) : undefined;
+  if (fromRedcode) return fromRedcode;
+  const picked = await vscode.window.showOpenDialog({
+    title: "Add to which WolvenKit project?",
+    openLabel: "Add to This Project",
+    filters: { "WolvenKit projects": ["cpmodproj"] },
+    canSelectMany: false,
+  });
+  if (!picked?.[0]) return undefined;
+  const p = projectFolders(picked[0].fsPath);
+  if (!p) void vscode.window.showErrorMessage(`EDGEfab: ${picked[0].fsPath} is not a WolvenKit project.`);
+  return p;
+}
+
+async function addItemToProject(folder: string, title: string): Promise<void> {
+  const project = await pickProject();
+  if (!project) return;
+  const collision = vscode.workspace.getConfiguration("edgefab").get<Collision>("collision") ?? DefaultCollision;
+  // REDcode's REDbridge when REDcode runs; else one of our own for this call.
+  const shared = redcode()?.bridge();
+  let own: Awaited<ReturnType<typeof startBridge>> | undefined;
+  try {
+    const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `EDGEfab: adding ${title} to ${project.name}` }, async (progress) => {
+      const step = (m: string) => {
+        log(m);
+        progress.report({ message: m.trim() });
+      };
+      let call;
+      if (shared) call = callOf(shared);
+      else {
+        step("Starting REDbridge");
+        own = await startBridge(log);
+        call = own.call;
+      }
+      return addToProject({ item: folder, project, call, collision, log: step });
+    });
+    log(`Added ${title} to ${project.name}${result.replaced ? " (replacing the earlier one)" : ""}: ${result.entity}`);
+    for (const f of result.files) log(`  ${f}`);
+    for (const n of result.notes) log(`  Note: ${n}`);
+    const how = collision === "physical" ? "solid (a physical mesh with a box)" : collision === "box" ? "solid (a box collider)" : "with no collision";
+    const actions = [...(redcode()?.packAndTry ? ["Pack and Try"] : []), "Reveal Entity", "Show Log"];
+    const pick = await vscode.window.showInformationMessage(
+      `EDGEfab added ${title} to ${project.name}, ${how}. Place ${path.win32.basename(result.entity)} with EDGEbuilder, or spawn it.`,
+      ...actions,
+    );
+    if (pick === "Pack and Try") await redcode()?.packAndTry?.();
+    if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...result.entity.split("\\"))));
+    if (pick === "Show Log") output.show();
+  } catch (e) {
+    log(`Add to Project failed: ${message(e)}`);
+    const pick = await vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`, "Show Log");
+    if (pick) output.show();
+  } finally {
+    own?.client.stop();
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
   const version = __VERSION__;
@@ -172,6 +250,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.view", (item: unknown) => {
       const entry = entryOf(item);
       if (entry) void openIn3D(entry.model, entry.preview);
+    }),
+    vscode.commands.registerCommand("edgefab.addToProject", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry) await addItemToProject(entry.folder, entry.title);
     }),
     vscode.commands.registerCommand("edgefab.openPreview", (item: unknown) => {
       const entry = entryOf(item);

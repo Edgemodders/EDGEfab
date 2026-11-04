@@ -34,6 +34,15 @@ npm run typecheck
 npm run smoke -- "<a textured model>.glb"   # makes a prop from it with the bundled core, into a temporary folder
 ```
 
+**EDGEmat's core, from a checkout, for now.** Add to Project makes its materials with EDGEmat's `materialsFromModel` (EDGEmat #4, #6). Until EDGEmat publishes its core as `@edgemodders/edgemat-core` ([EDGEmat #7](https://github.com/Edgemodders/EDGEmat/issues/7)), the build takes it from EDGEmat's source: a checkout beside this repo (`..\EDGEmat`), or the folder in `EDGEMAT_SRC`, with `npm install` run there (its `pngjs` and `vscode-jsonrpc` resolve from its own `node_modules`). `tools/build/edgemat.mjs` points esbuild at it, and both `tsconfig.json` files map the name with `paths`. Development builds only: no release is built this way (docs/tools-together.md, rule 1).
+
+```powershell
+git clone https://github.com/Edgemodders/EDGEmat.git ..\EDGEmat
+cd ..\EDGEmat; npm install; cd ..\EDGEfab
+```
+
+Used since 2026-11-04 at EDGEmat `a7b66a8`.
+
 F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.json`). `npm run mcp:start` runs the MCP server on stdio.
 
 | Package | Version | License | Why |

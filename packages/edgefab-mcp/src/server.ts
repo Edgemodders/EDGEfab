@@ -13,7 +13,9 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
-import { hasKey, makeModel, readSettings, tripoBalance, deskDir, writeSettings, DefaultFaceLimit, type MadeModel } from "../../../extensions/edgefab/src/core";
+import {
+  addToProject, deskItem, hasKey, makeModel, projectFolders, readSettings, startBridge, tripoBalance, deskDir, writeSettings, DefaultCollision, DefaultFaceLimit, type MadeModel,
+} from "../../../extensions/edgefab/src/core";
 
 declare const __VERSION__: string;
 
@@ -60,7 +62,7 @@ server.registerTool(
       "Makes a prop for Cyberpunk 2077 from a textured 3D model and prepares it for the game: real size, standing on its base, three levels of detail (full, half, a fifth), MikkTSpace tangents, " +
       "parts under the game's 65,535 vertices, and its textures written out for its materials. from 'file' takes a .glb or .gltf on disk. from 'tripo' asks Tripo to make the model from words, " +
       "with the modder's own Tripo key: it costs about 20 Tripo credits and takes about 2 minutes, so confirm with the user first. Tripo needs to know whether the modder's plan is paid or free " +
-      "(on a free plan Tripo keeps the rights to the model): pass plan, or set it once with fab_tripo. Puts it on the Desk (fab_desk) and returns its folder, size, LODs, textures and license. Putting it into a project comes next in EDGEfab.",
+      "(on a free plan Tripo keeps the rights to the model): pass plan, or set it once with fab_tripo. Puts it on the Desk (fab_desk) and returns its folder, size, LODs, textures and license. fab_add then puts it into a project.",
     inputSchema: {
       from: z.enum(["file", "tripo"]),
       file: z.string().optional().describe("For from 'file': the .glb or .gltf."),
@@ -114,6 +116,49 @@ server.registerTool(
   },
 );
 
+// REDbridge, started the first time a tool needs the game's files, and kept for the next.
+let bridge: Promise<Awaited<ReturnType<typeof startBridge>>> | undefined;
+const getBridge = () => {
+  bridge ??= startBridge(log).catch((e) => {
+    bridge = undefined;
+    throw e;
+  });
+  return bridge;
+};
+
+server.registerTool(
+  "fab_add",
+  {
+    description:
+      "Add to Project: puts a prop from EDGEfab's Desk into a WolvenKit project (the extension's Add to Project), ready to place with EDGEbuilder or spawn. Writes under source\\archive\\<mod>\\props\\<name>\\: " +
+      "the .mesh (imported over a game barrel template with its levels of detail, the template's materials and appearances replaced), the model's own textures as game textures and a .mi on metal_base " +
+      "(through EDGEmat's core, glow included), and the .ent to place, with collision. Also the prepared model as source\\raw\\...\\<name>.glb and a record of its source and license. " +
+      "collision 'physical' (default): one entPhysicalMeshComponent with a box the prop's size in the mesh's physics data. 'box': an entMeshComponent and an entColliderComponent with that box. 'none': it only draws. " +
+      "Which of the first two stops V in the game is not yet tested. Adding the same name again replaces it. Needs REDbridge and the game folder (from VS Code's redcode settings). Takes about 15 seconds.",
+    inputSchema: {
+      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      project: z.string().describe("The WolvenKit project: its folder, its .cpmodproj, or its source\\archive."),
+      name: z.string().optional().describe("The file name in the project; default the prop's. Made lowercase, with no spaces."),
+      mod: z.string().optional().describe("The mod's own folder under source\\archive; default the project's name."),
+      collision: z.enum(["physical", "box", "none"]).default(DefaultCollision),
+    },
+  },
+  async ({ prop, project, name, mod, collision }) => {
+    try {
+      const folders = projectFolders(project);
+      if (!folders) throw new Error(`${project} is not a WolvenKit project: it has no .cpmodproj and no source\\archive folder.`);
+      const { call } = await getBridge();
+      const r = await addToProject({ item: deskItem(prop), project: folders, call, name, mod, collision, log });
+      return text({
+        ...r,
+        next: `Pack the project (REDcode: Pack and Try), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode. The entity is the one to place; the mesh alone has no collision.`,
+      });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
 server.registerTool(
   "fab_tripo",
   {
@@ -148,6 +193,14 @@ server.registerTool(
     }
   },
 );
+
+// The bridge goes with the server: when the assistant closes the channel, or the process ends.
+const stopBridge = () => void bridge?.then((b) => b.client.stop(), () => undefined);
+process.stdin.on("close", () => {
+  stopBridge();
+  setTimeout(() => process.exit(0), 500);
+});
+process.on("exit", stopBridge);
 
 server.connect(new StdioServerTransport()).then(
   () => log(`ready; Desk ${deskDir()}`),

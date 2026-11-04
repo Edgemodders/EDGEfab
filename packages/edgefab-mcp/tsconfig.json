@@ -3,12 +3,24 @@
     "target": "ES2022",
     "module": "Node16",
     "moduleResolution": "Node16",
-    "lib": ["ES2022"],
-    "types": ["node"],
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@edgemodders/edgemat-core": [
+        "../../../EDGEmat/extensions/edgemat/src/core/index.ts"
+      ]
+    }
   },
-  "include": ["src", "../../extensions/edgefab/src/core"]
+  "include": [
+    "src",
+    "../../extensions/edgefab/src/core"
+  ]
 }

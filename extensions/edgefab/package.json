@@ -126,6 +126,12 @@
         "icon": "$(eye)"
       },
       {
+        "command": "edgefab.addToProject",
+        "title": "Add to Project",
+        "category": "EDGEfab",
+        "icon": "$(new-file)"
+      },
+      {
         "command": "edgefab.openPreview",
         "title": "Open Tripo's Preview",
         "category": "EDGEfab"
@@ -159,6 +165,16 @@
           "command": "edgefab.view",
           "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "inline"
+        },
+        {
+          "command": "edgefab.addToProject",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.addToProject",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@0"
         },
         {
           "command": "edgefab.view",
@@ -201,6 +217,10 @@
         {
           "command": "edgefab.view",
           "when": "false"
+        },
+        {
+          "command": "edgefab.addToProject",
+          "when": "false"
         }
       ]
     },
@@ -209,7 +229,27 @@
         "id": "edgefab.mcp",
         "label": "EDGEfab"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "EDGEfab",
+      "properties": {
+        "edgefab.collision": {
+          "type": "string",
+          "enum": [
+            "physical",
+            "box",
+            "none"
+          ],
+          "default": "physical",
+          "enumDescriptions": [
+            "One physical mesh component, its box in the mesh's physics data (what EDGEbuilder asked for: a baked entity with it is solid)",
+            "A mesh component and a collider component with a box, as the game's own props have",
+            "No collision: the prop only draws, and V walks through it"
+          ],
+          "markdownDescription": "How a prop added to a project is solid. Both kinds of box fit the prop's size. Which one stops V in the game is still being tested."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "node ../../tools/release/notes.mjs --extension && node esbuild.mjs && node ../../tools/release/notices.mjs --extension",
