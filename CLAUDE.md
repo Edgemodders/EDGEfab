@@ -49,6 +49,7 @@ Requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled 
 | EDGEmat | #4 | Materials from a textured model: a GLB's PBR textures to `.xbm` and a `.mi`, API and MCP `mat_from_model`, for F1 | Open, filed 2026-10-30 from EDGEfab. Built on EDGEmat's main 2026-11-04 (`a7b66a8`), not released |
 | EDGEmat | #6 | Glow: glTF emissive into metal_base's `Emissive`, `EmissiveColor`, `EmissiveEV` | Open, filed 2026-11-04 from EDGEfab. Built with #4 the same day; its test is the vending machine through EDGEfab |
 | REDbridge | #14 | `.anims` import from GLB, `anims.info`/`infoMany`, an entity's appearance on one rig, a mesh with its rig, rig import, for F5a and F7b-1 | Open, filed 2026-11-04 from EDGEfab |
+| EDGEmat | #7 | Publish the core as `@edgemodders/edgemat-core`, so EDGEfab's core and MCP server call `materialsFromModel` (with `bridgeOver`); EDGEfab's first release waits on it, development builds use a local EDGEmat checkout | Open, filed 2026-11-04 from EDGEfab |
 | EDGEquest | #6 | The animation index is EDGEfab's, its picker uses it; the scenes' side (which animations each scene plays, by which actor) from EDGEquest | Open, filed 2026-11-04 from EDGEfab |
 | REDcode | #21 | Play a game animation on its rig in the viewer, `openAnimation` (filed by EDGEquest, needed by F5a) | Open, filed 2026-11-03 from EDGEquest |
 | REDnode | #39 | Play an animation or a workspot on a spawned character (filed by EDGEquest, needed by F7b-1) | Open, filed 2026-11-03 from EDGEquest |
