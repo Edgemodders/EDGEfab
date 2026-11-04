@@ -38,6 +38,31 @@ F0's drum again, after `view.glb` was added: the same three levels (19,021 / 9,5
 
 **Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
+## F1 check: Tripo's model and its front
+
+Which Tripo model F1 asks for, and which way Tripo's models face, on a prop with a front. Not a release test.
+
+**Steps.** Scripts in a session's scratchpad, outside the repo: `run.cjs` reads the `tripo` key from the shared key store (never printed) and makes "a cyberpunk vending machine with a glowing screen on the front" three ways: (A) `v3.1-20260211` with `face_limit` 20000, (B) `P1-20260311` with `face_limit` 20000, both with `texture`, `pbr` and `auto_size`, at the same time; (C) `POST /v3/mesh/decimate` on A's task (`model` "v2.0", `face_limit` 20000, `bake` true). `views.cjs` draws each GLB from four sides (from +X, −X, +Z, −Z of glTF's axes, textured, orthographic). Then `npm run smoke` on each.
+
+**Expected.** Three textured models at real size; the front on the same side in each; each passes the smoke test.
+
+### Run 1, 2026-11-04: passed
+
+| | A: v3.1, `face_limit` | B: P1 | C: A, retopology with bake |
+|---|---|---|---|
+| Time, credits | 127 s, 20 | 95 s, 40 | 313 s, 30 (on top of A's 20) |
+| Size (`auto_size`) | 1.80 m tall, 0.82 × 0.85 m | 1.80 m, 0.81 × 1.08 m | 1.80 m, 0.81 × 0.84 m |
+| Triangles, vertices | 16,791, 12,455 | 17,909, 29,512 (many UV seams) | 20,356, 20,662 |
+| Front | **+X** | **+X** | **+X** |
+| Looks | Clean: glowing shelves, keypad, slot; plain sides and back | Bottles on shelves, but the screen on a side, a blurred smudge baked on the back, a brown body | A's shape, but smeared texture patches on the sides from the bake |
+| Smoke test | ok, 3 LODs | ok | ok |
+
+Balance 1,520 before, 1,430 after (110 credits, which matches the three).
+
+**What it decides for F1:** **v3.1 with `face_limit` stays the default**: the cheapest and the cleanest. P1 and retopology aren't used for now. **Text to model faces +X** as multiview does, so prepare turns every Tripo model to the game's forward. The front's side can't be told from an imported GLB, so imported models keep their facing and the modder turns them (F2's size and placement on the page).
+
+**Also found:** a task made with one Tripo key answers 404 to another key, even on the same account (the laptop's vending machine could not be read from the PC). So a take or an edit records which key made it (a short fingerprint, never the key).
+
 ## F0 check: Tripo text to model
 
 What Tripo returns for a prop, so F1's prepare step and EDGEmat #4 are built for it. Not a release test.
