@@ -1,0 +1,49 @@
+{
+  "name": "@edgemodders/edgefab-mcp",
+  "version": "0.1.0",
+  "description": "EDGEfab for AI assistants over MCP: make a Cyberpunk 2077 prop from a textured 3D model, or from words through Tripo, prepared for the game.",
+  "license": "MIT",
+  "author": "Edgemodders",
+  "homepage": "https://edgemodders.github.io/EDGEfab/",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cyberpunk2077",
+    "modding",
+    "3d",
+    "glb",
+    "tripo"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Edgemodders/EDGEfab.git",
+    "directory": "packages/edgefab-mcp"
+  },
+  "bin": {
+    "edgefab-mcp": "dist/server.cjs"
+  },
+  "files": [
+    "dist/server.cjs",
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.txt"
+  ],
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/server.cjs"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "~5.9.3",
+    "zod": "^3.25.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

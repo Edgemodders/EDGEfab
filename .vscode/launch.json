@@ -1,0 +1,13 @@
+{
+  // F5 runs EDGEfab in an extension development host. Build first: npm run build.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run EDGEfab",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/extensions/edgefab"],
+      "outFiles": ["${workspaceFolder}/extensions/edgefab/dist/**/*.js"]
+    }
+  ]
+}

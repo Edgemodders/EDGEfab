@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://edgemodders.github.io/EDGEfab/"><img src="docs/assets/brand/badges/docs.svg" alt="docs: read the docs"></a>
-  <img src="docs/assets/brand/badges/status.svg" alt="status: scaffold">
+  <img src="docs/assets/brand/badges/status.svg" alt="status: F1 props">
   <img src="docs/assets/brand/badges/game.svg" alt="game: Cyberpunk 2077">
   <img src="docs/assets/brand/badges/makes.svg" alt="makes: items and objects">
   <a href="LICENSE"><img src="docs/assets/brand/badges/license.svg" alt="license: MIT"></a>
@@ -19,7 +19,7 @@ EDGEfab is a fabricator, not a mesh editor: its goal is the whole game asset. Pr
 **[Read the docs](https://edgemodders.github.io/EDGEfab/)** &middot; [Build plan](docs/plan.md) &middot; [Design](docs/design.md) &middot; [UE5 assets](docs/ue-assets.md) &middot; [Dev setup](docs/dev-setup.md)
 
 > [!NOTE]
-> **Status: scaffold.** The repository, the branding, the docs site, a design brief and a proposed build plan exist; there is no code yet. **Version 1 is set** ([design](docs/design.md#version-1-props)): game props, imported from a GLB or made from words through Tripo, kept on a Desk and in a Library that EDGEbuilder places in the game. Next: V0, its checks.
+> **Status: F1 props, not released yet.** F0's checks are done: Tripo's v3 API makes a textured model, and a prepared GLB imports over a game prop (2026-10-31 and 11-01); which collision is solid in the game is still open. F1, the first build, has started: the extension's Desk view, **Import a GLB** and **Generate with Tripo**, the step that gets a model ready for the game (size, levels of detail, textures), and the MCP server (`fab_make`, `fab_desk`, `fab_tripo`). They pass the smoke test, but have not run in VS Code yet (unverified). Next: the collision check in the game, then **Add to Project**. There is no release yet. The phases are in the [build plan](docs/plan.md).
 
 ## Repository layout
 
