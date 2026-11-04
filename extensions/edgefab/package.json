@@ -120,6 +120,12 @@
         "category": "EDGEfab"
       },
       {
+        "command": "edgefab.view",
+        "title": "Open in 3D",
+        "category": "EDGEfab",
+        "icon": "$(eye)"
+      },
+      {
         "command": "edgefab.openPreview",
         "title": "Open Tripo's Preview",
         "category": "EDGEfab"
@@ -149,6 +155,16 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "edgefab.view",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.view",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@0"
+        },
         {
           "command": "edgefab.openPreview",
           "when": "view == edgefab.desk && viewItem == desk.preview",
@@ -180,6 +196,10 @@
         },
         {
           "command": "edgefab.delete",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.view",
           "when": "false"
         }
       ]

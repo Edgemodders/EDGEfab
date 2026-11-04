@@ -20,7 +20,7 @@ The bundled core makes a prop from a GLB on disk, and REDbridge takes the result
 2. Import the prepared GLB (`<out>\<name>.prop.asset\source\raw\<name>\<name>.glb`) with REDbridge's `project.import` over `base\environment\decoration\containers\barrel\drum\barrel_drum_a.mesh`.
 3. The MCP server: `npm run mcp:start`, send `initialize` and `tools/list`.
 
-**Expected.** The smoke test prints `ok`: three LODs, each part with `POSITION`, `NORMAL`, `TEXCOORD_0`, `TANGENT` and at most 65,535 vertices, the base at height 0, three texture files. REDbridge returns `ok: true` with 3 submeshes. The server lists `fab_make`, `fab_desk`, `fab_tripo`.
+**Expected.** The smoke test prints `ok`: three LODs, each part with `POSITION`, `NORMAL`, `TEXCOORD_0`, `TANGENT` and at most 65,535 vertices, the base at height 0, three texture files, and a `view.glb` beside the game GLB with the same parts and levels and the textures inside (added 2026-11-04, for Open in 3D). REDbridge returns `ok: true` with 3 submeshes. The server lists `fab_make`, `fab_desk`, `fab_tripo`.
 
 ### Run 1, 2026-11-01: passed
 
@@ -32,7 +32,11 @@ The bundled core makes a prop from a GLB on disk, and REDbridge takes the result
 
 Found on the way and fixed before this run: glTF-Transform's `normals()` unwelds every mesh, and `prune()` drops UVs and tangents once the textures are out of the GLB (REDbridge then refused it for missing tangents).
 
-**Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
+### Run 2, 2026-11-04: passed
+
+F0's drum again, after `view.glb` was added: the same three levels (19,021 / 9,510 / 3,794 triangles) and textures; `view.glb` (4.3 MB) has the nodes `submesh_00_LOD_1`, `_2`, `_4` and one material with its color, ORM and normal textures.
+
+**Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
 ## F0 check: Tripo text to model
 

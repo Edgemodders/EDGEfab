@@ -12,7 +12,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { Document, NodeIO, type Mesh, type Node, type Primitive, type Texture } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
-import { clearNodeTransform, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
+import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
 // meshoptimizer is an ES module and this package is CommonJS: esbuild bundles it either way, and TypeScript
 // only objects to the module kind.
 // @ts-expect-error TS1479
@@ -67,6 +67,8 @@ export interface PrepareResult {
   size: { height: number; width: number; depth: number };
   materials: string[];
   textures: PreparedTexture[];
+  /** A GLB to look at in REDcode's 3D view: the same parts and levels, with their textures (the game's GLB has none). */
+  view?: string;
   /** Things changed or left out that the modder should know. */
   notes: string[];
 }
@@ -234,6 +236,16 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   for (const m of root.listMeshes()) if (!/^submesh_\d\d_LOD_\d$/.test(m.getName())) m.dispose();
 
   await doc.transform(unweld(), tangents({ generateTangents, overwrite: true }), weld());
+
+  // A copy to look at, before the textures go. REDcode's 3D view reads the submesh_NN_LOD_N names: a level picker
+  // and a list of parts to show or hide, as for a game mesh.
+  const look = cloneDocument(doc);
+  await look.transform(prune({ keepAttributes: true }));
+  const lookBuffer = look.getRoot().listBuffers()[0] ?? look.createBuffer();
+  for (const a of look.getRoot().listAccessors()) if (!a.getBuffer()) a.setBuffer(lookBuffer);
+  const view = path.join(outDir, "view.glb");
+  await io.write(view, look);
+
   for (const t of root.listTextures()) t.dispose();
   // keepAttributes: with the textures taken out, prune would drop the UVs and tangents as unused.
   await doc.transform(prune({ keepAttributes: true }));
@@ -251,5 +263,5 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   }
   const glb = path.join(outDir, `${name}.glb`);
   await io.write(glb, doc);
-  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, notes };
+  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, view, notes };
 }

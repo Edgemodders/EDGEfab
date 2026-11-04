@@ -91,7 +91,7 @@ server.registerTool(
 server.registerTool(
   "fab_desk",
   {
-    description: "Lists what is on EDGEfab's Desk (the extension's Desk view), its own scratch workspace kept between sessions: each prop's folder, name, size, levels of detail, textures and license. Props wait there until they go into a project or the Library.",
+    description: "Lists what is on EDGEfab's Desk (the extension's Desk view), its own scratch workspace kept between sessions: each prop's folder, name, size, levels of detail, textures and license, and `view`: a GLB with its textures, parts and levels of detail to open in REDcode's 3D view (the game's GLB has no textures). Props wait there until they go into a project or the Library.",
     inputSchema: {},
   },
   async () => {
@@ -105,7 +105,7 @@ server.registerTool(
           const name = dir.slice(0, -".prop.asset".length);
           const asset = readJson(path.join(folder, "asset.json"));
           const prepared = readJson(path.join(folder, "source", "raw", name, "prepared.json"));
-          return { name, folder, title: asset?.name, from: asset?.from, license: asset?.license, size: prepared?.size, submeshes: prepared?.submeshes?.length, notes: prepared?.notes };
+          return { name, folder, title: asset?.name, from: asset?.from, license: asset?.license, size: prepared?.size, submeshes: prepared?.submeshes?.length, view: prepared?.view, notes: prepared?.notes };
         }),
       });
     } catch (e) {

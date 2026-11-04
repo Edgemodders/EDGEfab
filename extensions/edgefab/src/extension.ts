@@ -10,6 +10,8 @@ import { entryOf, DeskView } from "./deskView";
 
 declare const __VERSION__: string;
 
+const RedcodeId = "edgemodders.redcode-cyberpunk";
+
 let output: vscode.OutputChannel;
 const log = (line: string) => output.appendLine(`${new Date().toLocaleTimeString()} ${line}`);
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -63,6 +65,30 @@ function report(made: MadeModel): void {
   for (const n of p.notes) log(`  Note: ${n}`);
 }
 
+/** Opens a model in REDcode's 3D view, which shows its textures, its parts to show or hide, and its levels of detail. */
+async function openIn3D(glb: string | undefined, preview?: string): Promise<void> {
+  if (!glb || !fs.existsSync(glb)) {
+    void vscode.window.showWarningMessage("EDGEfab: this prop has no model to show. Make it again to get one.");
+    return;
+  }
+  if (!vscode.extensions.getExtension(RedcodeId)) {
+    const pick = await vscode.window.showInformationMessage(
+      "EDGEfab shows models in REDcode's 3D view, with their textures, parts and levels of detail. Install REDcode to see this one.",
+      "Install REDcode",
+      ...(preview ? ["Open Preview"] : []),
+    );
+    if (pick === "Install REDcode") void vscode.commands.executeCommand("workbench.extensions.search", RedcodeId);
+    if (pick === "Open Preview" && preview) void vscode.commands.executeCommand("vscode.open", vscode.Uri.file(preview));
+    return;
+  }
+  try {
+    await vscode.commands.executeCommand("vscode.openWith", vscode.Uri.file(glb), "redcode.mesh");
+  } catch (e) {
+    log(`Open in 3D: ${message(e)}`);
+    void vscode.window.showErrorMessage(`EDGEfab: REDcode's 3D view didn't open: ${message(e)}`);
+  }
+}
+
 async function make(run: (progress: (step: string) => void, signal: AbortSignal) => Promise<MadeModel>, view: DeskView): Promise<void> {
   try {
     const made = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "EDGEfab", cancellable: true }, (progress, token) => {
@@ -75,9 +101,11 @@ async function make(run: (progress: (step: string) => void, signal: AbortSignal)
     const lods = new Set(made.prepared.submeshes.map((s) => s.lod)).size;
     const pick = await vscode.window.showInformationMessage(
       `EDGEfab made ${made.name}: ${made.prepared.size.height.toFixed(2)} m tall, ${lods} levels of detail, ready for the game.${made.prepared.notes.length ? " See its notes on the Desk." : ""}`,
+      "Open in 3D",
       ...(made.preview ? ["Open Preview"] : []),
       "Reveal",
     );
+    if (pick === "Open in 3D") await openIn3D(made.prepared.view, made.preview);
     if (pick === "Open Preview" && made.preview) void vscode.commands.executeCommand("vscode.open", vscode.Uri.file(made.preview));
     if (pick === "Reveal") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(made.folder));
   } catch (e) {
@@ -140,6 +168,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.reveal", (item: unknown) => {
       const entry = entryOf(item);
       if (entry) void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(entry.folder));
+    }),
+    vscode.commands.registerCommand("edgefab.view", (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry) void openIn3D(entry.model, entry.preview);
     }),
     vscode.commands.registerCommand("edgefab.openPreview", (item: unknown) => {
       const entry = entryOf(item);

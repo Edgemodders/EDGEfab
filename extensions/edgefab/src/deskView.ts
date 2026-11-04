@@ -15,6 +15,8 @@ export interface DeskEntry {
   from?: Record<string, unknown>;
   prepared?: PrepareResult;
   preview?: string;
+  /** The GLB REDcode's 3D view opens: prepare's view.glb (with textures), or the model as it came for older items. */
+  model?: string;
 }
 
 /** Reads the asset folders on the Desk, newest first. */
@@ -35,7 +37,8 @@ export function listDesk(base = deskDir()): DeskEntry[] {
         prepared = undefined;
       }
       const preview = ["preview.webp", "preview.png", "preview.jpg", "preview.jpeg"].map((f) => path.join(raw, f)).find((f) => fs.existsSync(f));
-      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, at: fs.statSync(folder).mtimeMs });
+      const model = [prepared?.view, path.join(raw, "view.glb"), path.join(raw, "original.glb")].find((f): f is string => !!f && fs.existsSync(f));
+      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, model, at: fs.statSync(folder).mtimeMs });
     } catch {
       // not one of ours, or half written
     }
@@ -93,6 +96,7 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
     t.tooltip = new vscode.MarkdownString(`**${entry.title}**\n\n${entry.folder}`);
     t.contextValue = entry.preview ? "desk.preview" : "desk";
     t.resourceUri = vscode.Uri.file(entry.folder);
+    if (entry.model) t.command = { command: "edgefab.view", title: "Open in 3D", arguments: [item] };
     return t;
   }
 }
