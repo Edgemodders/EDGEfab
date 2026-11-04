@@ -28,6 +28,8 @@ nav:
     url: /design.html
   - title: Library
     url: /library.html
+  - title: Props proposal
+    url: /props.html
   - title: UE5 assets
     url: /ue-assets.html
   - title: Tests
