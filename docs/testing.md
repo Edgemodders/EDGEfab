@@ -153,3 +153,28 @@ Both meshes keep the game barrel's material, so the drums may draw wrongly: this
 6. Later, in EDGEbuilder: place each in a scene and bake it, then walk into each again.
 
 **Expected.** Each drum stands on the ground at its size. One or both stop V; the one that does is F1's collision (EDGEfab #2 asks for B). Its detail drops as V walks away.
+
+## F5a check: a game animation through REDbridge
+
+What REDbridge does with a game `.anims` today, before asking it for the rest ([REDbridge #14](https://github.com/Edgemodders/REDbridge/issues/14)). Not a release test. Without the game.
+
+**Steps.**
+
+1. Extract `base\animations\quest\main_quests\prologue\q001\q001_00c_rescuing_girl\anim\synced\synced__q001_00c__trauma_pack.anims` into a scratch project's `source\archive` (`archive_extract`).
+2. `project.export` it to `source\raw`.
+3. Read the GLB's JSON: nodes, skins, animations and their lengths.
+4. `project.import` the GLB back.
+
+**Expected.** Step 2 writes `<name>.anims.glb` with the rig and every clip. Step 4 writes the `.anims` again.
+
+### Run 1, 2026-11-04: export passed, import refused
+
+Bridge 0.11.0 through the `redcode` MCP server, game 2.5.
+
+| Step | Result |
+|---|---|
+| 2. Export | `synced__q001_00c__trauma_pack.anims.glb`, 43 KB: 6 nodes (`Armature`, `Root`, `base`, `Trajectory`, `open`, `handle`), 1 skin, no mesh |
+| 3. Clips | `synced__q001_00c_trauma_arrives_med_2__trauma_pack` 7.83 s and `synced__q001_00c_trauma_leaves__trauma_pack` 27.33 s, 10 channels each (translation, rotation), the lengths EDGEquest found. Each has WolvenKit's `wkit.cp2077.gltf.anims` v5 extras: `animationType` Normal, `rootMotionType`, `animEvents`, track keys |
+| 4. Import | Refused: "There is no mesh at ... `.anims.mesh` to import over". REDbridge takes every GLB as a mesh; WolvenKit's `ImportAnims` is not reached. Asked in REDbridge #14 |
+
+`project.export` needs the file as a full path on disk (a game path under `archiveDir` gave "File not found").

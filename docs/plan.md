@@ -63,7 +63,7 @@ Draft 0.1 said "EDGEfab does not connect to Blender: the assistant connects to b
 | Tripo | **EDGEfab's own client for Tripo's REST API** (v3), with the modder's own key from the EDGE tools' shared key store (`%APPDATA%\Edgemodders\keys`, REDnode's `keys.mjs`), the same way EDGEmat calls its image services | Tripo has no official MCP server (community ones exist). The REST API covers text and image to 3D, decimation, texturing and rigging. One client is easier to guard than a third-party server |
 | Other text-to-mesh services | Later, behind the same interface (Meshy, Hunyuan3D, Rodin) | One service first |
 | Open in EDGEfab beside Open in EDGEmat | Both stay: EDGEmat for editing a material by hand, EDGEfab for the whole asset, which calls EDGEmat | To confirm with the owner |
-| Where animation sits | **Split F7**: animated props (F7a) right after F2, character animation (F7b) right after F5, ahead of F6 | Animation is a key focus, and each half needs only its subject in the view: a prop (F1, F2) or a whole character (F5). See "Animation: a key focus" |
+| Where animation sits | **Split F7**: animated props (F7a) right after F2, character animation (F7b) right after F5, ahead of F6. **Split again 2026-11-04** (owner): F5a and F7b-1 move up after F7a; see "Rigs and animation: where they live" | Animation is a key focus, and each half needs only its subject in the view: a prop (F1, F2) or a whole character (F5). See "Animation: a key focus" |
 
 ### Words to parts
 
@@ -110,6 +110,44 @@ The modding community wants easy tooling for importing and generating animations
 | Generate (later) | "Make him lean on the wall and check his phone" | A text-to-motion service behind the same interface as Tripo; candidates unverified, chosen when the phase starts |
 | Preview | Scrub and loop it on the subject | Plays it in the 3D view |
 | Use it | "Play it when he stands here", "loop it", "add it to his idles" | Writes the `.anims`, the entity or workspot, the records; Try it in the running game |
+
+### Rigs and animation: where they live (owner, 2026-11-04)
+
+Asked by the owner after EDGEquest's Trauma Team experiments (2026-11-03): reusing a game animation can need a small change to it, so the modder needs to find the game's animations, see them on the character or object that plays them, change them, and see the result there, without hopping between tools. Agreed with the owner on 2026-11-04:
+
+| Decision | Why |
+|---|---|
+| **Rigs and animation live in EDGEfab**, as a module with its own editor tab (the animation tab), not a separate extension | An animation is judged on its subject, and the assembled character (F5a) is EDGEfab's; a separate tool would rebuild it or fetch it across extensions, which is the hopping to avoid. Skin weights (F4) and prop rigs (F7a) share its core |
+| **Built so it can move out**: its own core folder, editor tab and MCP tools (`fab_anim_*`) | If it is wanted without a subject, or its libraries make EDGEfab heavy, it becomes its own extension without a rewrite |
+| **EDGEfab owns the animation index**, in its API and MCP server; EDGEquest's Animation picker uses it | One index, not two. It finds an animation by name, by the character or object that uses it (an entity's animation sets), and by the scenes that play it |
+| **F5 and F7b split** (F5a and F7b-1 earlier) | Seeing is cheaper than editing, and serves EDGEquest too; the owner's Trauma Team mod gives F7b-1 its test |
+
+**What stays with other tools:**
+
+| Work | Home |
+|---|---|
+| Game file reads and writes: `.anims` to GLB and back, a whole character to GLB | REDbridge. WolvenKit has `ExportAnim` (an `.anims` with its rig to glTF) and `ImportAnims` (glTF to `.anims`) in `AnimationTools.cs`; `project.export` already writes an `.anims` with its rig as a GLB (checked 2026-11-04); import is not offered yet ([REDbridge #14](https://github.com/Edgemodders/REDbridge/issues/14)) |
+| The 3D view and animation playback | REDcode's viewer, shared, so every tab looks the same ([REDcode #21](https://github.com/Edgemodders/REDcode/issues/21), filed by EDGEquest: play an animation on its rig, `openAnimation`) |
+| Watching it in the running game | REDnode ([REDnode #39](https://github.com/Edgemodders/REDnode/issues/39), filed by EDGEquest: play an animation or a workspot on a spawned character) |
+| Scenes: who plays which animation, when and where | EDGEquest: it picks clips, EDGEfab makes and changes them |
+| Looks; voice; placing in the world | EDGEmat; EDGEwave; EDGEbuilder |
+| Heavy keyframe work | Blender, through its MCP server or its background |
+
+Vehicles and weapons fit the same way later: whole assets with their own rigs and animations (an AV's doors, its landing).
+
+**Moving between tabs.** One subject, many tabs. Clicking an NPC opens EDGEfab's character tab with the character assembled and playing its idle. Its toolbar offers change clothes (F4), change the look (EDGEmat on that part), open an animation in the animation tab, Edit in Blender, and Try it in the game (REDnode). Every tab works on the same Desk item, so a change anywhere (a clip edited, a recolor, a Blender round trip) redraws the character in the others. A breadcrumb row leads back, as EDGEquest's step view has.
+
+**What editing an animation means:**
+
+| Level | Examples | Where |
+|---|---|---|
+| 1. Timing | Trim, loop, speed, mirror, blend two clips | The animation tab (F7b-1) |
+| 2. Offsets | Move or scale the root's motion; a layer that turns one bone over the clip | The animation tab (F7b-1) |
+| 3. Keyframes | A pose, bone by bone | Simple changes in the tab; real work in Blender (F7b-2) |
+| 4. New motion | Text to motion through an AI service, retargeted onto the game's rig | F7b-2, with the agent in FA |
+| 5. From elsewhere | Unreal and Mixamo clips, retargeted | F8 |
+
+**The test case: Trauma Team's crew** (EDGEquest's experiment X2, 2026-11-03). A Trauma Team crew dropped from MaxTac's AV jumps a fixed height: with the AV lowered to 2 m, they fell through the ground. The drop is in the crew's exit animation, so scaling the root's fall to the new height is a level 2 edit. **Unverified:** which file holds the exit animation. Changing the game's file would change MaxTac's crews too, so the edited clip likely needs to be a new animation used by the owner's AV only; whether that works is open.
 
 ## The first build, agreed 2026-10-30
 
@@ -270,15 +308,17 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F3 Blender sources** (was Generated props; Tripo moved into F1 on 2026-10-30. Proposed right after F1) | FBX and `.blend` through Blender's background (`blender --background`): the scene to a GLB, then F1's path. Finding Blender, as REDcode's Edit in Blender does. Proposed from the parallel session ([above](#asked-in-a-parallel-session-placed-after-f1-2026-10-27-to-30)): changes in Blender (Fix Mesh in the background, by hand, by an assistant through a Blender MCP server), and hand edits on a prop in a project merged back with its materials kept | A prop from a `.blend` and one from an FBX end up in an EDGEbuilder scene |
 | **F2 Workspace and prompts** | **Open in EDGEfab** on a `.mesh`, `.ent` or `.app` (REDcode's Game Assets and Project views, the Explorer, the editor's title menu, as EDGEmat's Open in EDGEmat is). The 3D view, parts and the part map, looks, history with undo. No agent here: Claude Code drives F2 through the MCP server, and the agent comes in FA (owner, 2026-11-04). **Try it**: pack, hot load (REDnode), put it on V or spawn it. **Reshape a prop by words** (views, an image service's change, Tripo's multiview model, a fit with no bones; [above](#reshape-built-in-edgemat-first-read-2026-11-03)). Proposed from the parallel session ([above](#asked-in-a-parallel-session-placed-after-f1-2026-10-27-to-30)): takes, a prop from words in named parts, the material planner, Game Assets with kinds, size on the page and versions, on REDcode's viewer | **A prop made from words comes back in named parts, its materials planned and applied, is resized on the page, and shows in the running game**; Claude Code does the same through the MCP server. **1.0** once F1, F3 and F2 have passed (owner, 2026-11-04) |
 | **F4 Clothing** | Fitting to V's bodies and body mods ([design, "Clothing: fitting to the body"](design.html#clothing-fitting-to-the-body)): `fab_body`, `fab_fit`, `fab_refit`. **Reshape moves in from EDGEmat** ([EDGEfab #3](https://github.com/Edgemodders/EDGEfab/issues/3)) and grows past one bone. The item record, name, icon, both bodies | "Make an old worn trenchcoat" can be worn by V from the inventory, on both bodies |
-| **F5 Characters, whole** | Open in EDGEfab on an NPC: from its `Character` record, entity or appearance, EDGEfab assembles **the full character**: body, head, hair and clothes from its appearance parts, on its rig, playing its animations (idle and others from its animation sets), its **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
+| **F5a Characters, seen** (split from F5, owner, 2026-11-04; proposed right after F7a) | Open in EDGEfab on an NPC or an object with animations: from its `Character` record, entity or appearance, EDGEfab assembles it (body, head, hair and clothes from its appearance parts, on its rig) and plays its animations (idle first, the others from its animation sets, listed). **The animation index**: find the game's animations by name, by the character or object that uses them, and by the scenes that play them, in the UI and MCP (`fab_anim_find`), used by EDGEquest's picker too. Read-only. See [Rigs and animation](#rigs-and-animation-where-they-live-owner-2026-11-04) | Click an NPC asset and see the whole character standing in its idle, in EDGEfab; find the q001 Trauma Team animations and play one on a Trauma Team medic |
+| **F7b-1 Small animation edits** (split from F7b, owner, 2026-11-04; right after F5a) | The animation tab: timing (trim, loop, speed, mirror, blend) and offsets (the root's motion moved or scaled, a layer on one bone), on the subject from F5a, saved as a new `.anims` through REDbridge; Try it on a character beside V (REDnode #39). In the UI and MCP (`fab_anim_edit`) | The owner's Trauma Team crew drops from the AV at its new height and lands on the ground, in the game |
+| **F5b Characters, heard and read** (the rest of F5) | The character's **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
 | **FA The agent** (moved out of F2 by the owner, 2026-11-04) | EDGEfab's own agent (the Claude Agent SDK with the modder's key) and the prompt bar on the asset page, with EDGEfab's and EDGEmat's tools, the Blender MCP server, the part map for words to parts. What Claude Code could already do through MCP, typed in EDGEfab | "Make the jacket green and the sleeves red" shows on V in the running game, typed in EDGEfab's prompt bar |
 | **F6 Characters, edited** | Every aspect changed by orchestrating the EDGE tools: looks (EDGEmat), clothes swapped or made (F4), hair and head from the game's parts, animations (Blender, Unreal), voice (EDGEwave), records (TweakDB through TweakXL). A new NPC made from an existing one. Placed through EDGEbuilder's `npc` scene kind (its B3c, on REDnode's `world.load`) | "Make a new fixer from this one, in a leather coat, with a deeper voice" stands in a scene in the game |
 | **F7a Animated props** (a key focus; proposed right after F2) | The prop in the view first, then "animate the pinwheel": a small rig and a looping `.anims` made in Blender's background, or a Blender action brought in; the entity that plays it | The pinwheel turns in the game |
-| **F7b Character animation** (a key focus; proposed right after F5) | The character in the view first (F5), then animations brought in from Blender (actions on the game's rig, or retargeted) and played through workspots or added to its idles; text to motion behind one interface once a service is chosen. Unreal clips join in F8 (U4 of [UE5 assets](ue-assets.html)) | A Blender idle plays on an NPC in the game, previewed on that NPC in EDGEfab first |
+| **F7b-2 Character animation** (a key focus; proposed right after F5b) | The character in the view first (F5a), then keyframes (simple ones in the animation tab), animations brought in from Blender (actions on the game's rig, or retargeted) and played through workspots or added to its idles; text to motion behind one interface once a service is chosen. Unreal clips join in F8 (U4 of [UE5 assets](ue-assets.html)) | A Blender idle plays on an NPC in the game, previewed on that NPC in EDGEfab first |
 | **F8 Unreal assets** | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop, a garment and an NPC from the docs alone |
 
-Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), the proposed order is F0, F1, F3, F2, F7a, F4, F5, F7b, FA, F6, F8, F9 (FA added 2026-11-04). F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order is F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What EDGEfab needs from other repos
 
@@ -293,7 +333,10 @@ Filed as `request` issues when its phase starts, with the shape that would work:
 | EDGEbuilder | The Library's shared rules gain assets ([Library assets](library.html)); EDGEfab is the second tool to use the Library, which its Library page says moves the rules to the platform's wiki ([EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31) | F1 |
 | REDcode | The 3D view embeddable in another extension's webview (or a shared viewer package), with several meshes on one rig and animation playback; stable context values for `.mesh`, `.ent` and `.app` in its views. Its viewer already mounts with toolbar `actions` ([found](#found-in-that-session)): the need is a documented contract (where the script is, `mount` and its options) and a `snapshot()` for thumbnails | F2, F5 |
 | REDcode | Edit in Blender on a GLB outside the open project (the Desk, the Library), an event after each save is imported, and the Blender it found (`blenderPath()`) | F3 |
-| REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. `.anims` import from GLB onto a game rig or a prop's own rig, and `.morphtarget` import. Anything F0's checks find missing (collision, LODs) | F1, F5, F7a, F7b |
+| REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. `.anims` export with its rig, and import from GLB onto a game rig or a prop's own rig (WolvenKit's `ExportAnim`, `ImportAnims`), and `.morphtarget` import. Anything F0's checks find missing (collision, LODs). The animation and character part filed 2026-11-04 as [REDbridge #14](https://github.com/Edgemodders/REDbridge/issues/14); `.anims` export already works through `project.export`, import does not ([Tests](testing.html#f5a-check-a-game-animation-through-redbridge)) | F1, F5a, F7a, F7b-1 |
+| REDcode | Play a game animation on its rig in the viewer, `openAnimation` ([REDcode #21](https://github.com/Edgemodders/REDcode/issues/21), filed by EDGEquest 2026-11-03); for EDGEfab also several meshes on one rig (above) | F5a |
+| REDnode | Play an animation or a workspot on a spawned character beside V ([REDnode #39](https://github.com/Edgemodders/REDnode/issues/39), filed by EDGEquest 2026-11-03) | F7b-1 |
+| EDGEquest | Its Animation picker uses EDGEfab's animation index; the scenes' side of the index from EDGEquest (which animations each scene plays, and by which actor) ([EDGEquest #6](https://github.com/Edgemodders/EDGEquest/issues/6), filed 2026-11-04) | F5a |
 | EDGEwave | A character's voice lines: list them, play them, and replace them in a voice the modder chooses | F5, F6 |
 | REDnode | `world.spawn` and `world.load` of a project's prop or NPC after a hot load (H2c), equip on V | F2, F6 |
 | EDGEbuilder | Its B3c: the `npc` scene kind | F6 |
