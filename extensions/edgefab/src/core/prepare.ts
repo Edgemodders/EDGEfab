@@ -5,7 +5,9 @@
 // - at most 65,535 vertices per submesh;
 // - node transforms baked in (it reads vertex positions as they are, and only turns Y up into Z up);
 // - LODs named in the mesh: submesh_00_LOD_1 (full), _LOD_2, _LOD_4.
-// And for a prop: its base at height 0, centred across, as the game's props stand.
+// And for a prop: its base at height 0, centred across, as the game's props stand, and its front toward the
+// game's forward: glTF's -Z, which the importer makes the game's +Y. Tripo's models face +X (checked on text to
+// model and multiview, docs/testing.md "Tripo's model and its front"), so they are turned a quarter.
 // The textures are written out as image files, for the materials (EDGEmat), and left out of the GLB.
 
 import * as fs from "node:fs";
@@ -40,7 +42,17 @@ export interface PrepareOptions {
   lods?: LodLevel[];
   /** Stand the model on its base, centred across (props). Default on. */
   ground?: boolean;
+  /**
+   * Which way the model's front faces, in glTF's axes, so it is turned to face the game's forward (-Z).
+   * "auto" (the default): +X for a model Tripo made (its asset generator names Tripo), else left as it is.
+   */
+  front?: Facing | "auto";
 }
+
+export type Facing = "+X" | "-X" | "+Z" | "-Z";
+
+/** The turn about the up axis (Y) that brings each facing to -Z, in degrees. */
+const TurnToForward: Record<Facing, number> = { "+X": 90, "-X": -90, "+Z": 180, "-Z": 0 };
 
 export interface PreparedTexture {
   material: string;
@@ -89,6 +101,19 @@ function cloneDeep(doc: Document, prim: Primitive): Primitive {
   return copy;
 }
 
+/** Whether Tripo made the file: its asset generator, read from the file itself (glTF-Transform replaces it on
+ *  reading), or Tripo's node names (tripo_node_<task>). */
+function madeByTripo(input: string, doc: Document): boolean {
+  try {
+    const b = fs.readFileSync(input);
+    const json = b.readUInt32LE(0) === 0x46546c67 ? b.subarray(20, 20 + b.readUInt32LE(12)).toString("utf8") : b.toString("utf8");
+    if (/tripo/i.test(JSON.parse(json).asset?.generator ?? "")) return true;
+  } catch {
+    // fall back on the node names
+  }
+  return doc.getRoot().listNodes().some((n) => /^tripo_node_/i.test(n.getName()));
+}
+
 const vertexCount = (prim: Primitive) => prim.getAttribute("POSITION")?.getCount() ?? 0;
 const triangleCount = (prim: Primitive) => (prim.getIndices()?.getCount() ?? vertexCount(prim)) / 3;
 
@@ -114,9 +139,24 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   const scene = root.getDefaultScene() ?? root.listScenes()[0];
   if (!scene) throw new PrepareError("This GLB has no scene.");
 
+  // Turn its front to the game's forward, under one parent node, which the baking below takes in.
+  const front = (options.front ?? "auto") === "auto" ? (madeByTripo(input, doc) ? "+X" : "-Z") : (options.front as Facing);
+  const turn = TurnToForward[front];
+  if (turn) {
+    const half = (turn * Math.PI) / 360;
+    const parent = doc.createNode("edgefab_turn").setRotation([0, Math.sin(half), 0, Math.cos(half)]);
+    for (const child of scene.listChildren()) {
+      scene.removeChild(child);
+      parent.addChild(child);
+    }
+    scene.addChild(parent);
+    notes.push(front === "+X" ? "Turned a quarter to face forward: Tripo's models face sideways." : `Turned ${Math.abs(turn)}° to face forward (its front was ${front}).`);
+  }
+
   // Bake every node's transform into its mesh. A mesh used by several nodes is copied first, since each
   // submesh needs its own vertices.
   await doc.transform(flatten());
+  for (const n of root.listNodes()) if (n.getName() === "edgefab_turn" && !n.listChildren().length) n.dispose();
   const used = new Set<Mesh>();
   for (const node of root.listNodes()) {
     const mesh = node.getMesh();

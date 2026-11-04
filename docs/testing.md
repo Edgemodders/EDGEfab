@@ -36,6 +36,10 @@ Found on the way and fixed before this run: glTF-Transform's `normals()` unwelds
 
 F0's drum again, after `view.glb` was added: the same three levels (19,021 / 9,510 / 3,794 triangles) and textures; `view.glb` (4.3 MB) has the nodes `submesh_00_LOD_1`, `_2`, `_4` and one material with its color, ORM and normal textures.
 
+### Run 3, 2026-11-04: passed
+
+After the turn to the game's forward: test 8's v3.1 vending machine is turned a quarter (note "Turned a quarter to face forward"), 0.85 m wide by 0.82 m deep (was 0.82 by 0.85), and drawn from four sides its front faces −Z in glTF. F0's drum, also from Tripo, is turned the same way. **Unverified in the game:** that −Z in the GLB becomes the way a spawned or placed prop faces (to see with test 7's run).
+
 **Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
 ## F1 check: Tripo's model and its front

@@ -7,7 +7,7 @@ export {
   type Generated, type TextToModel, type TripoBalance, type TripoCall, type TripoTask,
 } from "./tripo";
 export {
-  DefaultLods, MaxSubmeshVertices, prepareModel, PrepareError,
+  DefaultLods, MaxSubmeshVertices, prepareModel, PrepareError, type Facing,
   type LodLevel, type PrepareOptions, type PrepareResult, type PreparedSubmesh, type PreparedTexture,
 } from "./prepare";
 export { makeModel, type MadeModel, type MakeRequest } from "./make";
