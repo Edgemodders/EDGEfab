@@ -92,3 +92,27 @@ Whether WolvenKit's importer (through REDbridge) makes a game mesh from a Tripo 
 | **How game props are solid** | Three game prop entities (`sq021_barrels.ent`, `mq034_barrel.ent`, `q105_fluff_barrels.ent`) use an `entMeshComponent` and an **`entColliderComponent` with a `physicsColliderBox`** (preset "Device solid visible" or "World Dynamic", `Kinematic`). One (`q301__barrel_drum_destroyed.ent`) uses an `entPhysicalMeshComponent`, which takes its shape from the mesh's `meshMeshParamPhysics`: there, a `physicsColliderConvex` held only as cooked PhysX data (`compiledGeometryBuffer`, 692 bytes, no plain vertices) |
 
 **What it decides for F1:** the prepare step does tangents, transforms, pivot, LOD names and the vertex limit. EDGEfab cannot cook PhysX shapes, so collision is made of shapes that need no cooking (box, capsule, sphere), fitted to the model. **Still open, in the game:** which of two ways is solid when spawned and when baked by EDGEbuilder: (A) an `entColliderComponent` with a fitted box, as the game's props do, or (B) an `entPhysicalMeshComponent` whose mesh's physics data holds a fitted box instead of the template's cooked shape (EDGEfab #2's shape). And whether the mesh looks right and switches LODs.
+
+## F0 check: which collision is solid in the game
+
+The two ways left open above, side by side, on F0's drum. Not a release test. Built 2026-11-04; **not run yet** (needs the game on the PC).
+
+**Built.** A test project `Projects\EDGEfab_Collision` (outside this repo). Its archive `tests\edgefab_collision_test.archive` (4 files) holds, under `edgefab_test\collision\`:
+
+| | Entity | Mesh |
+|---|---|---|
+| **A** | `drum_a.ent`: an `entMeshComponent` and an `entColliderComponent` with a `physicsColliderBox` (half extents 0.214, 0.214, 0.325 m, raised 0.325 m), preset "Device solid visible", `Kinematic`, as `sq021_barrels.ent` has | `drum_a.mesh`: F0's imported drum with its physics data taken out |
+| **B** | `drum_b.ent`: one `entPhysicalMeshComponent`, filter from the component ("Device solid visible", `Parent`), `Kinematic`, as `crate_red.ent` has | `drum_b.mesh`: the same drum, its `meshMeshParamPhysics` holding the same box instead of the template's cooked convex shape |
+
+Both meshes keep the game barrel's material, so the drums may draw wrongly: this test is about collision and LODs only. Made from WolvenKit JSON with REDbridge's `cr2w.fromJson`, then `project.pack`.
+
+**Steps** (Test timer: Start, then Mark after each step).
+
+1. Copy the archive into the game's `archive\pc\mod` (or add it with EDGEdeck), start the game and load a save outdoors.
+2. Spawn A and B two metres apart in front of V (REDnode `world.spawn` with each `.ent`, from Claude Code).
+3. Walk into each, then jump onto each.
+4. Shoot each.
+5. Walk 25 m away, watching each drum's detail (LODs at 0, 8 and 20 m).
+6. Later, in EDGEbuilder: place each in a scene and bake it, then walk into each again.
+
+**Expected.** Each drum stands on the ground at its size. One or both stop V; the one that does is F1's collision (EDGEfab #2 asks for B). Its detail drops as V walks away.
