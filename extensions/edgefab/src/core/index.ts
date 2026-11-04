@@ -8,6 +8,6 @@ export {
 } from "./tripo";
 export {
   DefaultLods, MaxSubmeshVertices, prepareModel, PrepareError, type Facing,
-  type LodLevel, type PrepareOptions, type PrepareResult, type PreparedSubmesh, type PreparedTexture,
+  type LodLevel, type PrepareOptions, type PrepareResult, type PreparedSubmesh, type PreparedTexture, type PreparedGlow,
 } from "./prepare";
 export { makeModel, type MadeModel, type MakeRequest } from "./make";

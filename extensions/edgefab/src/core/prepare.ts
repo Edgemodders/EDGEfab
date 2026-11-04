@@ -13,7 +13,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Document, NodeIO, type Mesh, type Node, type Primitive, type Texture } from "@gltf-transform/core";
-import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS, type EmissiveStrength } from "@gltf-transform/extensions";
 import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
 // meshoptimizer is an ES module and this package is CommonJS: esbuild bundles it either way, and TypeScript
 // only objects to the module kind.
@@ -72,6 +72,20 @@ export interface PreparedSubmesh {
   attributes: string[];
 }
 
+/**
+ * A material's glow (glTF's emissive): what EDGEmat needs to make the game material glow (metal_base's
+ * Emissive texture, EmissiveColor and EmissiveEV). glTF's light is color x strength x texture.
+ */
+export interface PreparedGlow {
+  material: string;
+  /** glTF's emissiveFactor, linear RGB 0 to 1. */
+  color: [number, number, number];
+  /** KHR_materials_emissive_strength (how much brighter than 1), 1 without it. */
+  strength: number;
+  /** The emissive texture written out, when the glow follows a map (screens, signs) rather than the whole part. */
+  texture?: string;
+}
+
 export interface PrepareResult {
   glb: string;
   submeshes: PreparedSubmesh[];
@@ -79,6 +93,8 @@ export interface PrepareResult {
   size: { height: number; width: number; depth: number };
   materials: string[];
   textures: PreparedTexture[];
+  /** The materials that glow; empty when none does. Tripo's models never glow: their lights are painted in. */
+  glow: PreparedGlow[];
   /** A GLB to look at in REDcode's 3D view: the same parts and levels, with their textures (the game's GLB has none). */
   view?: string;
   /** Things changed or left out that the modder should know. */
@@ -239,6 +255,16 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   }
   if (!textures.length) notes.push("It has no textures: it will need a material of its own.");
 
+  // Glow: kept for the game material. glTF's emissive is black unless the factor says otherwise.
+  const glow: PreparedGlow[] = [];
+  for (const m of materials) {
+    const [r, g, b] = m.getEmissiveFactor();
+    if (Math.max(r, g, b) <= 0) continue;
+    const strength = m.getExtension<EmissiveStrength>("KHR_materials_emissive_strength")?.getEmissiveStrength() ?? 1;
+    const texture = textures.find((x) => x.material === m.getName() && x.slot === "emissive")?.file;
+    glow.push({ material: m.getName(), color: [r, g, b], strength, ...(texture ? { texture } : {}) });
+  }
+
   // One mesh per primitive, each with its LODs.
   const submeshes: PreparedSubmesh[] = [];
   const sources: { prim: Primitive; material: string }[] = [];
@@ -303,5 +329,5 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   }
   const glb = path.join(outDir, `${name}.glb`);
   await io.write(glb, doc);
-  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, view, notes };
+  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, glow, view, notes };
 }

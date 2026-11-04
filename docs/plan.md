@@ -150,6 +150,20 @@ The owner, 2026-11-02: EDGEfab has a **Desk**, as EDGEmat does, and the Desk bec
 | Without a Library | The Desk and Add to Project work alone |
 | Not in F1 | REDcode's **Add to Library** on game assets ([REDcode #19](https://github.com/Edgemodders/REDcode/issues/19)), changing an asset that came from the game (F2, with Open in EDGEfab) |
 
+## Glow (emissive), the groundwork (2026-11-04)
+
+The owner, 2026-11-04: lay the groundwork for glowing materials now, before F1 goes much further. Screens, signs, neon and lit shelves are everywhere in Night City, so props need them from the start.
+
+| Piece | How | Phase, state |
+|---|---|---|
+| What Tripo sends | **No emissive**: four Tripo models checked (v3.1, P1, retopology, the drum), each a color, ORM and normal map. Its lights are painted into the color | Checked 2026-11-04 |
+| A GLB that glows (from Blender or a store) | Prepare keeps it: each material's glow color, strength (`KHR_materials_emissive_strength`) and map, in `prepared.json` as `glow`, the map written out with the other textures. The Desk says "Glows" | F1, **built 2026-11-04** |
+| Seeing it | The view model keeps the glow, and REDcode's 3D view draws it in its "Own textures" shading (three.js, without bloom) | F1, built; unverified in the view |
+| The game material | EDGEmat writes it into metal_base's `Emissive` texture, `EmissiveColor` and `EmissiveEV` ([EDGEmat #6](https://github.com/Edgemodders/EDGEmat/issues/6), filed 2026-11-04, with #4). Which `EmissiveEV` matches glTF's strength is to find in the game | F1, waits on EDGEmat |
+| **Make the painted lights glow** (Tripo models) | A glow map from the bright, saturated painted areas of the color texture, offered on a Tripo model and checked in the 3D view, with a slider for how much glows. Tried 2026-11-04 on the vending machine (brighter than 0.55, more saturated than 0.4): the lit shelves, buttons, trim and a side panel glow, the body stays dark | Proposed **F1, as an option** (small, and it makes Tripo's props look like Night City's); else F2 |
+| One part glows ("the screen glows") | The material planner sets a glow per part, with a color and strength and no map | F2 |
+| Light on the surroundings, flicker, on at night | A light component on the prop's entity; a glow that animates or switches | Later: F7a (animated props) or after |
+
 ## Reshape, built in EDGEmat first (read 2026-11-03)
 
 EDGEmat built **Reshape** for its REDnode app Wardrobe Designer: a garment V wears, changed by words. The owner's decision (2026-11-02, [EDGEfab #3](https://github.com/Edgemodders/EDGEfab/issues/3)): it is built in EDGEmat's core for now and moves into EDGEfab at a later increment. Source: EDGEmat's design ("Reshape: a garment's shape changed by words"), `extensions/edgemat/src/core/reshape.ts`, `glb.ts`, `tripo.ts`, and its test "Reshape check" (passed in the game 2026-11-02 on a cowboy hat).
@@ -273,7 +287,7 @@ Filed as `request` issues when its phase starts, with the shape that would work:
 | Repo | Need | For |
 |---|---|---|
 | EDGEbuilder | Its B2c: Browse indexes mod archives and the open project, so EDGEfab's props can be placed (its #1). **Built in EDGEbuilder 0.4.0 on 2026-10-30**; it asked back for an entity with collision per prop ([EDGEfab #2](https://github.com/Edgemodders/EDGEfab/issues/2)) | F1 |
-| EDGEmat | **Materials from a textured model**: a GLB's PBR textures to `.xbm` and a `.mi`, in its API and as MCP `mat_from_model` ([EDGEmat #4](https://github.com/Edgemodders/EDGEmat/issues/4), filed 2026-10-30) | F1 |
+| EDGEmat | **Materials from a textured model**: a GLB's PBR textures to `.xbm` and a `.mi`, in its API and as MCP `mat_from_model` ([EDGEmat #4](https://github.com/Edgemodders/EDGEmat/issues/4), filed 2026-10-30), with **glow** ([EDGEmat #6](https://github.com/Edgemodders/EDGEmat/issues/6), filed 2026-11-04) | F1 |
 | EDGEmat | Its API and MCP tools on an asset EDGEfab has open: list parts and layers, apply colors or a material per part, save a look; a render per part for the part map. For the material planner: a material asked for in words or by name (a game surface with a color and finish, a game `.mi`, or "make this"), made and put on a part's slot in one call, and candidates for a part's words | F2 |
 | REDcode | **Add to Library** on a file in Game Assets or a project, with the files it needs ([Library assets](library.html); [REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), filed 2026-10-31) | F2 |
 | EDGEbuilder | The Library's shared rules gain assets ([Library assets](library.html)); EDGEfab is the second tool to use the Library, which its Library page says moves the rules to the platform's wiki ([EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31) | F1 |

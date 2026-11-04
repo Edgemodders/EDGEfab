@@ -72,6 +72,10 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
       lines.push({ kind: "line", label: `${byLod.size} levels of detail`, detail: `${lods.join(" / ")} triangles`, icon: "layers" });
       const slots = [...new Set(p.textures.map((t) => (t.slot === "baseColor" ? "color" : t.slot === "metallicRoughness" ? "roughness and metal" : t.slot)))];
       lines.push({ kind: "line", label: p.textures.length ? `Textures: ${slots.join(", ")}` : "No textures", icon: "symbol-color" });
+      if (p.glow?.length) {
+        const how = p.glow.some((g) => g.texture) ? "in places, from its glow map" : "all over its glowing parts";
+        lines.push({ kind: "line", label: `Glows ${how}`, icon: "lightbulb", tooltip: p.glow.map((g) => `${g.material}: colour ${g.color.map((c) => c.toFixed(2)).join(", ")}, strength ${g.strength}`).join("\n") });
+      }
       for (const note of p.notes) lines.push({ kind: "line", label: note, icon: "info", tooltip: note });
     }
     if (entry.license) {

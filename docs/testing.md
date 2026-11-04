@@ -40,6 +40,10 @@ F0's drum again, after `view.glb` was added: the same three levels (19,021 / 9,5
 
 After the turn to the game's forward: test 8's v3.1 vending machine is turned a quarter (note "Turned a quarter to face forward"), 0.85 m wide by 0.82 m deep (was 0.82 by 0.85), and drawn from four sides its front faces −Z in glTF. F0's drum, also from Tripo, is turned the same way. **Unverified in the game:** that −Z in the GLB becomes the way a spawned or placed prop faces (to see with test 7's run).
 
+### Run 4, 2026-11-04: passed
+
+Glow: test 8's vending machine with a glow map made from its bright, saturated painted areas (15.8% of its texture), `emissiveFactor` 1 and `KHR_materials_emissive_strength` 3. Prepare writes the map out (`vending_glow_00_emissive.png`) and lists `glow` with its colour, strength 3 and map; `view.glb` keeps `emissiveTexture` and the strength extension. Drawn from four sides with the map alone: the shelves, buttons, trim lights and a side panel glow, the body stays dark. The model's file was written by glTF-Transform, yet it is still known as Tripo's by its node names and turned.
+
 **Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
 ## F1 check: Tripo's model and its front
