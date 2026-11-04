@@ -4,7 +4,7 @@ title: Tools working together
 
 # How EDGE tools work together
 
-**Status: proposal, 2026-11-04.** Written in EDGEfab at the owner's request, for everyone who builds an EDGE tool: the Claude sessions in each repo, and the owner. It writes down habits the tools already have, so the next need between two tools follows them instead of being improvised. Its home, once agreed, is the platform's own pages (asked of EDGEweb); this page stays until then.
+**Status: proposal, 2026-11-04.** Written in EDGEfab at the owner's request, for everyone who builds an EDGE tool: the Claude sessions in each repo, and the owner. It writes down habits the tools already have, so the next need between two tools follows them instead of being improvised. Its home, once agreed, is the platform's own pages (asked of EDGEweb, [EDGEweb #6](https://github.com/Edgemodders/EDGEweb/issues/6)); this page stays until then.
 
 Why now: EDGEfab is the first tool that orchestrates most of the others (EDGEmat for materials, REDcode for the view, REDbridge for game files, REDnode for the running game, EDGEquest for scenes). Its first cross-tool call, EDGEmat's `materialsFromModel`, showed a gap: the function existed, but no other tool could ship with it ([EDGEmat #7](https://github.com/Edgemodders/EDGEmat/issues/7)).
 
