@@ -6,7 +6,7 @@ The source of EDGEfab's Nexus Mods page will live here, so updates are edits in 
 
 | File | What it is |
 |---|---|
-| `nexus.json` | The page (none yet) and how a release uploads: the main file, **Mod Manager Download off** and not primary (a VS Code extension, not a game mod), the old version archived |
+| `nexus.json` | The page (none yet) and how a release uploads: the main file, **Mod Manager Download off** (a VS Code extension, not a game mod) and the page's Primary file, the old version archived |
 | `description.bbcode` | The page's description, once the page exists |
 
 `tools/nexus/` is REDnode's, copied unchanged: keep the copies the same.
