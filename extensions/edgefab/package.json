@@ -132,6 +132,22 @@
         "icon": "$(new-file)"
       },
       {
+        "command": "edgefab.paintGlow",
+        "title": "Make the Painted Lights Glow...",
+        "category": "EDGEfab",
+        "icon": "$(lightbulb)"
+      },
+      {
+        "command": "edgefab.glowStrength",
+        "title": "Glow Strength...",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.glowOff",
+        "title": "Stop the Glow",
+        "category": "EDGEfab"
+      },
+      {
         "command": "edgefab.openPreview",
         "title": "Open Tripo's Preview",
         "category": "EDGEfab"
@@ -183,13 +199,28 @@
         },
         {
           "command": "edgefab.openPreview",
-          "when": "view == edgefab.desk && viewItem == desk.preview",
+          "when": "view == edgefab.desk && viewItem =~ /^desk\\.preview/",
           "group": "1@1"
         },
         {
           "command": "edgefab.reveal",
           "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "1@2"
+        },
+        {
+          "command": "edgefab.paintGlow",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@3"
+        },
+        {
+          "command": "edgefab.glowStrength",
+          "when": "view == edgefab.desk && viewItem =~ /\\.glow/",
+          "group": "1@4"
+        },
+        {
+          "command": "edgefab.glowOff",
+          "when": "view == edgefab.desk && viewItem =~ /\\.glow/",
+          "group": "1@5"
         },
         {
           "command": "edgefab.delete",
@@ -220,6 +251,18 @@
         },
         {
           "command": "edgefab.addToProject",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.paintGlow",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.glowStrength",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.glowOff",
           "when": "false"
         }
       ]
@@ -266,6 +309,7 @@
     "@types/vscode": "1.70.0",
     "esbuild": "^0.28.2",
     "gl-matrix": "3.4.4",
+    "jpeg-js": "^0.4.4",
     "meshoptimizer": "1.3.0",
     "mikktspace": "1.1.1",
     "typescript": "~5.9.3"

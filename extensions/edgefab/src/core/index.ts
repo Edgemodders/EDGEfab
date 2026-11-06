@@ -16,3 +16,6 @@ export {
   type AddRequest, type AddResult, type Collision, type ProjectFolders,
 } from "./addToProject";
 export { callOf, startBridge } from "./bridge";
+export {
+  glowOff, glowWords, lightsMap, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
+} from "./glow";

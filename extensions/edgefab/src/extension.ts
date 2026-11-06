@@ -5,8 +5,8 @@ import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  addToProject, callOf, checkKey, makeModel, projectFolders, readSettings, sharedKeys, startBridge, tripoBalance, writeSettings,
-  DefaultCollision, DefaultFaceLimit, type Collision, type MadeModel, type ProjectFolders, type TripoPlan,
+  addToProject, callOf, checkKey, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, sharedKeys, startBridge, tripoBalance, writeSettings,
+  DefaultCollision, DefaultFaceLimit, GlowLevels, type Collision, type GlowResult, type MadeModel, type ProjectFolders, type TripoPlan,
 } from "./core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, DeskView } from "./deskView";
@@ -133,6 +133,41 @@ async function make(run: (progress: (step: string) => void, signal: AbortSignal)
   }
 }
 
+/** How strongly to glow, in plain words, with a number one click away. */
+async function askStrength(title: string, current?: number): Promise<number | undefined> {
+  const picked = await vscode.window.showQuickPick(
+    [
+      ...GlowLevels.map((l) => ({ label: l.label, description: `strength ${l.strength}${l.strength === current ? " (now)" : ""}`, detail: l.detail, strength: l.strength as number | undefined })),
+      { label: "A number...", description: current !== undefined ? `now ${current}` : "", detail: "0.125 is about the limit of what shows in the game; 8 is white-hot", strength: undefined },
+    ],
+    { title, placeHolder: "It depends on how much of it glows and where it stands: try one, look at it in the game, change it", ignoreFocusOut: true },
+  );
+  if (!picked) return undefined;
+  if (picked.strength !== undefined) return picked.strength;
+  const typed = await vscode.window.showInputBox({
+    title,
+    prompt: "A glow strength, above 0 and up to 64.",
+    value: current !== undefined ? String(current) : "1",
+    ignoreFocusOut: true,
+    validateInput: (v) => (Number(v) > 0 && Number(v) <= 64 ? null : "A number above 0, up to 64."),
+  });
+  return typed ? Number(typed) : undefined;
+}
+
+/** Runs a change to an item's glow, then says what happened and offers the 3D view. */
+async function changeGlow(view: DeskView, entry: { model?: string; preview?: string }, run: () => Promise<GlowResult>, said: (r: GlowResult) => string): Promise<void> {
+  try {
+    const r = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "EDGEfab: the glow" }, run);
+    view.refresh();
+    for (const n of r.notes) log(`Note: ${n}`);
+    const pick = await vscode.window.showInformationMessage(`EDGEfab: ${said(r)}${r.notes.length ? ` ${r.notes.join(" ")}` : ""} If it's in a project already, Add to Project again to carry it over.`, "Open in 3D");
+    if (pick) await openIn3D(r.view ?? entry.model, entry.preview);
+  } catch (e) {
+    log(`Glow: ${message(e)}`);
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+  }
+}
+
 /** The project to add to: REDcode's open one, else one the modder picks. */
 async function pickProject(): Promise<ProjectFolders | undefined> {
   const open = redcode()?.project?.();
@@ -254,6 +289,46 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.addToProject", async (item: unknown) => {
       const entry = entryOf(item);
       if (entry) await addItemToProject(entry.folder, entry.title);
+    }),
+    vscode.commands.registerCommand("edgefab.paintGlow", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (!entry) return;
+      const amount = await vscode.window.showQuickPick(
+        [
+          { label: "A few lights", detail: "Only the brightest, most colorful painted spots", amount: 0.25 },
+          { label: "The lights", description: "(usual)", detail: "What is both bright and strongly colored", amount: 0.5 },
+          { label: "Many lights", detail: "Dimmer and paler painted areas too; may catch colored paint that isn't a light", amount: 0.75 },
+        ],
+        { title: `EDGEfab: which painted areas of ${entry.title} should glow?`, placeHolder: "Tripo's lights are only painted on. Look at it in 3D after, and try again if it caught too much", ignoreFocusOut: true },
+      );
+      if (!amount) return;
+      const strength = await askStrength("EDGEfab: how strongly should they glow?", 1);
+      if (strength === undefined) return;
+      await changeGlow(view, entry, () => paintedLightsGlow(entry.folder, { amount: amount.amount, strength, version }), (r) => {
+        const share = r.lit?.map((l) => `${Math.round(l.share * 100)}%`).join(", ");
+        return `${entry.title}'s painted lights glow, ${glowWords(strength)}: ${share} of its texture.`;
+      });
+    }),
+    vscode.commands.registerCommand("edgefab.glowStrength", async (item: unknown) => {
+      const entry = entryOf(item);
+      const glow = entry?.prepared?.glow;
+      if (!entry || !glow?.length) return;
+      let material: string | undefined;
+      if (glow.length > 1) {
+        const picked = await vscode.window.showQuickPick(
+          [{ label: "All of them", material: undefined as string | undefined }, ...glow.map((g) => ({ label: g.material, description: `${glowWords(g.strength)}, strength ${g.strength}`, material: g.material as string | undefined }))],
+          { title: `EDGEfab: which part of ${entry.title}?`, ignoreFocusOut: true },
+        );
+        if (!picked) return;
+        material = picked.material;
+      }
+      const strength = await askStrength(`EDGEfab: how strongly should ${material ?? entry.title} glow?`, (glow.find((g) => g.material === material) ?? glow[0]).strength);
+      if (strength === undefined) return;
+      await changeGlow(view, entry, () => setGlowStrength(entry.folder, strength, { material, version }), () => `${material ?? entry.title} glows ${glowWords(strength)} now (strength ${strength}).`);
+    }),
+    vscode.commands.registerCommand("edgefab.glowOff", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry) await changeGlow(view, entry, () => glowOff(entry.folder, { version }), () => `${entry.title} doesn't glow now.`);
     }),
     vscode.commands.registerCommand("edgefab.openPreview", (item: unknown) => {
       const entry = entryOf(item);

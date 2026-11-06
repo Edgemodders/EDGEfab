@@ -41,7 +41,7 @@ git clone https://github.com/Edgemodders/EDGEmat.git ..\EDGEmat
 cd ..\EDGEmat; npm install; cd ..\EDGEfab
 ```
 
-Used since 2026-11-04 at EDGEmat `a7b66a8`.
+Used since 2026-11-04 at EDGEmat `a7b66a8`; at `3086e03` since 2026-11-05 (its settled glow rule).
 
 F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.json`). `npm run mcp:start` runs the MCP server on stdio.
 
@@ -51,6 +51,7 @@ F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.jso
 | `meshoptimizer` | 1.3.0 | MIT | The simplifier behind the levels of detail (WebAssembly, bundled) |
 | `gl-matrix` | 3.4.4 | MIT | Not used directly: glTF-Transform carries a copy of it. Installed so its license goes into the notices |
 | `mikktspace` | 1.1.1 | MIT | MikkTSpace tangents, as Blender makes them; WolvenKit needs tangents. Its `.wasm` is copied beside each bundle by the build |
+| `jpeg-js` | 0.4.4 | BSD-3-Clause | Reads a JPEG color texture in plain JavaScript for Make the Painted Lights Glow, so it works with no game and no REDbridge (Tripo's color textures are JPEG). `npm install -D jpeg-js@0.4.4 -w extensions/edgefab` |
 | `@modelcontextprotocol/sdk`, `zod` | 1.32, 3.25 | MIT | The MCP server, as EDGEmat's |
 | `esbuild`, `typescript`, `@types/*` | 0.28, 5.9 | MIT, Apache-2.0 | Building and type checks |
 

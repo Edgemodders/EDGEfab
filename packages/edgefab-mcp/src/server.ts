@@ -14,7 +14,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
 import {
-  addToProject, deskItem, hasKey, makeModel, projectFolders, readSettings, startBridge, tripoBalance, deskDir, writeSettings, DefaultCollision, DefaultFaceLimit, type MadeModel,
+  addToProject, deskItem, glowOff, hasKey, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, startBridge, tripoBalance, deskDir, writeSettings, DefaultCollision, DefaultFaceLimit, type MadeModel,
 } from "../../../extensions/edgefab/src/core";
 
 declare const __VERSION__: string;
@@ -107,9 +107,40 @@ server.registerTool(
           const name = dir.slice(0, -".prop.asset".length);
           const asset = readJson(path.join(folder, "asset.json"));
           const prepared = readJson(path.join(folder, "source", "raw", name, "prepared.json"));
-          return { name, folder, title: asset?.name, from: asset?.from, license: asset?.license, size: prepared?.size, submeshes: prepared?.submeshes?.length, view: prepared?.view, notes: prepared?.notes };
+          return { name, folder, title: asset?.name, from: asset?.from, license: asset?.license, size: prepared?.size, submeshes: prepared?.submeshes?.length, view: prepared?.view, glow: prepared?.glow?.length ? prepared.glow : undefined, notes: prepared?.notes };
         }),
       });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+server.registerTool(
+  "fab_glow",
+  {
+    description:
+      "Glow on a Desk prop (the extension's Make the Painted Lights Glow, Glow Strength and Stop the Glow). Tripo's models send no glow: their lights are only painted into the color texture. " +
+      "action 'paint' makes a glow map from the bright, strongly colored painted areas: amount 0 to 1 is how much counts as a light (0.5 by default), and it returns the share of the texture that lights up. A material with a glow of its own keeps it. Painting again replaces the last try. " +
+      "action 'strength' sets how strongly it glows: one material, or all. action 'off' stops it. " +
+      `strength: 0.25 is a saturated deep color for small lights, 1 a soft glow (the default), 3 bright, 8 white-hot; about 0.125 is the limit of what shows in the game. It depends on the use and how much of it glows, so it is the modder's choice. ` +
+      "Changes the Desk item only, free and offline: `view` is the GLB to open in REDcode's 3D view to see it. fab_add then carries it into the game material; a prop already added needs fab_add again.",
+    inputSchema: {
+      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      action: z.enum(["paint", "strength", "off"]),
+      amount: z.number().min(0).max(1).optional().describe("For 'paint': how much counts as a light, 0 to 1. Default 0.5."),
+      strength: z.number().positive().max(64).optional().describe("For 'paint' and 'strength'."),
+      material: z.string().optional().describe("For 'strength' and 'off': one material; default all that glow."),
+    },
+  },
+  async ({ prop, action, amount, strength, material }) => {
+    try {
+      const item = deskItem(prop);
+      const version = __VERSION__;
+      if (action === "paint") return text(await paintedLightsGlow(item, { amount, strength, version }));
+      if (action === "off") return text(await glowOff(item, { material, version }));
+      if (strength === undefined) throw new Error("Pass strength: 0.25 is a deep color, 1 a soft glow, 8 white-hot.");
+      return text(await setGlowStrength(item, strength, { material, version }));
     } catch (e) {
       return failure(e);
     }

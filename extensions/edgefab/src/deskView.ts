@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { deskDir, type PrepareResult } from "./core";
+import { deskDir, glowWords, type PrepareResult } from "./core";
 
 export interface DeskEntry {
   folder: string;
@@ -74,7 +74,8 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
       lines.push({ kind: "line", label: p.textures.length ? `Textures: ${slots.join(", ")}` : "No textures", icon: "symbol-color" });
       if (p.glow?.length) {
         const how = p.glow.some((g) => g.texture) ? "in places, from its glow map" : "all over its glowing parts";
-        lines.push({ kind: "line", label: `Glows ${how}`, icon: "lightbulb", tooltip: p.glow.map((g) => `${g.material}: colour ${g.color.map((c) => c.toFixed(2)).join(", ")}, strength ${g.strength}`).join("\n") });
+        const levels = [...new Set(p.glow.map((g) => glowWords(g.strength)))].join(", ");
+        lines.push({ kind: "line", label: `Glows ${how}`, detail: levels, icon: "lightbulb", tooltip: p.glow.map((g) => `${g.material}: colour ${g.color.map((c) => c.toFixed(2)).join(", ")}, strength ${g.strength}${g.painted ? ", from its painted lights" : ""}`).join("\n") });
       }
       for (const note of p.notes) lines.push({ kind: "line", label: note, icon: "info", tooltip: note });
     }
@@ -98,7 +99,8 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
     t.description = entry.name;
     t.iconPath = new vscode.ThemeIcon(entry.license?.source === "tripo" ? "sparkle" : "package");
     t.tooltip = new vscode.MarkdownString(`**${entry.title}**\n\n${entry.folder}`);
-    t.contextValue = entry.preview ? "desk.preview" : "desk";
+    // "desk" with what it has: .preview for Tripo's picture, .glow when it glows (package.json's menus match these).
+    t.contextValue = `desk${entry.preview ? ".preview" : ""}${entry.prepared?.glow?.length ? ".glow" : ""}`;
     t.resourceUri = vscode.Uri.file(entry.folder);
     if (entry.model) t.command = { command: "edgefab.view", title: "Open in 3D", arguments: [item] };
     return t;

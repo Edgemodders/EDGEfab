@@ -23,7 +23,7 @@ As of 2026-11-01. The first build (F1) is agreed and started; the other phases a
 | Phase | Status |
 |---|---|
 | F0 Decisions | Tripo and the GLB import over a game prop checked; open: which collision is solid in the game |
-| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Next: the in-game checks, then Make the painted lights glow, the small items, Add to Library |
+| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. Next: the in-game checks, then the small items, Add to Library |
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |

@@ -84,6 +84,8 @@ export interface PreparedGlow {
   strength: number;
   /** The emissive texture written out, when the glow follows a map (screens, signs) rather than the whole part. */
   texture?: string;
+  /** EDGEfab made this glow from the painted lights (core/glow.ts), rather than the model having it. */
+  painted?: boolean;
 }
 
 export interface PrepareResult {

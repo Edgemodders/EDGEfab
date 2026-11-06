@@ -48,6 +48,8 @@ export interface AddRequest {
   mod?: string;
   collision?: Collision;
   template?: string;
+  /** Flip the normal maps' green (glTF's are green up). Which way the game reads them is unverified: for that check. */
+  flipNormalGreen?: boolean;
   log?: (line: string) => void;
 }
 
@@ -332,6 +334,20 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
   const written = new Set<string>();
   const rel = (f: string) => path.relative(req.project.dir, f);
   const replaced = fs.existsSync(onDisk(req.project.archive, mesh));
+  const record = onDisk(req.project.raw, toGame(folder, `${name}.edgefab.json`));
+
+  // Adding again: what the last Add wrote goes first, and only that, so old textures aren't packed into the mod.
+  if (replaced && fs.existsSync(record)) {
+    try {
+      const before = JSON.parse(fs.readFileSync(record, "utf8")) as { files?: string[] };
+      for (const f of before.files ?? []) {
+        const file = path.resolve(req.project.dir, f);
+        if (file.startsWith(path.resolve(req.project.dir) + path.sep)) fs.rmSync(file, { force: true });
+      }
+    } catch {
+      notes.push("Couldn't read the last Add's record, so its old files stay in the project.");
+    }
+  }
 
   // 1. The prepared model, at the mesh's path in source\raw, where WolvenKit's import looks for it.
   const rawGlb = onDisk(req.project.raw, toGame(folder, `${name}.glb`));
@@ -342,7 +358,7 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
   // 2. The mesh, imported over the template (REDbridge 0.9.0). Over an earlier Add, the template again, so
   //    its physics data is there to fill.
   const meshFile = onDisk(req.project.archive, mesh);
-  if (replaced) fs.rmSync(meshFile);
+  fs.rmSync(meshFile, { force: true });
   log(`Importing the mesh over ${path.win32.basename(req.template ?? DefaultTemplate)}`);
   const imported = (await req.call("project.import", { file: rawGlb, rawDir: req.project.raw, archiveDir: req.project.archive, keep: false, template: req.template ?? DefaultTemplate })) as {
     ok: boolean;
@@ -383,6 +399,7 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
     folder,
     glow: glow.length ? glow : undefined,
     made,
+    flipNormalGreen: req.flipNormalGreen,
     log,
   });
   for (const f of materials.files) written.add(rel(onDisk(req.project.archive, f)));
@@ -398,7 +415,7 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
   if (collision === "none") notes.push("It has no collision: V walks through it.");
 
   // 6. Where it came from and its license, beside the model in source\raw.
-  const record = onDisk(req.project.raw, toGame(folder, `${name}.edgefab.json`));
+  written.add(rel(record));
   const out = {
     name,
     asset: { id: asset.id, name: asset.name, from: asset.from, license: asset.license },
@@ -408,9 +425,9 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
     template: req.template ?? DefaultTemplate,
     materials: materials.materials.map((m) => ({ name: m.name, mi: m.mi, glow: m.glow })),
     added: new Date().toISOString(),
+    files: [...written],
   };
   fs.writeFileSync(record, JSON.stringify(out, null, 2));
-  written.add(rel(record));
   if (asset.license?.source === "tripo" && asset.license.plan === "free") notes.push("Made on Tripo's free plan: the model is Tripo's, so it can't go in a released mod.");
 
   return { mesh, entity, raw: rawGlb, record, collision, materials: materials.materials, files: [...written], replaced, notes };

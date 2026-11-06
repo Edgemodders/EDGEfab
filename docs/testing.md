@@ -77,18 +77,48 @@ Found on the way: EDGEmat's copy of the REDbridge client is older than REDcode's
 
 With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. Not run yet.
 
-**Built.** `Projects\EDGEfab_F1\tests\edgefab_f1_test.archive` (16 files, 19 MB), made by Add to Project: test 8's glowing vending machine twice, `edgefab_f1\props\vending_glow\vending_glow.ent` (`physical`) and `edgefab_f1\props\vending_glow_box\vending_glow_box.ent` (`box`).
+**Built 2026-11-05** (rebuilt on EDGEmat's settled glow rule, `3086e03`). `Projects\EDGEfab_F1\tests\edgefab_f1_test.archive` (40 files, 49 MB), made by Add to Project from test 8's plain v3.1 vending machine with its painted lights made to glow (the usual amount), five times, under `edgefab_f1\props\<name>\<name>.ent`:
+
+| Name | Collision | Glow | For |
+|---|---|---|---|
+| `vending_glow` | `physical` | Soft glow, strength 1 (EV 1) | The baseline |
+| `vending_glow_box` | `box` | Soft glow | Which collision stops V |
+| `vending_deep` | `physical` | Deep color, strength 0.25 (EV 1, color at 137) | Which strength suits painted lights |
+| `vending_bright` | `physical` | Bright, strength 3 (EV 2.585) | The same |
+| `vending_flipped` | `physical` | Soft glow, normal maps' green flipped | Which way the game reads normal maps, beside `vending_glow` |
 
 **Steps** (Test timer: Start, then Mark after each step).
 
 1. Copy the archive into the game's `archive\pc\mod` with the collision test's, start the game and load a save outdoors. Somewhere dim or at night helps the glow.
-2. Claude spawns both machines three metres in front of V with REDnode, their fronts toward V.
-3. Look at each: its size against V (1.8 m tall), its textures, which way its front (the lit shelves and keypad) faces.
-4. Look at the glow: do the shelves, buttons and trim light up, and the body stay dark? Too bright, too dim?
-5. Walk into each, jump onto each, shoot each.
-6. Walk 25 m away, watching the detail drop.
+2. Claude spawns the machines in a row in front of V with REDnode, their fronts toward V.
+3. Look at one: its size against V (1.8 m tall), its textures, which way its front (the lit shelves and keypad) faces.
+4. Look at the glow on `vending_deep`, `vending_glow` and `vending_bright`: do the shelves, buttons and trim light up, and the body stay dark? Which looks right for painted lights, by night and by day?
+5. Up close, with a light moving across them, compare `vending_glow` and `vending_flipped`: on one the panels' dents and edges look raised the right way, on the other inside out.
+6. Walk into `vending_glow` and `vending_glow_box`, jump onto each, shoot each.
+7. Walk 25 m away, watching the detail drop.
 
-**Expected.** Both stand on the ground at their size, textured, fronts toward V. The painted lights glow; the body doesn't. The machine whose collision works stops V, holds V on top and takes shots (the same kind as the solid drum). Its detail drops with distance. EDGEmat #6's test is this one: its result goes there.
+**Expected.** All stand on the ground at their size, textured, fronts toward V. The painted lights glow; the body doesn't. The machine whose collision works stops V, holds V on top and takes shots (the same kind as the solid drum). Its detail drops with distance. EDGEmat #6's test is this one, the normal maps' green too: their results go there.
+
+## F1: the glow on a Desk item (without the game)
+
+Make the Painted Lights Glow, Glow Strength and Stop the Glow, through the core and MCP's `fab_glow`. No game, no REDbridge, no credits.
+
+**Steps.** On a copy of test 8's plain vending machine: paint at each amount (0.25, 0.5, 0.75), set strength 0.25 and 0.1, turn it off, set a strength with no glow, paint again. Read `prepared.json` and `view.glb`. Then Add to Project with each strength, and add one prop twice with its material name changed.
+
+**Expected.** More amount lights more. A strength under 0.125 gets a note. Off removes the map and the glow; a strength with no glow says so. `view.glb` has the map, factor and strength. The project's material follows EDGEmat's rule. Adding again leaves only the new files.
+
+### Run 1, 2026-11-05: passed
+
+| Check | Result |
+|---|---|
+| Paint | 0.4 s each on a 2048² JPEG. 5.3%, 15.8% and 29.4% of the texture; the usual amount matches the prototype's 15.8% (test 8) |
+| Strength, off | As expected, with the note at 0.1. `glowOff` removed `_emissive.png` |
+| `view.glb` | `emissiveFactor` 1, an `emissiveTexture`, `KHR_materials_emissive_strength`, 4 images |
+| In the project | Strength 1: EV 1, color 255. Strength 0.25: EV 1, color 137. Strength 3: EV 2.585, color 255 |
+| Adding again | 8 archive files per prop, none left from an earlier material name (a record lists what each Add wrote, and only those files go) |
+| `fab_glow` | Listed; paint, strength, off, and a plain error for a strength with none given |
+
+**Not yet tried:** the three commands in VS Code; the glow in REDcode's 3D view; the glow in the game.
 
 ## F1 check: Tripo's model and its front
 
