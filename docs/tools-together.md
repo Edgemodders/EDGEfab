@@ -22,7 +22,7 @@ One rule sits under all three: **REDbridge is passed in, not started, wherever a
 
 - **A tool's core has no VS Code imports** (EDGEmat, EDGEfab and EDGEquest already work this way): the extension and the MCP server both use it.
 - **When another tool needs a function from that core, the core is published as `@edgemodders/<tool>-core`** on npm: JavaScript and `.d.ts`, released with the tool under the same version number. A change to a function another tool uses is at least a minor version bump, named in the changelog. The caller pins a range.
-- **Small, stable files are copied unchanged** from one canonical repo instead. Today: `tools/keys/keys.mjs` and `tools/nexus/` (REDnode's), `tools/release/readme-check.mjs` (REDnode's), the REDbridge client (REDcode's `bridgeClient.ts`, copied into EDGEmat, EDGEquest and EDGEdeck). The copy says where it came from; a change is made in the canonical repo first, then copied again.
+- **Small, stable files are copied unchanged** from one canonical repo instead. Today: `tools/keys/keys.mjs` (REDnode's), `tools/release/readme-check.mjs` (REDnode's), the REDbridge client (REDcode's `bridgeClient.ts`, copied into EDGEmat, EDGEquest and EDGEdeck). The copy says where it came from; a change is made in the canonical repo first, then copied again. The Nexus tool is shared another way: it lives in [EDGErepo](https://github.com/Edgemodders/EDGErepo), each release workflow clones it at the tag `v1`, and on a PC it runs from a checkout beside the repo.
 - **Never build a release from another repo's working copy.** A development build may use a local checkout until the package exists; the release waits for it.
 
 ## Rule 2: in VS Code, an API and commands

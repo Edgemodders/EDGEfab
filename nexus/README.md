@@ -9,4 +9,4 @@ The source of EDGEfab's Nexus Mods page will live here, so updates are edits in 
 | `nexus.json` | The page (none yet) and how a release uploads: the main file, **Mod Manager Download off** (a VS Code extension, not a game mod) and the page's Primary file, the old version archived |
 | `description.bbcode` | The page's description, once the page exists |
 
-`tools/nexus/` is REDnode's, copied unchanged: keep the copies the same.
+The Nexus tool is shared, in [EDGErepo](https://github.com/Edgemodders/EDGErepo). The npm scripts (`nexus:pull`, `nexus:status`) need it checked out beside this repo (`../EDGErepo`). The release workflow clones it at the tag `v1`. Change it there.
