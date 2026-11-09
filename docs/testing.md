@@ -134,6 +134,42 @@ Balance 1,430 before, 1,310 after (120 credits for B, C and D). `texture_quality
 
 **What it decides (proposed to the owner):** the detailed texture is the biggest gain for its cost: **B's settings as the default** (30 credits). C's as a "High detail" choice (50). D's not offered. **For prepare:** add back faces to double-sided materials, so a GLB marked double-sided (store assets, leaves, signs, D) isn't see-through in the game; and the size check catches a model with no real size.
 
+## F1 check: parts from Tripo
+
+How a generated prop can come back in parts, so a modder gives one part a new material with EDGEmat (owner, 2026-11-09). Not a release test. Without the game.
+
+**Steps.** `scratchpad\parts\run.cjs` (outside the repo; the key from the shared key store, never printed), the vending machine prompt, two routes at the same time: (1) text to model v3.1 with `generate_parts` (untextured: Tripo doesn't texture parts in the same step), then `POST /v3/models/texture` on it with `texture_quality` detailed; (2) `POST /v3/mesh/segment` (model `v2.0-20260430`, granularity balanced) on B from the quality check. Each drawn textured and with each part in its own flat color.
+
+### Run 1, 2026-11-09
+
+| | Route 1: parts at generation, then texture | Route 2: B split afterwards |
+|---|---|---|
+| Credits, time | 30 + 20 = **50**, 3.2 min | **40** (on top of B's 30), 1.2 min |
+| Parts | **75**, named `tripo_part_0` to `_74`, one mesh and one material each, 17,305 triangles. Front shell, back and sides, glass, keypad pieces, slot, feet, and every bottle on its own | **42**, the same naming, 17,015 triangles (B's). Front frame, sides, top vent, window frame, bottles by shelf, chute, keypad, feet |
+| Texture | Its own set per part, sized to it: the body 4096², the rest 64² to 1024² (225 images) | B's 4096² cut into sets of at most 1024² (126 images): detail lost |
+| Size | No real size: `auto_size` ignored with parts | B's, kept |
+| Looks | Clean, the bottles lit behind the glass | Fine, a little softer than B |
+
+**What it decides (proposed):** route 1. A game mesh can't carry 75 submeshes with three levels each and 225 textures, so EDGEfab **groups the parts** (about 6 to 10: each small part joins the large part it sits in or on, so the bottles become one group behind the glass) and **packs each group's textures into one atlas**. Each group becomes its own submesh with its own material slot, named by place and size for now ("front", "glass", "contents"...), editable. Proper names from a picture of each part come with F2's part map. The size check sets the height.
+
+## F1 check: shape cleanup in Blender
+
+Whether a cleanup pass takes the ripples out of Tripo's flat panels without hurting the texture (owner, 2026-11-09). Not a release test. Offline done; the game part is open.
+
+**Steps.** `scratchpad\cleanup\cleanup.py`, run with Blender 5.2.3 (REDcode's `redcode.blenderPath`, `D:\SteamLibrary\steamapps\common\Blender`) as `blender --background --factory-startup --python cleanup.py -- <in.glb> <out.glb> <angle> <min area>`, on C (`vending_detail`, 50,927 triangles): merge vertices closer than 0.2 mm; grow regions of faces within the angle of the region's first face; for regions over the minimum area, press the inner vertices (those whose faces are all in the region) onto the region's best-fit plane, so the edges between regions and the creases stay; Limited Dissolve at 1° delimited by UV seams and materials; triangulate. Drawn lit and untextured from four sides.
+
+### Run 1, 2026-11-09 (offline)
+
+| Angle | Regions flattened | Vertices moved | Largest move | Triangles |
+|---|---|---|---|---|
+| 6° | 170 | 1,904 | 2.8 mm | 48,897 |
+| **15°** | 207 | 3,532 | 19.1 mm | 48,235 |
+| 25° | 213 | 4,678 | 64.2 mm (pulls real shapes flat) | 48,201 |
+
+Under 3 seconds a run. 9,030 doubled vertices merged. At 15° **the back panel's ripple bands are gone**; some new facets show along the sides' diagonal panel lines in a drawing without smooth shading (the game smooths, so it needs the game). Only about 5% fewer triangles: the pass flattens, it barely reduces. The texture and its size came through, and prepare still knew it as Tripo's (Blender keeps the node names).
+
+**In the game:** `vending_clean` (15°, glow 3, `physical`) is in `Projects\EDGEfab_F1` (archive 72 files, 175 MB), to swap in and compare with `vending_detail` next session.
+
 ## F1: the glow on a Desk item (without the game)
 
 Make the Painted Lights Glow, Glow Strength and Stop the Glow, through the core and MCP's `fab_glow`. No game, no REDbridge, no credits.

@@ -11,7 +11,7 @@ What a Windows PC needs to work on EDGEfab. The shared tools are the same as in 
 | Python | 3.10 or later | Brand tooling | |
 | Chrome or Edge | any | Renders the brand images | Already present on Windows |
 | REDbridge | 0.8.0 or later | Reads and writes game files (0.8.0 adds TweakDB reading) | See [REDbridge's setup guide](https://edgemodders.github.io/REDbridge/dev-setup.html) |
-| Blender | to record in F0 | Making and rigging models; converting FBX and OBJ to GLB | To record in F0 |
+| Blender | 5.2.3 LTS (on the PC, Steam, `D:\SteamLibrary\steamapps\common\Blender`, found through REDcode's `redcode.blenderPath`) | The shape cleanup tried in F1, run in the background; F3's sources and Fix Mesh. EDGEfab doesn't ship it | Steam, or blender.org |
 
 ## 2. Repository and GitHub
 
