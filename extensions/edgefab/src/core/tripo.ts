@@ -68,6 +68,12 @@ export interface TextToModel {
   /** Real size from Tripo (it puts the scale on the node, which prepare bakes in). Default on. */
   autoSize?: boolean;
   negativePrompt?: string;
+  /** "detailed": a sharper texture (Tripo's SDK, docs/API.md); costs more. Default standard. */
+  textureQuality?: "standard" | "detailed";
+  /** "detailed": finer shapes; costs more. Default standard. */
+  geometryQuality?: "standard" | "detailed";
+  /** Clean low-poly shapes from the start (flat panels, straight edges), 20,000 triangles at most. */
+  smartLowPoly?: boolean;
 }
 
 export interface TripoTask {
@@ -88,6 +94,9 @@ export async function startTextToModel(req: TextToModel, call: TripoCall = {}): 
     face_limit: req.faceLimit ?? DefaultFaceLimit,
     auto_size: req.autoSize ?? true,
     ...(req.negativePrompt ? { negative_prompt: req.negativePrompt } : {}),
+    ...(req.textureQuality && req.textureQuality !== "standard" ? { texture_quality: req.textureQuality } : {}),
+    ...(req.geometryQuality && req.geometryQuality !== "standard" ? { geometry_quality: req.geometryQuality } : {}),
+    ...(req.smartLowPoly ? { smart_low_poly: true } : {}),
   };
   const created = await api<{ task_id: string }>(call, "POST", "/v3/generation/text-to-model", body);
   return created.task_id;

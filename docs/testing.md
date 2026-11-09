@@ -75,7 +75,7 @@ Found on the way: EDGEmat's copy of the REDbridge client is older than REDcode's
 
 ## F1 check: an added prop in the game
 
-With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. Not run yet.
+With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. **Run 1 passed, 2026-11-09**, except the normal maps' green (below).
 
 **Built 2026-11-05** (rebuilt on EDGEmat's settled glow rule, `3086e03`). `Projects\EDGEfab_F1\tests\edgefab_f1_test.archive` (40 files, 49 MB), made by Add to Project from test 8's plain v3.1 vending machine with its painted lights made to glow (the usual amount), five times, under `edgefab_f1\props\<name>\<name>.ent`:
 
@@ -98,6 +98,41 @@ With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game),
 7. Walk 25 m away, watching the detail drop.
 
 **Expected.** All stand on the ground at their size, textured, fronts toward V. The painted lights glow; the body doesn't. The machine whose collision works stops V, holds V on top and takes shots (the same kind as the solid drum). Its detail drops with distance. EDGEmat #6's test is this one, the normal maps' green too: their results go there.
+
+### Run 1, 2026-11-09: passed, the normal maps' green open
+
+Game 2.5, REDnode 0.58.0, at night, then by day; outside Embers' area (about -1940, -2800). The owner played; Claude spawned through REDnode, read V's and each entity's position and forward with `api_read`, and took screenshots with `game_image`.
+
+| Check | Result |
+|---|---|
+| Size | All stand on the ground, 1.8 m tall against V |
+| Facing | **Passed after a rebuild.** The first archive was built by mistake from a scratch copy of the model made before the turn was fixed (no "Turned" note, 0.81 × 0.85 m): its front pointed at the entity's +X (north for an entity spawned facing west). That is what glTF's +X maps to, so the axes are as expected. Rebuilt from the turned copy and swapped in live (`archives_reload`, 77 ms): an entity spawned facing V shows its front to V; one spawned at a position (forward +Y, north) faces north |
+| Glow | Visible. At night only the orange shelf strips and keypad light, the body stays dark. **The owner: strength 3 (Bright, EV 2.585) is the most appropriate**; 0.25 and 1 are faint at night on thin painted strips |
+| Collision | **Both pass:** `vending_glow` (`physical`) and `vending_glow_box` (`box`) each stop V, hold V standing on top and spark under fire. The drums (test 7) test the same two components on another mesh and were skipped |
+| Levels of detail | **Passed:** walking 25 m away, the owner: "the LOD transitions look to be pretty smooth" |
+| Normal maps' green | **Open.** `vending_glow` and `vending_flipped` look the same in low side light. Flipping green only changes up-and-down shading, which side light doesn't test. WolvenKit's importer doesn't touch the green channel, so the game reads it as written; which convention the game uses is to settle offline (a test normal map of a known dome, or a game texture on a known shape). On Tripo's models the difference didn't show |
+| Up close | The owner: the textures look low resolution, with jaggies and rough corners. Tripo's standard 2048² texture over the whole machine, and 20,000 triangles. See [Tripo's quality settings](#f1-check-tripos-quality-settings-in-the-game) |
+
+Also found: with nine or more similar objects spawned, the owner couldn't tell them apart or find them; neither the game's debug text (`DrawText3D`, not drawn in the release game) nor a map pin (`RegisterMappin`, minimap only) labels them in the world. Asked of REDnode as world pins ([REDnode #43](https://github.com/Edgemodders/REDnode/issues/43)). Spawning one object at a time in front of V worked for the collision checks.
+
+## F1 check: Tripo's quality settings in the game
+
+Which of Tripo's quality settings a prop should use, by the same prompt made several ways and seen up close in the game. Not a release test.
+
+**Steps.** `scratchpad\quality\run.cjs` (outside the repo) makes "a cyberpunk vending machine with a glowing screen on the front" with EDGEfab's core (`makeModel` with the new `textureQuality`, `geometryQuality`, `smartLowPoly`), the key from the shared key store, never printed. Each gets its painted lights made to glow at strength 3, Add to Project (`physical`), the archive swapped into the running game, and spawned in a line with A.
+
+### Run 1, 2026-11-09
+
+| | Texture | Shape | Credits | Time | Triangles | In the game |
+|---|---|---|---|---|---|---|
+| A `vending_bright` (test 8) | 2048², standard | standard, `face_limit` 20000 | 20 | 2 min | 16,791 | Soft, painterly texture; wobbly edges, smeared vent; rough corners |
+| B `vending_tex` | **4096², detailed** | standard, 20000 | **30** | 3.3 min | 17,015 | **Much sharper:** bottle labels, screws, coin unit and vent slats crisp; straight outer edges. Shelf edges still a little soft |
+| C `vending_detail` | 4096², detailed | **detailed**, `face_limit` 60000 | **50** | 3.3 min | 50,927 | The most detailed: crisp bevels and buttons. The owner: still "lots of mesh imperfections and wrinkles" on flat panels; garbled AI lettering on the price strips |
+| D `vending_lowpoly` | 4096², detailed | **`smart_low_poly`**, 20000 | **40** | **9 min** | 25,687 | **Broken:** see-through panels and the wrong size. Its front is the cleanest (flat panels), but the sides and back are open shells: Tripo marks the material double-sided, the game draws one side. `auto_size` is ignored: no scale on the node, about a metre tall |
+
+Balance 1,430 before, 1,310 after (120 credits for B, C and D). `texture_quality: "detailed"` costs +10 and gives 4096² textures; `geometry_quality: "detailed"` +20; `smart_low_poly` +10. Add to Project took about 110 s with 4096² textures (15 s at 2048²); the archive grows to about 25 MB a prop.
+
+**What it decides (proposed to the owner):** the detailed texture is the biggest gain for its cost: **B's settings as the default** (30 credits). C's as a "High detail" choice (50). D's not offered. **For prepare:** add back faces to double-sided materials, so a GLB marked double-sided (store assets, leaves, signs, D) isn't see-through in the game; and the size check catches a model with no real size.
 
 ## F1: the glow on a Desk item (without the game)
 
@@ -206,7 +241,7 @@ Whether WolvenKit's importer (through REDbridge) makes a game mesh from a Tripo 
 
 ## F0 check: which collision is solid in the game
 
-The two ways left open above, side by side, on F0's drum. Not a release test. Built 2026-11-04; **not run yet** (needs the game on the PC).
+The two ways left open above, side by side, on F0's drum. Not a release test. Built 2026-11-04. **Settled 2026-11-09 by the vending machines instead** ([an added prop in the game](#f1-check-an-added-prop-in-the-game)): the same two components, `entPhysicalMeshComponent` with a box in the mesh and `entColliderComponent` with a box, made by Add to Project; **both are solid** (they stop V, hold V on top, stop bullets). The drums were spawned but not walked into.
 
 **Built.** A test project `Projects\EDGEfab_Collision` (outside this repo). Its archive `tests\edgefab_collision_test.archive` (4 files) holds, under `edgefab_test\collision\`:
 

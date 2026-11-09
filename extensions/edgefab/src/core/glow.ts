@@ -34,7 +34,8 @@ export function glowWords(strength: number): string {
   return "white-hot";
 }
 
-export const DefaultGlowStrength = 1;
+/** Painted lights are thin strips on Tripo models: at 1 they barely show at night; 3 looked right (owner, in the game, 2026-11-09). */
+export const DefaultGlowStrength = 3;
 export const DefaultLightsAmount = 0.5;
 
 // ---- the item's files -------------------------------------------------------------------------------

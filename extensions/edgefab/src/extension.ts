@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   addToProject, callOf, checkKey, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, sharedKeys, startBridge, tripoBalance, writeSettings,
-  DefaultCollision, DefaultFaceLimit, GlowLevels, type Collision, type GlowResult, type MadeModel, type ProjectFolders, type TripoPlan,
+  DefaultCollision, DefaultFaceLimit, DefaultGlowStrength, GlowLevels, type Collision, type GlowResult, type MadeModel, type ProjectFolders, type TripoPlan,
 } from "./core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, DeskView } from "./deskView";
@@ -302,7 +302,7 @@ export function activate(context: vscode.ExtensionContext): void {
         { title: `EDGEfab: which painted areas of ${entry.title} should glow?`, placeHolder: "Tripo's lights are only painted on. Look at it in 3D after, and try again if it caught too much", ignoreFocusOut: true },
       );
       if (!amount) return;
-      const strength = await askStrength("EDGEfab: how strongly should they glow?", 1);
+      const strength = await askStrength("EDGEfab: how strongly should they glow?", DefaultGlowStrength);
       if (strength === undefined) return;
       await changeGlow(view, entry, () => paintedLightsGlow(entry.folder, { amount: amount.amount, strength, version }), (r) => {
         const share = r.lit?.map((l) => `${Math.round(l.share * 100)}%`).join(", ");

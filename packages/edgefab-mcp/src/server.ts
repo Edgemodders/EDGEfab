@@ -123,7 +123,7 @@ server.registerTool(
       "Glow on a Desk prop (the extension's Make the Painted Lights Glow, Glow Strength and Stop the Glow). Tripo's models send no glow: their lights are only painted into the color texture. " +
       "action 'paint' makes a glow map from the bright, strongly colored painted areas: amount 0 to 1 is how much counts as a light (0.5 by default), and it returns the share of the texture that lights up. A material with a glow of its own keeps it. Painting again replaces the last try. " +
       "action 'strength' sets how strongly it glows: one material, or all. action 'off' stops it. " +
-      `strength: 0.25 is a saturated deep color for small lights, 1 a soft glow (the default), 3 bright, 8 white-hot; about 0.125 is the limit of what shows in the game. It depends on the use and how much of it glows, so it is the modder's choice. ` +
+      `strength: 0.25 is a saturated deep color for small lights, 1 a soft glow, 3 bright (the default for painted lights, which are thin strips: 1 barely shows at night), 8 white-hot; about 0.125 is the limit of what shows in the game. It depends on the use and how much of it glows, so it is the modder's choice. ` +
       "Changes the Desk item only, free and offline: `view` is the GLB to open in REDcode's 3D view to see it. fab_add then carries it into the game material; a prop already added needs fab_add again.",
     inputSchema: {
       prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
