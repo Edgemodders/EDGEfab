@@ -170,6 +170,25 @@ Under 3 seconds a run. 9,030 doubled vertices merged. At 15° **the back panel's
 
 **In the game:** `vending_clean` (15°, glow 3, `physical`) is in `Projects\EDGEfab_F1` (archive 72 files, 175 MB), to swap in and compare with `vending_detail` next session.
 
+## F1 check: picture first
+
+Whether a picture made first by a better image model, then turned into 3D by Tripo, gives finer details than Tripo's text to model (owner, 2026-11-09, after EDGEmat's Reshape, which makes four views with GPT Image and sends them to Tripo's multiview). Not a release test. Offline done; the game part is open.
+
+**Steps.** `scratchpad\picture\images.mjs` and `tripo.cjs` (outside the repo; the OpenAI and Tripo keys from the shared key store, never printed). GPT Image (`gpt-image-2.5-sunburst`, EDGEmat's Reshape default, quality high) draws the vending machine prompt with a hard-surface brief (flat straight panels, crisp edges, sharp fine details, soft even light, plain white background, no text): (1) one three-quarter front view, 1024 × 1536; (2) four views as one 2 by 2 sheet (front, left, back, right, orthographic, Reshape's layout), 2048 × 2048, cut into four 1024² views. Then Tripo v3.1 with `texture_quality` detailed, `face_limit` 20000, `auto_size`: (1) `image-to-model`, (2) `multiview-to-model`.
+
+### Run 1, 2026-11-09 (offline)
+
+| | Picture | Tripo | Result |
+|---|---|---|---|
+| One picture | 27 s; very crisp: cans and bottles with symbols, keypad, a city on the screen, screws, vents, flat panels | `image-to-model`, 140 s, **40 credits**, 16,222 triangles | The front follows the picture closely. The back is a blank slab and the two sides are mirror copies: Tripo guesses what it can't see |
+| Four views | 33 s; the four sides consistent (the same side panel and vents from left and right, grilles and an access panel on the back) | `multiview-to-model`, 161 s, **40 credits**, 17,043 triangles | **Every side follows its view**: a consistent object all round, far closer to a designed prop than text to model's |
+
+Both 1.8 m (`auto_size` kept), facing +X like text to model (prepare's turn applies), 4096² textures. **Shape:** the silhouette and panel layout are right, but large flat panels are faceted (big, slightly tilted triangles), the back most. The Blender cleanup at 15° helps the sides, not the back's facets: a box-like prop would need its main planes found and vertices near them pressed onto them, a stronger pass to try. The pictures' cost: GPT Image's usage was 1,372 and 3,568 output image tokens (the price per token unverified).
+
+**In the game:** `vending_picture`, `vending_views` and `vending_views_clean` (glow 3, `physical`) are in `Projects\EDGEfab_F1` (archive 96 files, 266 MB), to compare with B and C next session.
+
+**What it suggests (proposed):** Generate becomes picture first, then 3D: the modder sees the four views in seconds and for little, changes the words, and only then pays Tripo for the model. Four views over one picture.
+
 ## F1: the glow on a Desk item (without the game)
 
 Make the Painted Lights Glow, Glow Strength and Stop the Glow, through the core and MCP's `fab_glow`. No game, no REDbridge, no credits.
