@@ -52,6 +52,7 @@ F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.jso
 | `gl-matrix` | 3.4.4 | MIT | Not used directly: glTF-Transform carries a copy of it. Installed so its license goes into the notices |
 | `mikktspace` | 1.1.1 | MIT | MikkTSpace tangents, as Blender makes them; WolvenKit needs tangents. Its `.wasm` is copied beside each bundle by the build |
 | `jpeg-js` | 0.4.4 | BSD-3-Clause | Reads a JPEG color texture in plain JavaScript for Make the Painted Lights Glow, so it works with no game and no REDbridge (Tripo's color textures are JPEG). `npm install -D jpeg-js@0.4.4 -w extensions/edgefab` |
+| `pngjs` | 7.0.0 | MIT | Reads and writes PNG in plain JavaScript: Tripo's normal maps when parts are packed into one picture, and the four views cut from the picture-first sheet. The version EDGEmat uses. `npm install -D pngjs@7.0.0 @types/pngjs@6.0.5 -w extensions/edgefab` |
 | `@modelcontextprotocol/sdk`, `zod` | 1.32, 3.25 | MIT | The MCP server, as EDGEmat's |
 | `esbuild`, `typescript`, `@types/*` | 0.28, 5.9 | MIT, Apache-2.0 | Building and type checks |
 

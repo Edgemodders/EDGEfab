@@ -44,7 +44,9 @@
     "onCommand:edgefab.clearTripoKey",
     "onCommand:edgefab.tripoPlan",
     "onCommand:edgefab.connectAssistant",
-    "onCommand:edgefab.showLog"
+    "onCommand:edgefab.showLog",
+    "onCommand:edgefab.setOpenAIKey",
+    "onCommand:edgefab.clearOpenAIKey"
   ],
   "contributes": {
     "viewsContainers": {
@@ -79,9 +81,33 @@
       },
       {
         "command": "edgefab.generate",
-        "title": "Generate with Tripo...",
+        "title": "Generate from Words...",
         "category": "EDGEfab",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "edgefab.make3d",
+        "title": "Make 3D...",
+        "category": "EDGEfab",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "edgefab.redraw",
+        "title": "Change the Words...",
+        "category": "EDGEfab",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "edgefab.openPicture",
+        "title": "Open the Picture",
+        "category": "EDGEfab",
+        "icon": "$(file-media)"
+      },
+      {
+        "command": "edgefab.setSize",
+        "title": "Set Size...",
+        "category": "EDGEfab",
+        "icon": "$(symbol-ruler)"
       },
       {
         "command": "edgefab.setTripoKey",
@@ -96,6 +122,16 @@
       {
         "command": "edgefab.tripoPlan",
         "title": "Set Tripo Plan (Paid or Free)",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.setOpenAIKey",
+        "title": "Set OpenAI Key",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.clearOpenAIKey",
+        "title": "Clear OpenAI Key",
         "category": "EDGEfab"
       },
       {
@@ -204,7 +240,7 @@
         },
         {
           "command": "edgefab.reveal",
-          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "when": "view == edgefab.desk && viewItem =~ /^(desk|picture)/",
           "group": "1@2"
         },
         {
@@ -224,8 +260,38 @@
         },
         {
           "command": "edgefab.delete",
-          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "when": "view == edgefab.desk && viewItem =~ /^(desk|picture)/",
           "group": "2@1"
+        },
+        {
+          "command": "edgefab.make3d",
+          "when": "view == edgefab.desk && viewItem == picture",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.openPicture",
+          "when": "view == edgefab.desk && viewItem == picture",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.make3d",
+          "when": "view == edgefab.desk && (viewItem == picture || viewItem =~ /\\.views/)",
+          "group": "0@1"
+        },
+        {
+          "command": "edgefab.redraw",
+          "when": "view == edgefab.desk && (viewItem == picture || viewItem =~ /\\.views/)",
+          "group": "0@2"
+        },
+        {
+          "command": "edgefab.openPicture",
+          "when": "view == edgefab.desk && (viewItem == picture || viewItem =~ /\\.views/)",
+          "group": "0@3"
+        },
+        {
+          "command": "edgefab.setSize",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@2"
         }
       ],
       "commandPalette": [
@@ -264,6 +330,22 @@
         {
           "command": "edgefab.glowOff",
           "when": "false"
+        },
+        {
+          "command": "edgefab.make3d",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.redraw",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.openPicture",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.setSize",
+          "when": "false"
         }
       ]
     },
@@ -289,7 +371,12 @@
             "A mesh component and a collider component with a box, as the game's own props have",
             "No collision: the prop only draws, and V walks through it"
           ],
-          "markdownDescription": "How a prop added to a project is solid. Both kinds of box fit the prop's size. Which one stops V in the game is still being tested."
+          "markdownDescription": "How a prop added to a project is solid. Both kinds of box fit the prop's size, and both stop V in the game (tested 2026-11-09)."
+        },
+        "edgefab.generateInParts": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Generate models in parts, each with its own material, so EDGEmat can give one part a new look. Costs Tripo about 20 to 30 credits more, and Tripo gives no real size for them: EDGEfab asks how tall the object is."
         }
       }
     }
@@ -306,12 +393,14 @@
     "@gltf-transform/extensions": "4.5.1",
     "@gltf-transform/functions": "4.5.1",
     "@types/node": "^24.0.0",
+    "@types/pngjs": "^6.0.5",
     "@types/vscode": "1.70.0",
     "esbuild": "^0.28.2",
     "gl-matrix": "3.4.4",
     "jpeg-js": "^0.4.4",
     "meshoptimizer": "1.3.0",
     "mikktspace": "1.1.1",
+    "pngjs": "^7.0.0",
     "typescript": "~5.9.3"
   }
 }

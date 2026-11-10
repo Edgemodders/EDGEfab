@@ -10,6 +10,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { NodeIO } from "@gltf-transform/core";
+import { quiet } from "./quiet";
 import { ALL_EXTENSIONS, KHRMaterialsEmissiveStrength } from "@gltf-transform/extensions";
 import { readPng, writePng, type Image } from "@edgemodders/edgemat-core";
 import * as jpeg from "jpeg-js";
@@ -77,7 +78,7 @@ function readGlowItem(folder: string): Item {
 async function drawInView(item: Item): Promise<void> {
   const view = item.prepared.view;
   if (!view || !fs.existsSync(view)) return;
-  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const io = new NodeIO().setLogger(quiet).registerExtensions(ALL_EXTENSIONS);
   const doc = await io.read(view);
   const ext = doc.createExtension(KHRMaterialsEmissiveStrength);
   for (const m of doc.getRoot().listMaterials()) {

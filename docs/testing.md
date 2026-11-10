@@ -189,6 +189,35 @@ Both 1.8 m (`auto_size` kept), facing +X like text to model (prepare's turn appl
 
 **What it suggests (proposed):** Generate becomes picture first, then 3D: the modder sees the four views in seconds and for little, changes the words, and only then pays Tripo for the model. Four views over one picture.
 
+## F1: picture first and parts (without the game)
+
+Generate from Words as built (core `picture.ts`, `parts.ts`, Tripo's multiview with `generate_parts` and the texture step, Set Size), through the MCP server as an assistant uses it. A release test: rerun before F1's release.
+
+**Steps.**
+
+1. Build (`npm run build`). In `scratchpad\e2e\mcp.cjs` (outside the repo), start `packages/edgefab-mcp/dist/server.cjs` on stdio and call `fab_tripo` (status), then `fab_picture` with "a cyberpunk vending machine with a glowing screen on the front" (the OpenAI key from the shared key store, never printed). Look at the sheet: four views of one object.
+2. `fab_make` with `from: "picture"`, the item, `detail: "standard"`, `parts: true`, `height: 1.8`, `plan` as the modder's. About 60 credits and 4 minutes.
+3. `fab_glow` paint at strength 3; `fab_size` to 1.85 and back to 1.8.
+4. Draw the prepared `view.glb` textured and with each part a flat color (`scratchpad\parts\colorize.cjs`, `t8\views.cjs`).
+5. Add to Project (`scratchpad\add\run.cjs`) into `Projects\EDGEfab_F1`, then pack into its `tests` folder.
+
+**Expected:** a 2048² sheet in under a minute; the model true to the four views, standing 1.8 m tall, in at most 10 named parts, each with one material and one set of textures; no stray output on the server's stdout; one `.mi` per part in the project.
+
+**Checks on the way, 2026-11-09 and 10** (`scratchpad\mvparts`): multiview to model takes `generate_parts` (40 credits, 107 s, 79 pieces, untextured, no real size: `auto_size` ignored as with text), then `/v3/models/texture` with the detailed texture (20 credits, 101 s, one texture set per piece: 237 images). Prepare grouped the 79 pieces into 5 parts in 13 s: the shell, the back panel, the display (its back wall, shelves and cans), the base with the back grill, and small trims; Tripo's text-to-model parts (75 pieces) into 3. The atlases keep the texture as sharp as Tripo's. Found on the way: single-linkage clusters chained the whole front together (fixed: a small piece joins the tightest large piece whose box holds it, unless that is the outer shell); "body" named by the largest group rather than the largest piece (fixed); back faces added before simplifying locked the simplifier, so the levels of detail didn't shrink (fixed: added per level after simplifying, decided once per part on level 1). All Tripo's parts are marked double-sided, so back faces go only to parts open on one side.
+
+### Run 1, 2026-11-10: passed after a fix
+
+| Step | Result |
+|---|---|
+| 1 | `fab_tripo`: key set, 1,080 credits, plan not recorded on this PC (the run passed `plan: "paid"`, the owner's Pro plan). `fab_picture`: 39 s, a consistent four-view sheet (cans behind lit glass, keypad, a screen, the side door and vents on both sides, back panels and grilles) |
+| 2 | First try: `fab_make` refused without a plan, as it should. Second: Tripo 60 credits (balance 1,080 to 1,020), then **failed in prepare**: glTF-Transform's `prune` printed "prune: Removed types..." to stdout, the MCP channel, and the client broke. **Fixed:** every `NodeIO` gets a quiet logger (warnings to stderr only, core `quiet.ts`), and the server sends `console.log` to stderr. The kept `original.glb` then went through the fixed server (`fab_make` from `file`): clean |
+| 2, finished | Prepared in place (`scratchpad\e2e\finish.cjs`, the record marking the task ids as not kept): 70 pieces into **6 parts**: front (the display, 40 pieces, 31% of the surface), body (the sides), back, middle (the front frame), base (the back grill), details (chute, keypad column, trim); 1.8 m; back faces on 5 open parts; 54,063 triangles over three levels |
+| 3 | Glow painted at 3 (the display 2%, the frame 6% of their textures). `fab_size` through the server: 1.85 m (0.99 x 0.78), then 1.8 m again, its width and depth back to the same |
+| 4 | The model follows the four views on every side; the parts as listed |
+| 5 | One `.mi` and its textures per part. Archive 133 files, 317 MB |
+
+**In the game: open.** `vending_e2e` joins `vending_picture`, `vending_views`, `vending_views_clean` and `vending_clean`, to compare with B and C. Each one gets a world pin from the `edgefab-pins` test package (REDnode 0.59.0's `world.pin`).
+
 ## F1: the glow on a Desk item (without the game)
 
 Make the Painted Lights Glow, Glow Strength and Stop the Glow, through the core and MCP's `fab_glow`. No game, no REDbridge, no credits.

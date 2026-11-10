@@ -13,6 +13,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Document, NodeIO, type Mesh, type Node, type Primitive, type Texture } from "@gltf-transform/core";
+import { quiet } from "./quiet";
 import { ALL_EXTENSIONS, type EmissiveStrength } from "@gltf-transform/extensions";
 import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
 // meshoptimizer is an ES module and this package is CommonJS: esbuild bundles it either way, and TypeScript
@@ -20,6 +21,7 @@ import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, 
 // @ts-expect-error TS1479
 import { MeshoptSimplifier } from "meshoptimizer";
 import { generateTangents } from "mikktspace";
+import { addBackFaces, groupParts, type PreparedPart } from "./parts";
 
 /** WolvenKit's limit: a submesh's indices are 16-bit. */
 export const MaxSubmeshVertices = 65535;
@@ -47,6 +49,12 @@ export interface PrepareOptions {
    * "auto" (the default): +X for a model Tripo made (its asset generator names Tripo), else left as it is.
    */
   front?: Facing | "auto";
+  /** Its height in metres: the model is scaled to it. For a model with no real size (Tripo's in parts). */
+  height?: number;
+  /** A model of more than MaxParts pieces grouped into named parts, each with one material. Default on. */
+  parts?: boolean;
+  /** Back faces for parts open on one side and marked double-sided. Default on. */
+  backFaces?: boolean;
 }
 
 export type Facing = "+X" | "-X" | "+Z" | "-Z";
@@ -99,6 +107,10 @@ export interface PrepareResult {
   glow: PreparedGlow[];
   /** A GLB to look at in REDcode's 3D view: the same parts and levels, with their textures (the game's GLB has none). */
   view?: string;
+  /** Its parts, when its pieces were grouped (core/parts.ts): each one submesh with its own material. */
+  parts?: PreparedPart[];
+  /** Tripo gave no real size and none was asked for: its height is a guess until Set Size. */
+  sizeUnknown?: boolean;
   /** Things changed or left out that the modder should know. */
   notes: string[];
 }
@@ -140,7 +152,7 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   const lods = options.lods ?? DefaultLods;
   if (!lods.some((l) => l.lod === 1)) throw new PrepareError("The LODs must include LOD 1, the full model.");
   const notes: string[] = [];
-  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const io = new NodeIO().setLogger(quiet).registerExtensions(ALL_EXTENSIONS);
   let doc: Document;
   try {
     doc = await io.read(input);
@@ -157,8 +169,11 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   const scene = root.getDefaultScene() ?? root.listScenes()[0];
   if (!scene) throw new PrepareError("This GLB has no scene.");
 
+  // Tripo puts the real size on the node (auto_size); its models in parts come without one.
+  const byTripo = madeByTripo(input, doc);
+  const sized = root.listNodes().some((n) => n.getScale().some((v) => Math.abs(v - 1) > 1e-6));
   // Turn its front to the game's forward, under one parent node, which the baking below takes in.
-  const front = (options.front ?? "auto") === "auto" ? (madeByTripo(input, doc) ? "+X" : "-Z") : (options.front as Facing);
+  const front = (options.front ?? "auto") === "auto" ? (byTripo ? "+X" : "-Z") : (options.front as Facing);
   const turn = TurnToForward[front];
   if (turn) {
     const half = (turn * Math.PI) / 360;
@@ -214,6 +229,25 @@ export async function prepareModel(input: string, outDir: string, name: string, 
     }
   }
   const size = { height: bounds.max[1] - bounds.min[1], width: bounds.max[0] - bounds.min[0], depth: bounds.max[2] - bounds.min[2] };
+  let sizeUnknown = false;
+  if (options.height && options.height > 0 && size.height > 0) {
+    const k = options.height / size.height;
+    for (const prim of prims) {
+      const pos = prim.getAttribute("POSITION")!;
+      const v = [0, 0, 0];
+      for (let i = 0; i < pos.getCount(); i++) {
+        pos.getElement(i, v);
+        pos.setElement(i, [v[0] * k, v[1] * k, v[2] * k]);
+      }
+    }
+    size.height *= k;
+    size.width *= k;
+    size.depth *= k;
+    notes.push(`Scaled to ${options.height} m tall, as asked.`);
+  } else if (byTripo && !sized) {
+    sizeUnknown = true;
+    notes.push(`Tripo gave no real size (it doesn't for models in parts): it is ${size.height.toFixed(2)} m tall for now. Set its size before adding it to a project.`);
+  }
   if (size.height > 50 || size.width > 50 || size.depth > 50) notes.push(`It is ${Math.round(Math.max(size.height, size.width, size.depth))} m across: check its scale (glTF is in metres).`);
   if (Math.max(size.height, size.width, size.depth) < 0.02) notes.push("It is under 2 cm across: check its scale (glTF is in metres).");
 
@@ -222,6 +256,8 @@ export async function prepareModel(input: string, outDir: string, name: string, 
     await doc.transform(normals({ overwrite: false }));
     notes.push("Normals were missing and were made.");
   }
+  // Many pieces into a few named parts (Tripo's generate_parts).
+  const parts = options.parts === false ? undefined : groupParts(doc, notes);
   await doc.transform(weld());
   await MeshoptSimplifier.ready;
 
@@ -230,7 +266,8 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   const textures: PreparedTexture[] = [];
   const written = new Map<Texture, string>();
   const materials = root.listMaterials();
-  materials.forEach((m, i) => m.setName(`${name}_${two(i)}`));
+  materials.forEach((m, i) => m.setName(parts ? `${name}_${m.getName()}` : `${name}_${two(i)}`));
+  for (const part of parts ?? []) part.material = `${name}_${part.name}`;
   for (const m of materials) {
     const slots: [PreparedTexture["slot"], Texture | null][] = [
       ["baseColor", m.getBaseColorTexture()],
@@ -302,6 +339,11 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   // The originals go; the submeshes stay.
   for (const node of meshNodes) node.dispose();
   for (const m of root.listMeshes()) if (!/^submesh_\d\d_LOD_\d$/.test(m.getName())) m.dispose();
+  // Back faces for open double-sided parts, on each level after simplifying (doubled faces lock the simplifier).
+  if (options.backFaces !== false) {
+    const backed = addBackFaces(doc).filter((m) => /_LOD_1$/.test(m)).length;
+    if (backed) notes.push(`${backed} part${backed > 1 ? "s are" : " is"} open on one side and marked double-sided: back faces were added, so ${backed > 1 ? "they aren't" : "it isn't"} see-through in the game.`);
+  }
 
   await doc.transform(unweld(), tangents({ generateTangents, overwrite: true }), weld());
 
@@ -331,5 +373,5 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   }
   const glb = path.join(outDir, `${name}.glb`);
   await io.write(glb, doc);
-  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, glow, view, notes };
+  return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, glow, view, ...(parts ? { parts } : {}), ...(sizeUnknown ? { sizeUnknown } : {}), notes };
 }
