@@ -4,7 +4,9 @@
 // registers the server with VS Code's own MCP support where the editor has it (1.101 and later); without
 // that API, or where it fails (EDGEkit without Copilot), nothing is registered and the rest works as before.
 // "Connect an Assistant (MCP)..." registers it with Claude Code, or copies the command or a JSON entry for
-// other clients. No keys are passed: the server reads the Tripo key from the shared store (REDnode #23).
+// other clients. No keys are passed: EDGEfab's keys stay in VS Code's secret storage, and the server reads
+// TRIPO_API_KEY and OPENAI_API_KEY from its own environment (EDGEfab #4; EDGEchat's plugin sets them from its
+// settings). Without them the server still prepares, glows and adds props; only Tripo and the picture need keys.
 
 import * as vscode from "vscode";
 import { execFile, exec } from "node:child_process";
@@ -100,7 +102,7 @@ export async function connectAssistant(context: vscode.ExtensionContext, log: Lo
     return;
   }
 
-  // No keys: the server reads them from the shared store, so they never go into a client's settings.
+  // No keys: they never go into a client's settings from here (the modder sets the server's environment).
   const env = run.env;
   const line = ["claude mcp add --scope user edgefab", ...Object.entries(env).map(([k, v]) => `-e ${k}=${v}`), "--", quote(run.command), ...args.map(quote)].join(" ");
 
@@ -124,7 +126,7 @@ export async function connectAssistant(context: vscode.ExtensionContext, log: Lo
   const added = await shell(line);
   if (added.ok) {
     log(`MCP: ${added.out}`);
-    void vscode.window.showInformationMessage("EDGEfab is connected to Claude Code. Start a new Claude Code session and ask it to make a prop.");
+    void vscode.window.showInformationMessage("EDGEfab is connected to Claude Code. Start a new Claude Code session and ask it to make a prop. To make models from words there too, the server needs TRIPO_API_KEY (and OPENAI_API_KEY for the picture) in its environment: EDGEfab doesn't hand on the keys you keep in VS Code.");
     return;
   }
   log(`MCP: claude mcp add failed: ${added.out}`);

@@ -5,12 +5,13 @@ import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  addToProject, callOf, checkKey, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, setSize, sharedKeys, startBridge, tripoBalance, tripoCredits, writeSettings,
+  addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, writeSettings,
   DefaultCollision, DefaultGlowStrength, DetailLevels, GlowLevels, ViewNames,
   type Collision, type Detail, type GlowResult, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, DeskView } from "./deskView";
+import { clearKey, getKey, initKeys, setKey } from "./keys";
 
 declare const __VERSION__: string;
 
@@ -34,46 +35,6 @@ function redcode(): REDcodeApi | undefined {
 let output: vscode.OutputChannel;
 const log = (line: string) => output.appendLine(`${new Date().toLocaleTimeString()} ${line}`);
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
-
-async function setTripoKey(): Promise<boolean> {
-  const k = await vscode.window.showInputBox({
-    title: "EDGEfab: Tripo API key",
-    prompt: "For Generate with Tripo. Kept encrypted for your Windows account in the EDGE tools' shared key store, so every EDGE tool that needs it uses it too, and sent only to Tripo. Make one at platform.tripo3d.ai, under API Keys.",
-    password: true,
-    ignoreFocusOut: true,
-    validateInput: (v) => (v.trim() ? checkKey("tripo", v) : null),
-  });
-  if (!k?.trim()) return false;
-  await sharedKeys.setKey("tripo", k.trim());
-  return true;
-}
-
-async function setOpenAIKey(): Promise<boolean> {
-  const k = await vscode.window.showInputBox({
-    title: "EDGEfab: OpenAI API key",
-    prompt: "For drawing a picture first (GPT Image), before Tripo makes it 3D. Kept encrypted for your Windows account in the EDGE tools' shared key store (EDGEmat uses the same key), and sent only to OpenAI. Make one at platform.openai.com, under API keys.",
-    password: true,
-    ignoreFocusOut: true,
-    validateInput: (v) => (v.trim() ? checkKey("openai", v) : null),
-  });
-  if (!k?.trim()) return false;
-  await sharedKeys.setKey("openai", k.trim());
-  return true;
-}
-
-async function clearOpenAIKey(): Promise<void> {
-  const go = await vscode.window.showWarningMessage("Clear the OpenAI API key?", { modal: true, detail: "It is the EDGE tools' shared key: EDGEmat and every other EDGE tool that uses it asks for it again." }, "Clear It");
-  if (!go) return;
-  await sharedKeys.removeKey("openai");
-  void vscode.window.showInformationMessage("EDGEfab: the OpenAI API key is cleared.");
-}
-
-async function clearTripoKey(): Promise<void> {
-  const go = await vscode.window.showWarningMessage("Clear the Tripo API key?", { modal: true, detail: "It is the EDGE tools' shared key: every EDGE tool that uses it asks for it again." }, "Clear It");
-  if (!go) return;
-  await sharedKeys.removeKey("tripo");
-  void vscode.window.showInformationMessage("EDGEfab: the Tripo API key is cleared.");
-}
 
 /** Asks once whether the modder's Tripo plan is paid or free, from Tripo's terms (5.2), and keeps the answer. */
 async function askTripoPlan(): Promise<TripoPlan | undefined> {
@@ -183,17 +144,19 @@ async function askSize(folder: string, title: string, current: number, view: Des
   }
 }
 
-/** The Tripo key and plan, asked for when missing; the plan, or undefined when the modder stops. */
-async function readyForTripo(): Promise<TripoPlan | undefined> {
-  if (!(await sharedKeys.hasKey("tripo"))) {
+/** The Tripo key and plan, asked for when missing; undefined when the modder stops. */
+async function readyForTripo(): Promise<{ key: string; plan: TripoPlan } | undefined> {
+  let key = await getKey("tripo");
+  if (!key) {
     const go = await vscode.window.showInformationMessage("Making a 3D model needs your own Tripo API key: Tripo makes it, with your credits.", "Set Tripo Key");
-    if (go !== "Set Tripo Key" || !(await setTripoKey())) return undefined;
+    if (go !== "Set Tripo Key" || !(key = await setKey("tripo"))) return undefined;
   }
-  return readSettings().tripoPlan ?? (await askTripoPlan());
+  const plan = readSettings().tripoPlan ?? (await askTripoPlan());
+  return plan ? { key, plan } : undefined;
 }
 
 /** How much detail, in parts or not (the setting), how tall; then the cost, confirmed. */
-async function askTripoSettings(title: string, fromPicture: boolean): Promise<{ request: Omit<TextToModel, "prompt">; height?: number } | undefined> {
+async function askTripoSettings(title: string, fromPicture: boolean, key: string): Promise<{ request: Omit<TextToModel, "prompt">; height?: number } | undefined> {
   const parts = vscode.workspace.getConfiguration("edgefab").get<boolean>("generateInParts") ?? true;
   const views = fromPicture ? (Object.fromEntries(ViewNames.map((v) => [v, ""])) as Record<ViewName, string>) : undefined;
   const credits = (d: Detail) => tripoCredits({ ...DetailLevels[d].settings, views, parts });
@@ -208,7 +171,7 @@ async function askTripoSettings(title: string, fromPicture: boolean): Promise<{ 
   }
   let balance = "";
   try {
-    balance = ` You have ${(await tripoBalance()).balance.toLocaleString("en-US")}.`;
+    balance = ` You have ${(await tripoBalance({ key })).balance.toLocaleString("en-US")}.`;
   } catch (e) {
     log(`Tripo balance: ${message(e)}`);
   }
@@ -220,25 +183,27 @@ async function askTripoSettings(title: string, fromPicture: boolean): Promise<{ 
 
 /** Make 3D: Tripo's model from a Desk item's last picture. */
 async function make3d(folder: string, title: string, view: DeskView): Promise<void> {
-  const plan = await readyForTripo();
-  if (!plan) return;
-  const settings = await askTripoSettings(title, true);
+  const tripo = await readyForTripo();
+  if (!tripo) return;
+  const settings = await askTripoSettings(title, true, tripo.key);
   if (!settings) return;
   await make(
-    (progress, signal) => makeModel({ from: "picture", item: folder, request: settings.request, plan }, { version: __VERSION__, onProgress: progress, call: { signal }, prepare: settings.height ? { height: settings.height } : undefined }),
+    (progress, signal) => makeModel({ from: "picture", item: folder, request: settings.request, plan: tripo.plan }, { version: __VERSION__, onProgress: progress, call: { signal, key: tripo.key }, prepare: settings.height ? { height: settings.height } : undefined }),
     view,
   );
 }
 
 /** Picture first, step 1: draws the four views, shows them, and offers Make 3D or other words. */
 async function drawAndOffer(words: string, item: string | undefined, view: DeskView): Promise<void> {
+  const key = (await getKey("openai")) ?? (await setKey("openai"));
+  if (!key) return;
   let drawn: Awaited<ReturnType<typeof drawPicture>>;
   try {
     drawn = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "EDGEfab", cancellable: true }, (progress, token) => {
       const abort = new AbortController();
       token.onCancellationRequested(() => abort.abort());
       progress.report({ message: "Drawing it from four sides (about 30 seconds)..." });
-      return drawPicture(words, { version: __VERSION__, item, call: { signal: abort.signal } });
+      return drawPicture(words, { version: __VERSION__, item, call: { signal: abort.signal, key } });
     });
   } catch (e) {
     log(`Picture: ${message(e)}`);
@@ -359,6 +324,7 @@ async function addItemToProject(folder: string, title: string): Promise<void> {
 
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
+  initKeys(context);
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
   const view = new DeskView();
@@ -383,7 +349,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }))?.trim();
       if (!words) return;
       let how: "picture" | "words" = "picture";
-      if (!(await sharedKeys.hasKey("openai"))) {
+      if (!(await getKey("openai"))) {
         const picked = await vscode.window.showQuickPick(
           [
             { label: "$(file-media) Draw it first", description: "(recommended)", detail: "OpenAI's GPT Image draws it from four sides in about 30 seconds, for a few cents of your OpenAI credit: change the words until it's right, then make it 3D. Needs your own OpenAI key (the one EDGEmat uses).", how: "picture" as const },
@@ -393,15 +359,15 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         if (!picked) return;
         how = picked.how;
-        if (how === "picture" && !(await setOpenAIKey())) return;
+        if (how === "picture" && !(await setKey("openai"))) return;
       }
       if (how === "picture") return drawAndOffer(words, undefined, view);
-      const plan = await readyForTripo();
-      if (!plan) return;
-      const settings = await askTripoSettings(`"${words}"`, false);
+      const tripo = await readyForTripo();
+      if (!tripo) return;
+      const settings = await askTripoSettings(`"${words}"`, false, tripo.key);
       if (!settings) return;
       await make(
-        (progress, signal) => makeModel({ from: "tripo", request: { ...settings.request, prompt: words }, plan }, { version, onProgress: progress, call: { signal }, prepare: settings.height ? { height: settings.height } : undefined }),
+        (progress, signal) => makeModel({ from: "tripo", request: { ...settings.request, prompt: words }, plan: tripo.plan }, { version, onProgress: progress, call: { signal, key: tripo.key }, prepare: settings.height ? { height: settings.height } : undefined }),
         view,
       );
     }),
@@ -422,14 +388,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (entry?.prepared) await askSize(entry.folder, entry.title, entry.prepared.size.height, view);
     }),
     vscode.commands.registerCommand("edgefab.setOpenAIKey", async () => {
-      if (await setOpenAIKey()) void vscode.window.showInformationMessage("EDGEfab: the OpenAI key is set, in the EDGE tools' shared key store.");
+      if (await setKey("openai")) void vscode.window.showInformationMessage("EDGEfab: the OpenAI key is set, in VS Code's secret storage.");
     }),
-    vscode.commands.registerCommand("edgefab.clearOpenAIKey", clearOpenAIKey),
+    vscode.commands.registerCommand("edgefab.clearOpenAIKey", () => clearKey("openai")),
 
     vscode.commands.registerCommand("edgefab.setTripoKey", async () => {
-      if (await setTripoKey()) void vscode.window.showInformationMessage("EDGEfab: the Tripo key is set, in the EDGE tools' shared key store.");
+      if (await setKey("tripo")) void vscode.window.showInformationMessage("EDGEfab: the Tripo key is set, in VS Code's secret storage.");
     }),
-    vscode.commands.registerCommand("edgefab.clearTripoKey", clearTripoKey),
+    vscode.commands.registerCommand("edgefab.clearTripoKey", () => clearKey("tripo")),
     vscode.commands.registerCommand("edgefab.tripoPlan", askTripoPlan),
     vscode.commands.registerCommand("edgefab.connectAssistant", () => connectAssistant(context, log)),
     vscode.commands.registerCommand("edgefab.showLog", () => output.show()),

@@ -3,14 +3,14 @@
 // right; then Tripo makes the model from the four views (multiview to model), which follows each side far more
 // closely than text to model. The sheet's layout is EDGEmat's Reshape's: front and left above, back and right below.
 //
-// OpenAI's GPT Image, with the modder's own key from the EDGE tools' shared key store ("openai", as EDGEmat's),
-// sent only to OpenAI. EDGEmat's core has the same service (imageServices.ts) but draws 1024² only; EDGEfab asks
+// OpenAI's GPT Image, with the modder's own key (the extension's secret storage, or OPENAI_API_KEY), sent
+// only to OpenAI. EDGEmat's core has the same service (imageServices.ts) but draws 1024² only; EDGEfab asks
 // 2048² (1024² a view) until EDGEmat's generateImage takes a size (EDGEmat #9).
 
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { crop, decode, encodePng } from "./pixels";
-import { sharedKeys } from "./sharedKeys";
+import { envKey } from "./keys";
 import { ViewNames, type ViewName } from "./tripo";
 
 export const PictureModel = "gpt-image-2.5-sunburst";
@@ -66,8 +66,8 @@ export function readPictures(raw: string): PictureRecord | undefined {
 }
 
 async function openaiKey(call: PictureCall): Promise<string> {
-  const key = call.key ?? (await sharedKeys.getKey("openai", { tool: "EDGEfab" }));
-  if (!key) throw new PictureError("No OpenAI API key. Set one with EDGEfab: Set OpenAI Key (it goes into the EDGE tools' shared key store, the one EDGEmat uses too).");
+  const key = call.key ?? envKey("openai");
+  if (!key) throw new PictureError("No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key; for the MCP server, set OPENAI_API_KEY in its environment.");
   return key;
 }
 

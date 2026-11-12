@@ -4,7 +4,8 @@
 //
 //   edgefab-mcp
 //
-// The Tripo and OpenAI keys come from the EDGE tools' shared key store, or TRIPO_API_KEY and OPENAI_API_KEY.
+// The Tripo and OpenAI keys come from this process's environment only, TRIPO_API_KEY and OPENAI_API_KEY (EDGEfab #4:
+// the extension keeps its own in VS Code's secret storage and doesn't hand them on).
 // stdout is the MCP channel;
 // logs go to stderr.
 
@@ -15,7 +16,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
 import {
-  addToProject, deskItem, drawPicture, glowOff, hasKey, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
+  addToProject, deskItem, drawPicture, envKey, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
 } from "../../../extensions/edgefab/src/core";
 
@@ -67,7 +68,7 @@ server.registerTool(
   {
     description:
       "Picture first, step 1 of making a prop from words (the extension's Generate from Words): OpenAI's GPT Image draws the object from four sides (front, left, back, right) as one 2 by 2 picture, " +
-      "with the modder's own OpenAI key from the EDGE tools' shared key store. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG) and let them change the words: " +
+      "with the modder's own OpenAI key from OPENAI_API_KEY in this server's environment. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG) and let them change the words: " +
       "pass prop to draw another take into the same Desk item. When they like it, fab_make with from 'picture' makes the 3D model from the four views with Tripo, which follows each side closely. " +
       "Returns the Desk item, the picture files, and what Make 3D would cost.",
     inputSchema: {
@@ -273,7 +274,7 @@ server.registerTool(
   "fab_tripo",
   {
     description:
-      "Tripo, EDGEfab's 3D model service. action 'status': whether a Tripo key is set (in the EDGE tools' shared key store; the key itself is never shown), the plan recorded, and the credit balance. " +
+      "Tripo, EDGEfab's 3D model service. action 'status': whether a Tripo key is set (TRIPO_API_KEY in this server's environment; the key itself is never shown), the plan recorded, and the credit balance. " +
       "action 'set_plan' records whether the modder's Tripo plan is 'paid' (the models are theirs to release) or 'free' (Tripo keeps all rights): ask the user, don't guess.",
     inputSchema: { action: z.enum(["status", "set_plan"]).default("status"), plan: z.enum(["paid", "free"]).optional() },
   },
@@ -283,8 +284,8 @@ server.registerTool(
         if (!plan) throw new Error("Pass plan: 'paid' or 'free', as the user says.");
         return text({ plan: writeSettings({ tripoPlan: plan }).tripoPlan });
       }
-      const key = await hasKey("tripo");
-      const openai = await hasKey("openai");
+      const key = !!envKey("tripo");
+      const openai = !!envKey("openai");
       let balance: number | string | undefined;
       if (key) {
         try {
@@ -294,7 +295,7 @@ server.registerTool(
         }
       }
       return text({
-        key: key ? "set" : "not set: the user sets it in VS Code with EDGEfab: Set Tripo Key, or with TRIPO_API_KEY",
+        key: key ? "set" : "not set: the user sets TRIPO_API_KEY in this server's environment (EDGEchat's plugin settings, or their own environment variables). Keys set in VS Code stay there; the user can still make models from words in VS Code's Desk",
         plan: readSettings().tripoPlan ?? "not recorded",
         credits: balance,
         perModel: {
@@ -302,7 +303,7 @@ server.registerTool(
           fromWords: { standard: tripoCredits({ ...DetailLevels.standard.settings, parts: true }), high: tripoCredits({ ...DetailLevels.high.settings, parts: true }) },
           note: "in parts with the detailed texture, as Tripo charged on 2026-11-09",
         },
-        pictures: openai ? "OpenAI key set: fab_picture draws four views first" : "no OpenAI key: the user sets it in VS Code with EDGEfab: Set OpenAI Key (shared with EDGEmat), or with OPENAI_API_KEY; fab_make from 'tripo' works without it",
+        pictures: openai ? "OpenAI key set: fab_picture draws four views first" : "no OpenAI key: the user sets OPENAI_API_KEY in this server's environment; fab_make from 'tripo' works without it",
       });
     } catch (e) {
       return failure(e);

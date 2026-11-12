@@ -189,6 +189,26 @@ Both 1.8 m (`auto_size` kept), facing +X like text to model (prepare's turn appl
 
 **What it suggests (proposed):** Generate becomes picture first, then 3D: the modder sees the four views in seconds and for little, changes the words, and only then pays Tripo for the model. Four views over one picture.
 
+## F1: keys in VS Code's secret storage (EDGEfab #4)
+
+The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the MCP server reads its environment only, and nothing in the package decrypts key files through PowerShell (the likely reason the Marketplace refused EDGEhack). A release test: rerun before each release.
+
+**Steps.**
+
+1. `npm run build`, then `npm run edgefab:package`. Unzip `dist/edgefab-<version>.vsix` and search every file for `ConvertTo-SecureString`, `SecureStringToBSTR` and `powershell` (any case), and for files named like `keys`.
+2. Start `packages/edgefab-mcp/dist/server.cjs` with `TRIPO_API_KEY` and `OPENAI_API_KEY` unset, and call `fab_tripo` (status) and `fab_picture`.
+3. In VS Code (F5, or the installed `.vsix`): **Set Tripo Key** and **Set OpenAI Key** (password boxes; a key without `tsk_` or `sk-` is refused in words). Generate from Words: no key asked again; the picture and Make 3D work. **Clear OpenAI Key**: Generate asks for it again. Restart VS Code: the keys are still there.
+
+**Expected:** no match in step 1. In step 2, both keys "not set", saying how to set the server's environment, and `fab_picture` refused in plain words. In step 3, the keys kept across restarts, cleared on Clear.
+
+### Run 1, 2026-11-11: steps 1 and 2 passed; step 3 open
+
+| Step | Result |
+|---|---|
+| 1 | `edgefab-0.1.0.vsix`, 11 files: **no match**, no key files. Built against EDGEmat's working copy, which was mid-way through the same change (its `keys.mjs` deleted, not yet committed). Built against EDGEmat's last commit instead, the bundles still had a `powershell.exe` path from EDGEmat's `keys.mjs` (the decryption strings themselves tree-shaken out): rerun once EDGEmat commits |
+| 2 | `fab_tripo`: "not set: the user sets TRIPO_API_KEY in this server's environment...", the same for OpenAI; `fab_picture` refused: "No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key; for the MCP server, set OPENAI_API_KEY in its environment." |
+| 3 | Not run: needs VS Code (the owner's test on the laptop, with the other Desk commands) |
+
 ## F1: picture first and parts (without the game)
 
 Generate from Words as built (core `picture.ts`, `parts.ts`, Tripo's multiview with `generate_parts` and the texture step, Set Size), through the MCP server as an assistant uses it. A release test: rerun before F1's release.

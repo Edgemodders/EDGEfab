@@ -1,12 +1,12 @@
 // Tripo's v3 REST API (openapi.tripo3d.ai; v2 shut down on 2026-10-31): text to a textured model.
 // Routes and model names from Tripo's MIT Python SDK, checked with a real key in F0 (docs/testing.md).
-// The key comes from the EDGE tools' shared key store and goes only into the Authorization header of
+// The key comes from the caller (the extension's secret storage) or TRIPO_API_KEY, and goes only into the Authorization header of
 // calls to Tripo: never logged, never in a URL, never to a child process. Downloads of the results go to
 // Tripo's signed storage URLs without the key.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { sharedKeys } from "./sharedKeys";
+import { envKey } from "./keys";
 
 const Base = "https://openapi.tripo3d.ai";
 export const TripoModel = "v3.1-20260211";
@@ -26,8 +26,8 @@ export interface TripoCall {
 }
 
 async function tripoKey(call: TripoCall): Promise<string> {
-  const key = call.key ?? (await sharedKeys.getKey("tripo", { tool: "EDGEfab" }));
-  if (!key) throw new TripoError("No Tripo API key. Set one with EDGEfab: Set Tripo Key (it goes into the EDGE tools' shared key store).");
+  const key = call.key ?? envKey("tripo");
+  if (!key) throw new TripoError("No Tripo API key. In VS Code, set one with EDGEfab: Set Tripo Key; for the MCP server, set TRIPO_API_KEY in its environment.");
   return key;
 }
 
