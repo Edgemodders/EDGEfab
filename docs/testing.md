@@ -209,6 +209,10 @@ The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the M
 | 2 | `fab_tripo`: "not set: the user sets TRIPO_API_KEY in this server's environment...", the same for OpenAI; `fab_picture` refused: "No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key; for the MCP server, set OPENAI_API_KEY in its environment." |
 | 3 | Not run: needs VS Code (the owner's test on the laptop, with the other Desk commands) |
 
+### Run 2, 2026-11-12: step 1 passed
+
+Step 1 again, after EDGEmat committed its keys change (`aeda9c1`, EDGEmat #10; its working copy clean, so the build is its HEAD): `edgefab-0.1.0.vsix`, 11 files, **no match**, no key files. Steps 2 and 3 not rerun (2 unchanged since Run 1; 3 is still the owner's).
+
 ## F1: picture first and parts (without the game)
 
 Generate from Words as built (core `picture.ts`, `parts.ts`, Tripo's multiview with `generate_parts` and the texture step, Set Size), through the MCP server as an assistant uses it. A release test: rerun before F1's release.

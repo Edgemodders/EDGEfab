@@ -69,7 +69,7 @@
     "viewsWelcome": [
       {
         "view": "edgefab.desk",
-        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate with Tripo...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project or your Library (coming next)."
+        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate from Words...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project."
       }
     ],
     "commands": [
