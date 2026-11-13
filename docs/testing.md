@@ -10,6 +10,63 @@ In-game steps start with the Test timer: switch on REDnode's **Test timer** app,
 
 F1's tests come first, then F0's checks.
 
+## F1: the extension in VS Code (the owner's pass)
+
+Every command of the extension, in VS Code, in one go. The sections below test the same features without VS Code; this one is the only test of the buttons, menus, boxes and views themselves. A release test: rerun before each release. Parts A to G cost nothing; part H spends about 60 Tripo credits and a few cents of OpenAI.
+
+**Before.** Install `dist\edgefab-0.1.0.vsix` (Extensions view, `...`, Install from VSIX), or press F5 in this repo for a development window. REDcode installed, with a WolvenKit project open in it (a scratch one, such as `Projects\EDGEfab_F1`). Open the EDGEfab icon in the activity bar: the **Desk** and the **Library** views. Write down anything that reads oddly, not only what fails.
+
+**A. Keys and plan**
+
+1. Command palette: **EDGEfab: Set Tripo Key**. Type `abc`: refused in words. Paste the real key: "set, in VS Code's secret storage".
+2. **EDGEfab: Set OpenAI Key**, the same way (`sk-`).
+3. **EDGEfab: Tripo Plan...**: pick Paid.
+
+**B. A prop from a GLB** (free)
+
+4. Desk title bar, **Import a GLB...**: pick a textured GLB (`%LOCALAPPDATA%\EDGEfab\desk\vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` will do). A progress note, then "EDGEfab made ...", with Open in 3D and Reveal.
+5. Expand it on the Desk: its size (or "Size unknown"), levels of detail, textures, parts, license.
+6. Click it: REDcode's 3D view opens it with its textures; its parts and levels of detail can be switched.
+7. Right-click, **Set Size...**: 1.8. The size line changes; the warning goes.
+8. Right-click, **Rename...**: "Test vending machine". The Desk shows the new name; click it: it still opens in 3D.
+
+**C. Glow**
+
+9. Right-click, **Make the Painted Lights Glow...**: "The lights", then Bright. Open in 3D: the lit areas glow.
+10. **Glow Strength...** on one part: Soft. **Stop the Glow**: the glow line goes.
+
+**D. Add to Project**
+
+11. Right-click, **Add to Project**: it goes into REDcode's open project (or asks for one). The message names the `.ent`; Reveal Entity shows it under `source\archive\<project>\props\test_vending_machine\`.
+
+**E. The Library**
+
+12. Right-click the prop, **Add to Library...**. Your Library is already set up (`Documents\EDGE Library`), so it isn't asked for. Asked once: your own folder in game paths (type your modder name). Pick **New folder...** `Production/Props`, then **In folders matching its game path**. A progress note, then "is in the Library".
+13. The Desk prop shows "In the Library, version 1". The **Library** view shows `Production`, down to the prop, `v1`; expand it: version, the `.ent`, size, parts, license.
+14. In the Library view, right-click the prop, **Add to Project**: almost instant; the message says version 1.
+15. On the Desk, **Glow Strength...** (any), then **Add to Library...** again: "Update ... in the Library?", version 2, the same place.
+16. Library view title, **Refresh Project from Library...**: the prop ticked, "version 1 → 2"; OK: refreshed.
+17. Library view, right-click the prop, **Edit on the Desk**: "is on the Desk already", Replace It: the Desk's copy replaced.
+18. In VS Code's Explorer, right-click any `.glb`, **Make a Prop (EDGEfab)**: it lands on the Desk.
+19. Library view title, `...`: **Set the Library Folder...** shows "Keep it where it is" first (Escape); **Set Your Folder in Game Paths...** shows yours (Escape).
+
+**F. Assistants**
+
+20. **EDGEfab: Connect an Assistant (MCP)...**: it registers with Claude Code; a new Claude Code session lists `fab_*` tools.
+
+**G. Delete and keys again**
+
+21. Right-click a test prop on the Desk, **Delete**: asks first, then it goes.
+22. **EDGEfab: Clear OpenAI Key**: asks first. Restart VS Code. The Tripo key is still set (Import works, part H isn't asked for it); the OpenAI key is asked for again in step 23.
+
+**H. From words** (spends credits)
+
+23. Desk title bar, **Generate from Words...**: "a rusty oil drum with a hazard sticker". It asks for the OpenAI key (cleared in 22): paste it. About 30 s: the four-view picture opens; the Desk shows a picture item.
+24. Right-click it, **Change the Words...**: "... with a dented lid": picture 2.
+25. Right-click, **Make 3D...**: detail Standard, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours".
+
+**Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
+
 ## F1: prepare a model (smoke test, without VS Code)
 
 The bundled core makes a prop from a GLB on disk, and REDbridge takes the result. Run after every change to `src/core`.
@@ -289,7 +346,7 @@ The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the M
 |---|---|
 | 1 | `edgefab-0.1.0.vsix`, 11 files: **no match**, no key files. Built against EDGEmat's working copy, which was mid-way through the same change (its `keys.mjs` deleted, not yet committed). Built against EDGEmat's last commit instead, the bundles still had a `powershell.exe` path from EDGEmat's `keys.mjs` (the decryption strings themselves tree-shaken out): rerun once EDGEmat commits |
 | 2 | `fab_tripo`: "not set: the user sets TRIPO_API_KEY in this server's environment...", the same for OpenAI; `fab_picture` refused: "No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key; for the MCP server, set OPENAI_API_KEY in its environment." |
-| 3 | Not run: needs VS Code (the owner's test on the laptop, with the other Desk commands) |
+| 3 | Not run: in [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), part A and steps 22 and 23 |
 
 ### Run 2, 2026-11-12: step 1 passed
 
