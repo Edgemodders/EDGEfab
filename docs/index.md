@@ -6,7 +6,7 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 |---|---|
 | [Build plan](plan.html) | The owner's vision (2026-10-25 and 26), what it changes in the design, Blender and Unreal assets alike, animation as a key focus, the decisions for F0, the phases F0 to F9, what other repos are asked for. Proposed |
 | [Design](design.html) | The mission, what EDGEfab owns and what the other EDGE tools do, what a game asset is made of, clothing fitted to the body, Blender and Blender MCP, its shape, the MCP server, open questions. Draft 0.1, a brief, extended 2026-10-19 |
-| [Library assets](library.html) | Assets in the EDGE Library, shared across tools and projects: found in REDcode, made and changed in EDGEfab, pulled into any project. In F1 (decided 2026-10-31); the asset item is a proposal |
+| [Library assets](library.html) | Assets in the EDGE Library, shared across tools and projects: found in REDcode, made and changed in EDGEfab, pulled into any project. In F1 (decided 2026-10-31); EDGEfab's part built 2026-11-13 |
 | [Tools working together](tools-together.html) | How EDGE tools share code (packages), move between tabs (extension APIs), talk to assistants (MCP) and share REDbridge. For every tool's builders. A proposal (2026-11-04); its home is asked of EDGEweb ([#6](https://github.com/Edgemodders/EDGEweb/issues/6)) |
 | [Props, the parallel proposal](props.html) | A first version of props written with the owner in a parallel session (2026-10-27 to 30): takes, parts and a material planner, changes in Blender, edits merged back. Kept for reference; the build plan places each part (reviewed 2026-11-04) |
 | [UE5 assets](ue-assets.html) | Research: Unreal Engine 5 props and characters, with materials, rigs and animations, into the game; driving Unreal headless and through its MCP server; feasibility, effort, tradeoffs |
@@ -18,12 +18,12 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-01. The first build (F1) is agreed and started; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
+As of 2026-11-13. The first build (F1) is agreed and nearly built; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
 
 | Phase | Status |
 |---|---|
 | F0 Decisions | Tripo and the GLB import over a game prop checked; open: which collision is solid in the game |
-| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. Next: the in-game checks, then the small items, Add to Library |
+| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. In the game 2026-11-09: both collisions solid, the facing right. Generate from Words (picture first, in parts) and Set Size built 2026-11-10; keys in VS Code's secret storage 2026-11-11; **the Library** (Add to Library, the Library view, Add to Project from it, Refresh) and Make a Prop in the Explorer built 2026-11-13. Next: Rename, the normal maps' green, the owner's VS Code pass, then F1's test in the game with EDGEbuilder |
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |

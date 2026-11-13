@@ -17,6 +17,7 @@ import * as path from "node:path";
 import { z } from "zod";
 import {
   addToProject, deskItem, drawPicture, envKey, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
+  addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
 } from "../../../extensions/edgefab/src/core";
 
@@ -187,6 +188,7 @@ server.registerTool(
             picture: picture ? { take: picture.take, words: picture.words, sheet: picture.sheet } : undefined,
             size: prepared?.size, sizeUnknown: prepared?.sizeUnknown, parts: prepared?.parts?.map((x: { name: string; material: string }) => ({ name: x.name, material: x.material })),
             submeshes: prepared?.submeshes?.length, view: prepared?.view, glow: prepared?.glow?.length ? prepared.glow : undefined, notes: prepared?.notes,
+            library: asset?.library ? { path: asset.library.path, version: asset.library.version, note: "In the Library: fab_library_add again updates it there" } : undefined,
           };
         }),
       });
@@ -241,28 +243,179 @@ server.registerTool(
   "fab_add",
   {
     description:
-      "Add to Project: puts a prop from EDGEfab's Desk into a WolvenKit project (the extension's Add to Project), ready to place with EDGEbuilder or spawn. Writes under source\\archive\\<mod>\\props\\<name>\\: " +
-      "the .mesh (imported over a game barrel template with its levels of detail, the template's materials and appearances replaced), the model's own textures as game textures and a .mi on metal_base " +
-      "(through EDGEmat's core, glow included), and the .ent to place, with collision. Also the prepared model as source\\raw\\...\\<name>.glb and a record of its source and license. " +
-      "collision 'physical' (default): one entPhysicalMeshComponent with a box the prop's size in the mesh's physics data. 'box': an entMeshComponent and an entColliderComponent with that box. 'none': it only draws. " +
-      "Which of the first two stops V in the game is not yet tested. Adding the same name again replaces it. Needs REDbridge and the game folder (from VS Code's redcode settings). Takes about 15 seconds.",
+      "Add to Project: puts a prop into a WolvenKit project (the extension's Add to Project), ready to place with EDGEbuilder or spawn. " +
+      "from 'desk' (default): a prop from EDGEfab's Desk is built into the project under source\\archive\\<mod>\\props\\<name>\\: the .mesh (imported over a game barrel template with its levels of detail, " +
+      "the template's materials and appearances replaced), the model's own textures as game textures and a .mi on metal_base (through EDGEmat's core, glow included), and the .ent to place, with collision; " +
+      "also the prepared model as source\\raw\\...\\<name>.glb and a record of its source and license. Adding the same name again replaces it. Needs REDbridge and the game folder (from VS Code's redcode settings); " +
+      "about 15 seconds for one material, 3 minutes for a prop in 6 parts. collision 'physical' (default): one entPhysicalMeshComponent with a box the prop's size in the mesh's physics data. " +
+      "'box': an entMeshComponent and an entColliderComponent with that box. 'none': it only draws. Both solid kinds stop V in the game (tested 2026-11-09). " +
+      "from 'library': a prop from the EDGE Library (fab_library lists them) is copied in as it was built there, at its own game paths (<modder>\\props\\<name>\\), with its collision; " +
+      "no REDbridge, a few seconds. The project's source\\library.json notes it, so fab_refresh finds newer versions later. name, mod and collision don't apply.",
     inputSchema: {
-      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      prop: z.string().describe("from 'desk': the Desk prop's name (fab_desk lists them) or its folder. from 'library': the Library prop's path under the Library (as fab_library gives it), its folder, or its id."),
       project: z.string().describe("The WolvenKit project: its folder, its .cpmodproj, or its source\\archive."),
-      name: z.string().optional().describe("The file name in the project; default the prop's. Made lowercase, with no spaces."),
-      mod: z.string().optional().describe("The mod's own folder under source\\archive; default the project's name."),
+      from: z.enum(["desk", "library"]).default("desk"),
+      name: z.string().optional().describe("from 'desk': the file name in the project; default the prop's. Made lowercase, with no spaces."),
+      mod: z.string().optional().describe("from 'desk': the mod's own folder under source\\archive; default the project's name."),
       collision: z.enum(["physical", "box", "none"]).default(DefaultCollision),
     },
   },
-  async ({ prop, project, name, mod, collision }) => {
+  async ({ prop, project, from, name, mod, collision }) => {
     try {
       const folders = projectFolders(project);
       if (!folders) throw new Error(`${project} is not a WolvenKit project: it has no .cpmodproj and no source\\archive folder.`);
+      if (from === "library") {
+        const root = needRoot();
+        const r = addFromLibrary(libraryProp(root, prop), folders, root);
+        return text({ ...r, next: `Pack the project (REDcode: Pack and Try), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode.` });
+      }
       const { call } = await getBridge();
       const r = await addToProject({ item: deskItem(prop), project: folders, call, name, mod, collision, log });
       return text({
         ...r,
         next: `Pack the project (REDcode: Pack and Try), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode. The entity is the one to place; the mesh alone has no collision.`,
+      });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+/** The Library's root, or an error saying how to set one. */
+function needRoot(): string {
+  const root = libraryRoot();
+  if (root) return root;
+  const recorded = recordedLibraryRoot();
+  throw new Error(
+    recorded
+      ? `The Library's folder is missing: ${recorded}. A drive may be unplugged; or set another with fab_library's root.`
+      : `No EDGE Library is set up yet. Ask the user where to keep it (suggest ${suggestedLibraryRoot()}), then set it with fab_library's root.`,
+  );
+}
+
+server.registerTool(
+  "fab_library",
+  {
+    description:
+      "The EDGE Library: one folder every EDGE tool shares (in %APPDATA%\\EDGE\\library.json), outside any project, where the modder keeps reusable things in folders of their own. " +
+      "EDGEfab's items are props (<name>.prop.asset folders, with their game files built in); other tools' items (mesh, sound, quickhack assets, scenes) and model files (GLB, FBX, .blend) show too. " +
+      "Lists one folder: its sub-folders, asset items (kind, name, version) and model files. Also sets things up when the user asks: 'root' sets the Library's folder for every EDGE tool " +
+      "(ask the user; suggest Documents\\EDGE Library; never inside the game's folder); 'modder' sets the modder's own folder in Library props' game paths (<modder>\\props\\<name>\\), lowercase, " +
+      "such as their modder name: ask the user, it shows in the game's paths.",
+    inputSchema: {
+      folder: z.string().optional().describe("A folder under the Library, with /; default its top."),
+      root: z.string().optional().describe("Set the Library's folder (only when the user says where)."),
+      modder: z.string().optional().describe("Set the modder's own folder for game paths (only when the user says)."),
+    },
+  },
+  async ({ folder, root, modder }) => {
+    try {
+      const set: Record<string, string> = {};
+      if (root) set.root = setLibraryRoot(root, { gameDir: await gameFolder() });
+      if (modder) set.modder = setModderFolder(modder);
+      const r = libraryRoot();
+      if (!r) return text({ ...set, library: needRootMessage(), modder: modderFolder() ?? "not set" });
+      const here = libraryFolder(r, folder);
+      return text({
+        ...set,
+        root: r,
+        modder: modderFolder() ?? "not set: ask the user before the first fab_library_add",
+        folder: here.rel || "(top)",
+        folders: here.folders.map((f) => f.rel),
+        assets: here.assets.map((a) => ({ path: a.rel, kind: a.kind, name: a.title, version: a.version, id: a.id, main: a.main ?? undefined, ours: a.kind === "prop" })),
+        modelFiles: here.files.map((f) => f.file),
+      });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+function needRootMessage(): string {
+  try {
+    needRoot();
+    return "";
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e);
+  }
+}
+
+server.registerTool(
+  "fab_library_add",
+  {
+    description:
+      "Add to Library: a prop on EDGEfab's Desk goes into the EDGE Library with its game files built in (mesh, materials, entity with collision; REDbridge, as fab_add), under the modder's own " +
+      "game folder <modder>\\props\\<name>\\, so it is the same in every project. The same prop again (it keeps its id) updates the Library's item where it is, one version up; projects that took it see the newer " +
+      "version with fab_refresh. folder: the modder's own folder under the Library (ask, or use the last one). useGamePath: put it in folders matching its game path under that folder, made if missing " +
+      "(the modder's choice, so the Library browses like the game's files). The prop needs its size known (fab_size). About as long as fab_add from the Desk.",
+    inputSchema: {
+      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      folder: z.string().optional().describe("A folder under the Library, with /, such as Production/Meshes; default the last one used, else the top. Made if missing. Ignored when updating."),
+      useGamePath: z.boolean().optional().describe("Folders matching its game path under the folder; default the last choice."),
+      collision: z.enum(["physical", "box", "none"]).default(DefaultCollision),
+    },
+  },
+  async ({ prop, folder, useGamePath, collision }) => {
+    try {
+      const root = needRoot();
+      const modder = modderFolder();
+      if (!modder) throw new Error("The modder's own folder for game paths isn't set: ask the user (such as their modder name, lowercase), then fab_library with modder.");
+      const settings = readSettings();
+      const place = safeFolder(folder ?? settings.libraryFolder ?? "");
+      const byPath = useGamePath ?? settings.useGamePath ?? false;
+      const { call } = await getBridge();
+      const r = await addToLibrary({ item: deskItem(prop), root, folder: place, useGamePath: byPath, modder, call, collision, tool: `EDGEfab ${__VERSION__}`, gameDir: await gameFolder(), log });
+      writeSettings({ libraryFolder: place, useGamePath: byPath });
+      return text({ ...r, next: `fab_add with from 'library' and prop '${r.rel}' puts it in a project.` });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+server.registerTool(
+  "fab_library_edit",
+  {
+    description:
+      "Edit on the Desk: a prop from the EDGE Library copied back onto EDGEfab's Desk, keeping its id, to change (fab_glow, fab_size, fab_make again from its picture). fab_library_add then updates " +
+      "the Library's item, one version up. A Desk prop with the same id is replaced only with replace: true (it may hold changes not yet in the Library).",
+    inputSchema: {
+      prop: z.string().describe("The Library prop: its path under the Library, its folder, or its id."),
+      replace: z.boolean().default(false),
+    },
+  },
+  async ({ prop, replace }) => {
+    try {
+      const root = needRoot();
+      const r = editOnDesk(libraryProp(root, prop), root, { replace, tool: `EDGEfab ${__VERSION__}` });
+      return text({ ...r, next: "Change it on the Desk, then fab_library_add to update the Library." });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+server.registerTool(
+  "fab_refresh",
+  {
+    description:
+      "Refresh from Library: EDGEfab's props in a WolvenKit project that came from the EDGE Library (its source\\library.json), each 'newer' (the Library has a later version), 'same' or 'missing' " +
+      "(not found in the Library). update: true copies the newer versions in, as fab_add from 'library' does. Other tools' items in the note are left alone.",
+    inputSchema: {
+      project: z.string().describe("The WolvenKit project: its folder, its .cpmodproj, or its source\\archive."),
+      update: z.boolean().default(false),
+    },
+  },
+  async ({ project, update }) => {
+    try {
+      const folders = projectFolders(project);
+      if (!folders) throw new Error(`${project} is not a WolvenKit project.`);
+      const root = needRoot();
+      const lines = refreshList(folders.dir, root);
+      const updated = update ? lines.filter((l) => l.state === "newer" && l.prop).map((l) => addFromLibrary(l.prop!, folders, root)) : [];
+      return text({
+        props: lines.map((l) => ({ path: l.prop?.rel ?? l.entry.path, name: l.prop?.title, state: l.state, inProject: l.entry.version, inLibrary: l.prop?.version })),
+        updated: update ? updated.map((u) => ({ entity: u.entity, version: u.version })) : undefined,
       });
     } catch (e) {
       return failure(e);

@@ -61,6 +61,8 @@ export interface AssetRecord {
   license: { source: "own" | "tripo" | "openai"; plan?: TripoPlan; terms?: string; note: string };
   history: { tool: string; did: string; date: string }[];
   tools: Record<string, string>;
+  /** On the Desk only: where Add to Library put it (under the root, with `/`) and its version there. */
+  library?: { path: string; version: number; date: string };
 }
 
 const TripoTerms = "https://www.tripo3d.ai/terms";

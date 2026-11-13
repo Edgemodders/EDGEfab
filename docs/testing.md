@@ -86,6 +86,37 @@ After the switch to `@edgemodders/edgemat-core` 0.3.2 from npm (EDGEmat #7), in 
 
 Much slower than Run 1 (15 s) because 6 parts each convert 4 or 5 textures at up to 4096², against one material at 2048². Steps 2 and 3 (reading the mesh and entity back) not rerun: `addToProject.ts` is unchanged.
 
+## F1: the Library (without the game)
+
+A Desk prop goes into the EDGE Library with its game files built in, from there into a project as a copy noted in the project's `source/library.json`, is updated one version up, refreshed in the project, and copied back to the Desk; through the MCP server, in scratch folders. Run after every change to `core/library.ts`.
+
+**Steps.** Scripts in a session's scratchpad, outside the repo (`libtest\run.cjs`, `run2.cjs`). `EDGE_LIBRARY_CONFIG` and `EDGEFAB_DATA` point the server at a scratch `library.json` and a scratch Desk, so the modder's own Library and Desk are untouched.
+
+1. `npm run build`. Copy a Desk prop (`vending_e2e`, 6 parts) to the scratch Desk; make an empty project folder with `source\archive`.
+2. `fab_library` and `fab_library_add` with no Library set; then `fab_library` with `root` and `modder` ("Test Modder").
+3. `fab_library_add` the prop into `Production/Props`; `fab_library` on that folder; `fab_desk`.
+4. `fab_add` with `from: "library"` into the project; read its `source/library.json`; compare every file it lists with the item's; `fab_refresh`.
+5. `fab_library_add` the same prop again (folder `Elsewhere`); `fab_refresh`, `fab_refresh` with `update`, `fab_refresh` again.
+6. `fab_library_edit` by its id, then with `replace`; `fab_add` from the Library by its id.
+7. A second Desk (another `EDGEFAB_DATA`): `fab_make` from a GLB named `vending_e2e` (a game name the Library has); `fab_library_add` with `useGamePath` before and after setting `modder` there.
+8. Read the project's `.ent` and `.mesh` back (`cr2w_read`); look for hidden `.edgefab-*` folders in the Library.
+
+**Expected.** Step 2: both say no Library is set up and how to set one (offering `Documents\EDGE Library`); the modder folder is made lowercase (`test_modder`). Step 3: `Production/Props/vending_e2e.prop.asset`, version 1, `main` `test_modder\props\vending_e2e\vending_e2e.ent`, its game files inside; the Desk prop shows where it went. Step 4: the files listed in the note are in the project, the same bytes; the note has one `edgefab` `prop` entry with id, path, version 1 and files; `same`. Step 5: updated in place (not in `Elsewhere`), version 2; `newer`, updated, then `same`. Step 6: refused while the Desk has it, then replaced, keeping the id; Add to Project by id works. Step 7: refused until the modder folder is set; then `Production/test_modder/props/vending_e2e_2/vending_e2e_2.prop.asset` with `main` `...\vending_e2e_2\vending_e2e_2.ent`. Step 8: the entity's mesh and the mesh's materials at the modder's paths; no hidden folders left.
+
+### Run 1, 2026-11-13: passed after a fix
+
+| Step | Result |
+|---|---|
+| 2 | As expected; `test_modder` |
+| 3 | 128 s (REDbridge's start, 6 parts' textures): version 1, 37 game files; listed with kind, version, id, `main`; the Desk prop records `library` (path, version) |
+| 4 | Instant: 39 files (the game files, the prepared GLB, the record), **0 differ** from the item's; the note as expected; `same` |
+| 5 | 127 s: `updated: true`, version 2, the same folder and game paths; `newer` (1 to 2), updated, `same` |
+| 6 | Refused ("is on the Desk already"), then replaced with the same id; Add to Project by id: version 2 |
+| 7 | Refused, then 5.4 s (one material, no textures): `vending_e2e_2` at the game path's folders under `Production` |
+| 8 | `components.0.mesh` = `test_modder\props\vending_e2e\vending_e2e.mesh`; the mesh's first material `test_modder\...\vending_e2e_front.mi`; no hidden folders |
+
+**Fixed on the way:** the update's history lost the first "Added to the Library" line, which went only into the Library's copy; the Desk item now gets the same line (seen in step 7's Desk item). **Not run:** the extension's Library view and its commands in VS Code (the owner's test, with the other Desk commands).
+
 ## F1 check: an added prop in the game
 
 With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. **Run 1 passed, 2026-11-09**, except the normal maps' green (below).

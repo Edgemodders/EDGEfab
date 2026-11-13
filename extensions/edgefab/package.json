@@ -46,7 +46,12 @@
     "onCommand:edgefab.connectAssistant",
     "onCommand:edgefab.showLog",
     "onCommand:edgefab.setOpenAIKey",
-    "onCommand:edgefab.clearOpenAIKey"
+    "onCommand:edgefab.clearOpenAIKey",
+    "onView:edgefab.library",
+    "onCommand:edgefab.library.setRoot",
+    "onCommand:edgefab.library.setModder",
+    "onCommand:edgefab.refreshFromLibrary",
+    "onCommand:edgefab.makeProp"
   ],
   "contributes": {
     "viewsContainers": {
@@ -63,13 +68,22 @@
         {
           "id": "edgefab.desk",
           "name": "Desk"
+        },
+        {
+          "id": "edgefab.library",
+          "name": "Library"
         }
       ]
     },
     "viewsWelcome": [
       {
         "view": "edgefab.desk",
-        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate from Words...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project."
+        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate from Words...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project or your Library."
+      },
+      {
+        "view": "edgefab.library",
+        "when": "!edgefab.hasLibrary",
+        "contents": "The EDGE Library: one folder every EDGE tool shares, outside any project, for props and other things you reuse across mods. Its folders are yours to name. Optional: the Desk and Add to Project work without it.\n[Set Up the Library...](command:edgefab.library.setRoot)"
       }
     ],
     "commands": [
@@ -192,6 +206,68 @@
         "command": "edgefab.delete",
         "title": "Delete",
         "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.addToLibrary",
+        "title": "Add to Library...",
+        "category": "EDGEfab",
+        "icon": "$(library)"
+      },
+      {
+        "command": "edgefab.library.setRoot",
+        "title": "Set the Library Folder...",
+        "category": "EDGEfab",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "edgefab.library.setModder",
+        "title": "Set Your Folder in Game Paths...",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.library.refresh",
+        "title": "Refresh the Library",
+        "category": "EDGEfab",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "edgefab.library.view",
+        "title": "Open in 3D",
+        "category": "EDGEfab",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "edgefab.library.addToProject",
+        "title": "Add to Project",
+        "category": "EDGEfab",
+        "icon": "$(add)"
+      },
+      {
+        "command": "edgefab.library.edit",
+        "title": "Edit on the Desk",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.library.reveal",
+        "title": "Reveal in File Explorer",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.library.makeProp",
+        "title": "Make a Prop",
+        "category": "EDGEfab",
+        "icon": "$(wand)"
+      },
+      {
+        "command": "edgefab.makeProp",
+        "title": "Make a Prop (EDGEfab)",
+        "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.refreshFromLibrary",
+        "title": "Refresh Project from Library...",
+        "category": "EDGEfab",
+        "icon": "$(sync)"
       }
     ],
     "menus": {
@@ -210,6 +286,26 @@
           "command": "edgefab.refresh",
           "when": "view == edgefab.desk",
           "group": "navigation@3"
+        },
+        {
+          "command": "edgefab.refreshFromLibrary",
+          "when": "view == edgefab.library && edgefab.hasLibrary",
+          "group": "navigation@1"
+        },
+        {
+          "command": "edgefab.library.refresh",
+          "when": "view == edgefab.library",
+          "group": "navigation@2"
+        },
+        {
+          "command": "edgefab.library.setRoot",
+          "when": "view == edgefab.library",
+          "group": "1@1"
+        },
+        {
+          "command": "edgefab.library.setModder",
+          "when": "view == edgefab.library",
+          "group": "1@2"
         }
       ],
       "view/item/context": [
@@ -292,6 +388,51 @@
           "command": "edgefab.setSize",
           "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "1@2"
+        },
+        {
+          "command": "edgefab.addToLibrary",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@0"
+        },
+        {
+          "command": "edgefab.library.view",
+          "when": "view == edgefab.library && viewItem == libprop",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.library.addToProject",
+          "when": "view == edgefab.library && viewItem == libprop",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.library.addToProject",
+          "when": "view == edgefab.library && viewItem == libprop",
+          "group": "1@0"
+        },
+        {
+          "command": "edgefab.library.view",
+          "when": "view == edgefab.library && viewItem == libprop",
+          "group": "1@1"
+        },
+        {
+          "command": "edgefab.library.edit",
+          "when": "view == edgefab.library && viewItem == libprop",
+          "group": "1@2"
+        },
+        {
+          "command": "edgefab.library.makeProp",
+          "when": "view == edgefab.library && viewItem == libmodel.glb",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.library.makeProp",
+          "when": "view == edgefab.library && viewItem == libmodel.glb",
+          "group": "1@0"
+        },
+        {
+          "command": "edgefab.library.reveal",
+          "when": "view == edgefab.library && viewItem =~ /^lib/",
+          "group": "2@0"
         }
       ],
       "commandPalette": [
@@ -346,6 +487,45 @@
         {
           "command": "edgefab.setSize",
           "when": "false"
+        },
+        {
+          "command": "edgefab.addToLibrary",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.view",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.addToProject",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.edit",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.reveal",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.makeProp",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.library.refresh",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.makeProp",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "edgefab.makeProp",
+          "when": "resourceExtname =~ /^.(glb|gltf)$/i",
+          "group": "navigation@90"
         }
       ]
     },

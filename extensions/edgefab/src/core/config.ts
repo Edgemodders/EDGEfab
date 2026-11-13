@@ -7,6 +7,7 @@ import * as path from "node:path";
 
 /** EDGEfab's own folder: %LOCALAPPDATA%\EDGEfab on Windows. */
 export function dataDir(): string {
+  if (process.env.EDGEFAB_DATA) return process.env.EDGEFAB_DATA; // for tests
   const base = process.platform === "win32" ? (process.env.LOCALAPPDATA ?? path.join(os.homedir(), "AppData", "Local")) : path.join(os.homedir(), ".cache");
   return path.join(base, "EDGEfab");
 }
@@ -22,6 +23,11 @@ export type TripoPlan = "paid" | "free";
 
 export interface SharedSettings {
   tripoPlan?: TripoPlan;
+  /** The modder's own folder in Library props' game paths: `<modder>\props\<name>\`. */
+  modder?: string;
+  /** Add to Library's last choices, offered again: a folder under the root with `/`, and Use the game path. */
+  libraryFolder?: string;
+  useGamePath?: boolean;
 }
 
 const settingsFile = () => path.join(dataDir(), "settings.json");

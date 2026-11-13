@@ -15,7 +15,13 @@ export {
   addToProject, deskItem, entityJson, fitMesh, projectFolders, readItem, AddError, DefaultCollision, DefaultTemplate,
   type AddRequest, type AddResult, type Collision, type ProjectFolders,
 } from "./addToProject";
-export { callOf, startBridge } from "./bridge";
+export { callOf, gameFolder, startBridge } from "./bridge";
+export {
+  addFromLibrary, addToLibrary, assetById, editOnDesk, isInside, libraryAssets, libraryConfigFile, libraryFolder, libraryFolders, libraryProp, libraryRoot,
+  modderFolder, propFiles, propGameFolder, readAsset, readNote, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
+  LibraryError, ModelFiles,
+  type FromLibraryResult, type LibraryAddRequest, type LibraryAddResult, type LibraryAsset, type LibraryFolder, type Note, type NoteItem, type RefreshLine,
+} from "./library";
 export {
   glowOff, glowWords, lightsMap, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";

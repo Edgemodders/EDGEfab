@@ -14,6 +14,16 @@ export function callOf(client: unknown): BridgeCall {
   return (method, params) => c.call!.call(client, method, params);
 }
 
+/** The game's folder, as REDbridge would be started for it; undefined when none is found. Doesn't search the drives. */
+export async function gameFolder(): Promise<string | undefined> {
+  try {
+    const game = await resolveGame(vscodeUserSettings(), {}, false);
+    return game && isGameFolder(game.path) ? game.path : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Starts a REDbridge with the game loaded, for tools outside VS Code. */
 export async function startBridge(log: (line: string) => void = () => undefined): Promise<{ client: BridgeClient; call: BridgeCall }> {
   const settings = vscodeUserSettings();

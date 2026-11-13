@@ -5,12 +5,16 @@ import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, writeSettings,
+  addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
+  addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
+  setModderFolder, suggestedLibraryRoot, LibraryError,
   DefaultCollision, DefaultGlowStrength, DetailLevels, GlowLevels, ViewNames,
-  type Collision, type Detail, type GlowResult, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
+  type AssetRecord, type Collision, type Detail, type GlowResult, type LibraryAsset, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
+import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
-import { entryOf, DeskView } from "./deskView";
+import { entryOf, DeskView, type DeskEntry } from "./deskView";
+import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
 
 declare const __VERSION__: string;
@@ -33,6 +37,8 @@ function redcode(): REDcodeApi | undefined {
 }
 
 let output: vscode.OutputChannel;
+let deskView: DeskView;
+let libraryView: LibraryView;
 const log = (line: string) => output.appendLine(`${new Date().toLocaleTimeString()} ${line}`);
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -279,28 +285,38 @@ async function pickProject(): Promise<ProjectFolders | undefined> {
   return p;
 }
 
-async function addItemToProject(folder: string, title: string): Promise<void> {
-  const project = await pickProject();
-  if (!project) return;
-  const collision = vscode.workspace.getConfiguration("edgefab").get<Collision>("collision") ?? DefaultCollision;
-  // REDcode's REDbridge when REDcode runs; else one of our own for this call.
+/** Runs `run` with REDbridge's call function and a progress line: REDcode's REDbridge when REDcode runs, else one of our own for this run. */
+async function withBridge<T>(title: string, run: (call: BridgeCall, step: (m: string) => void) => Promise<T>): Promise<T> {
   const shared = redcode()?.bridge();
   let own: Awaited<ReturnType<typeof startBridge>> | undefined;
   try {
-    const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `EDGEfab: adding ${title} to ${project.name}` }, async (progress) => {
+    return await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title }, async (progress) => {
       const step = (m: string) => {
         log(m);
         progress.report({ message: m.trim() });
       };
-      let call;
+      let call: BridgeCall;
       if (shared) call = callOf(shared);
       else {
         step("Starting REDbridge");
         own = await startBridge(log);
         call = own.call;
       }
-      return addToProject({ item: folder, project, call, collision, log: step });
+      return run(call, step);
     });
+  } finally {
+    own?.client.stop();
+  }
+}
+
+const collisionSetting = () => vscode.workspace.getConfiguration("edgefab").get<Collision>("collision") ?? DefaultCollision;
+
+async function addItemToProject(folder: string, title: string): Promise<void> {
+  const project = await pickProject();
+  if (!project) return;
+  const collision = collisionSetting();
+  try {
+    const result = await withBridge(`EDGEfab: adding ${title} to ${project.name}`, (call, step) => addToProject({ item: folder, project, call, collision, log: step }));
     log(`Added ${title} to ${project.name}${result.replaced ? " (replacing the earlier one)" : ""}: ${result.entity}`);
     for (const f of result.files) log(`  ${f}`);
     for (const n of result.notes) log(`  Note: ${n}`);
@@ -317,8 +333,243 @@ async function addItemToProject(folder: string, title: string): Promise<void> {
     log(`Add to Project failed: ${message(e)}`);
     const pick = await vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`, "Show Log");
     if (pick) output.show();
-  } finally {
-    own?.client.stop();
+  }
+}
+
+// ---- the Library -----------------------------------------------------------------------------------------
+
+/** The Library's root; asks where to make it when there is none (Documents\EDGE Library offered), or `always`. */
+async function askLibraryRoot(always = false): Promise<string | undefined> {
+  const root = libraryRoot();
+  if (root && !always) return root;
+  const recorded = recordedLibraryRoot();
+  const suggested = suggestedLibraryRoot();
+  const picked = await vscode.window.showQuickPick(
+    [
+      ...(root ? [{ label: "$(check) Keep it where it is", detail: root, where: root as string | undefined }] : []),
+      ...(suggested !== root ? [{ label: "$(library) Documents\\EDGE Library", description: "(suggested)", detail: suggested, where: suggested as string | undefined }] : []),
+      { label: "$(folder-opened) Choose a folder...", detail: "Anywhere outside the game's folder, such as a bigger drive", where: undefined as string | undefined },
+    ],
+    {
+      title: recorded && !root ? `EDGEfab: the Library's folder is missing (${recorded}). Where is it now?` : "EDGEfab: where should the EDGE Library be?",
+      placeHolder: "One folder every EDGE tool shares, outside any project, for props and other things you reuse. Its folders inside are yours to name",
+      ignoreFocusOut: true,
+    },
+  );
+  if (!picked) return undefined;
+  let where = picked.where;
+  if (!where) {
+    const chosen = await vscode.window.showOpenDialog({ title: "The EDGE Library's folder", openLabel: "Use This Folder", canSelectFolders: true, canSelectFiles: false, canSelectMany: false });
+    if (!chosen?.[0]) return undefined;
+    where = chosen[0].fsPath;
+  }
+  if (where === root) return root;
+  try {
+    const set = setLibraryRoot(where, { gameDir: await gameFolder() });
+    log(`The EDGE Library is ${set} (for every EDGE tool)`);
+    libraryView.refresh();
+    return set;
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+    return undefined;
+  }
+}
+
+/** The modder's own folder in Library props' game paths; asked once. */
+async function askModder(always = false): Promise<string | undefined> {
+  const current = modderFolder();
+  if (current && !always) return current;
+  const typed = await vscode.window.showInputBox({
+    title: "EDGEfab: your own folder in the game's files",
+    prompt: "Props you keep in the Library go under <this>\\props\\<name>\\ in the game's files, the same in every project. Lowercase letters, digits and _, such as your modder name.",
+    value: current,
+    ignoreFocusOut: true,
+    validateInput: (v) => (slug(v, "") ? null : "Letters or digits, please."),
+  });
+  if (!typed?.trim()) return undefined;
+  const set = setModderFolder(typed);
+  if (set !== typed.trim()) void vscode.window.showInformationMessage(`EDGEfab: your folder in game paths is "${set}".`);
+  return set;
+}
+
+/** A Library folder for a new item, and whether to use its game path: the last choices first. */
+async function askLibraryPlace(root: string, gameFolderOf: string): Promise<{ folder: string; useGamePath: boolean } | undefined> {
+  const s = readSettings();
+  const last = s.libraryFolder;
+  type Item = vscode.QuickPickItem & { folder?: string; make?: boolean };
+  const folders = libraryFolders(root);
+  const items: Item[] = [
+    ...(last !== undefined && (last === "" || folders.includes(last)) ? [{ label: `$(history) ${last || "The Library's top"}`, description: "(last used)", folder: last }] : []),
+    { label: "$(new-folder) New folder...", detail: "Such as Production/Props: your own names, made now", make: true },
+    ...(last !== "" ? [{ label: "$(home) The Library's top", folder: "" }] : []),
+    ...folders.filter((f) => f !== last).map((f) => ({ label: `$(folder) ${f}`, folder: f })),
+  ];
+  const picked = await vscode.window.showQuickPick(items, { title: "EDGEfab: which Library folder?", placeHolder: "The folders are yours: tools never make them on their own", ignoreFocusOut: true, matchOnDetail: true });
+  if (!picked) return undefined;
+  let folder = picked.folder;
+  if (picked.make) {
+    const typed = await vscode.window.showInputBox({
+      title: "EDGEfab: a new Library folder",
+      prompt: "A folder under the Library, with / between folders, such as Production/Props",
+      ignoreFocusOut: true,
+      validateInput: (v) => {
+        try {
+          return safeFolder(v) ? null : "A folder name, please.";
+        } catch (e) {
+          return message(e);
+        }
+      },
+    });
+    if (!typed) return undefined;
+    folder = safeFolder(typed);
+  }
+  const where = folder || "the Library's top";
+  const ways = [
+    { label: `$(folder) In ${where}`, detail: "As it is, in the folder you picked", useGamePath: false },
+    { label: "$(file-directory) In folders matching its game path", detail: `${where}/${gameFolderOf.split("\\").join("/")}/: the Library then browses like the game's files`, useGamePath: true },
+  ];
+  if (s.useGamePath) ways.reverse();
+  const way = await vscode.window.showQuickPick(ways, { title: "EDGEfab: use the game path?", placeHolder: "Your choice, offered again next time", ignoreFocusOut: true });
+  if (!way) return undefined;
+  return { folder: folder ?? "", useGamePath: way.useGamePath };
+}
+
+async function addDeskToLibrary(entry: DeskEntry): Promise<void> {
+  if (!entry.prepared) {
+    void vscode.window.showWarningMessage(`EDGEfab: ${entry.title} isn't a model yet. Make 3D first.`);
+    return;
+  }
+  if (entry.prepared.sizeUnknown) {
+    const go = await vscode.window.showWarningMessage(`EDGEfab: ${entry.title}'s size is unknown. Set its size first, so it goes in the Library at its real size.`, "Set Size");
+    if (go) await askSize(entry.folder, entry.title, entry.prepared.size.height, deskView);
+    return;
+  }
+  const root = await askLibraryRoot();
+  if (!root) return;
+  let id: string | undefined;
+  try {
+    id = (JSON.parse(fs.readFileSync(path.join(entry.folder, "asset.json"), "utf8")) as AssetRecord).id;
+  } catch {
+    id = undefined;
+  }
+  const existing = id ? assetById(root, id) : undefined;
+  let modder = modderFolder() ?? "";
+  let place = { folder: "", useGamePath: false };
+  if (existing) {
+    const go = await vscode.window.showInformationMessage(
+      `Update ${entry.title} in the Library?`,
+      { modal: true, detail: `It's version ${existing.version ?? 1} there, in ${existing.rel}. This makes version ${(existing.version ?? 1) + 1}, in the same place; projects that took it can refresh.` },
+      "Update It",
+    );
+    if (go !== "Update It") return;
+  } else {
+    const m = await askModder();
+    if (!m) return;
+    modder = m;
+    const p = await askLibraryPlace(root, propGameFolder(modder, entry.name));
+    if (!p) return;
+    place = p;
+  }
+  try {
+    const gameDir = await gameFolder();
+    const r = await withBridge(`EDGEfab: ${existing ? "updating" : "adding"} ${entry.title} ${existing ? "in" : "to"} the Library`, (call, step) =>
+      addToLibrary({ item: entry.folder, root, folder: place.folder, useGamePath: place.useGamePath, modder, call, collision: collisionSetting(), tool: `EDGEfab ${__VERSION__}`, gameDir, log: step }),
+    );
+    if (!existing) writeSettings({ libraryFolder: place.folder, useGamePath: place.useGamePath });
+    log(`${r.updated ? "Updated" : "Added"} ${entry.title} in the Library: ${r.rel}, version ${r.version}, ${r.files} game files`);
+    for (const n of r.notes) log(`  Note: ${n}`);
+    deskView.refresh();
+    libraryView.refresh();
+    const pick = await vscode.window.showInformationMessage(`EDGEfab: ${entry.title} is in the Library${r.updated ? `, version ${r.version}` : ""}: ${r.rel}`, "Add to Project", "Reveal");
+    if (pick === "Reveal") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(r.folder));
+    if (pick === "Add to Project") {
+      const a = readAsset(root, r.folder);
+      if (a) await libraryToProject(a);
+    }
+  } catch (e) {
+    log(`Add to Library failed: ${message(e)}`);
+    const pick = await vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`, "Show Log");
+    if (pick) output.show();
+  }
+}
+
+async function libraryToProject(a: LibraryAsset): Promise<void> {
+  const root = libraryRoot();
+  if (!root) return;
+  const project = await pickProject();
+  if (!project) return;
+  try {
+    const r = addFromLibrary(a, project, root);
+    log(`Added ${a.title} (version ${r.version}) from the Library to ${project.name}: ${r.entity}`);
+    for (const f of r.files) log(`  ${f}`);
+    const actions = [...(redcode()?.packAndTry ? ["Pack and Try"] : []), "Reveal Entity"];
+    const pick = await vscode.window.showInformationMessage(
+      `EDGEfab ${r.replaced ? "updated" : "added"} ${a.title} (version ${r.version}) from the Library in ${project.name}. Place ${path.win32.basename(r.entity)} with EDGEbuilder, or spawn it.`,
+      ...actions,
+    );
+    if (pick === "Pack and Try") await redcode()?.packAndTry?.();
+    if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...r.entity.split("\\"))));
+  } catch (e) {
+    log(`Add to Project from the Library failed: ${message(e)}`);
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+  }
+}
+
+async function libraryEdit(a: LibraryAsset): Promise<void> {
+  const root = libraryRoot();
+  if (!root) return;
+  const tool = `EDGEfab ${__VERSION__}`;
+  try {
+    let r;
+    try {
+      r = editOnDesk(a, root, { tool });
+    } catch (e) {
+      if (!(e instanceof LibraryError) || !/on the Desk already/.test(e.message)) throw e;
+      const go = await vscode.window.showWarningMessage(`${a.title} is on the Desk already.`, { modal: true, detail: "Replace the Desk's copy with the Library's? The Desk's may have changes not yet in the Library." }, "Replace It");
+      if (go !== "Replace It") return;
+      r = editOnDesk(a, root, { tool, replace: true });
+    }
+    deskView.refresh();
+    void vscode.window.showInformationMessage(`EDGEfab: ${a.title} is on the Desk. Change it there, then Add to Library to update it (version ${(a.version ?? 1) + 1}).`);
+    log(`Copied ${a.rel} to the Desk: ${r.folder}`);
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+  }
+}
+
+async function refreshFromLibrary(): Promise<void> {
+  const root = libraryRoot();
+  if (!root) {
+    void vscode.window.showInformationMessage("EDGEfab: no EDGE Library is set up yet.");
+    return;
+  }
+  const project = await pickProject();
+  if (!project) return;
+  const lines = refreshList(project.dir, root);
+  if (!lines.length) {
+    void vscode.window.showInformationMessage(`EDGEfab: ${project.name} has no props from the Library.`);
+    return;
+  }
+  const newer = lines.filter((l) => l.state === "newer" && l.prop);
+  const missing = lines.filter((l) => l.state === "missing");
+  const missingWords = missing.length ? ` ${missing.length} ${missing.length > 1 ? "aren't" : "isn't"} in the Library any more: ${missing.map((l) => l.entry.path).join(", ")}.` : "";
+  if (!newer.length) {
+    void vscode.window.showInformationMessage(`EDGEfab: ${project.name}'s props from the Library are up to date.${missingWords}`);
+    return;
+  }
+  const picked = await vscode.window.showQuickPick(
+    newer.map((l) => ({ label: l.prop!.title, description: `version ${l.entry.version ?? "?"} → ${l.prop!.version}`, detail: l.prop!.rel, picked: true, line: l })),
+    { title: `EDGEfab: newer in the Library, for ${project.name}`, placeHolder: "The ones ticked are copied in, replacing the project's", canPickMany: true, ignoreFocusOut: true },
+  );
+  if (!picked?.length) return;
+  try {
+    for (const p of picked) {
+      const r = addFromLibrary(p.line.prop!, project, root);
+      log(`Refreshed ${p.label} in ${project.name} to version ${r.version}`);
+    }
+    void vscode.window.showInformationMessage(`EDGEfab: ${picked.length} prop${picked.length > 1 ? "s" : ""} refreshed in ${project.name}. Pack it again to see them in the game.${missingWords}`);
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
   }
 }
 
@@ -328,11 +579,57 @@ export function activate(context: vscode.ExtensionContext): void {
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
   const view = new DeskView();
+  deskView = view;
+  libraryView = new LibraryView();
+  libraryView.refresh();
 
   installServer(context.extensionPath, log);
   context.subscriptions.push(
     output,
     vscode.window.registerTreeDataProvider("edgefab.desk", view),
+    vscode.window.registerTreeDataProvider("edgefab.library", libraryView),
+    vscode.commands.registerCommand("edgefab.addToLibrary", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry) await addDeskToLibrary(entry);
+    }),
+    vscode.commands.registerCommand("edgefab.library.setRoot", async () => {
+      const root = await askLibraryRoot(true);
+      if (root) void vscode.window.showInformationMessage(`EDGEfab: the EDGE Library is ${root}, for every EDGE tool.`);
+    }),
+    vscode.commands.registerCommand("edgefab.library.setModder", async () => {
+      const m = await askModder(true);
+      if (m) void vscode.window.showInformationMessage(`EDGEfab: new Library props go under ${m}\\props\\ in the game's files. Props already in the Library keep theirs.`);
+    }),
+    vscode.commands.registerCommand("edgefab.library.refresh", () => libraryView.refresh()),
+    vscode.commands.registerCommand("edgefab.library.view", (node: unknown) => {
+      const a = libraryAssetOf(node);
+      if (a) void openIn3D(viewOf(a));
+    }),
+    vscode.commands.registerCommand("edgefab.library.addToProject", async (node: unknown) => {
+      const a = libraryAssetOf(node);
+      if (a) await libraryToProject(a);
+    }),
+    vscode.commands.registerCommand("edgefab.library.edit", async (node: unknown) => {
+      const a = libraryAssetOf(node);
+      if (a) await libraryEdit(a);
+    }),
+    vscode.commands.registerCommand("edgefab.library.reveal", (node: unknown) => {
+      const p = libraryPathOf(node);
+      if (p) void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(p));
+    }),
+    vscode.commands.registerCommand("edgefab.library.makeProp", async (node: unknown) => {
+      const file = libraryPathOf(node);
+      if (file) await make((progress) => makeModel({ from: "file", file }, { version, onProgress: progress }), deskView);
+    }),
+    vscode.commands.registerCommand("edgefab.makeProp", async (uri?: vscode.Uri) => {
+      const file = uri?.fsPath ?? vscode.window.activeTextEditor?.document.uri.fsPath;
+      if (!file || !/\.(glb|gltf)$/i.test(file)) {
+        void vscode.window.showWarningMessage("EDGEfab: Make a Prop takes a .glb or .gltf file.");
+        return;
+      }
+      await make((progress) => makeModel({ from: "file", file }, { version, onProgress: progress }), deskView);
+    }),
+    vscode.commands.registerCommand("edgefab.refreshFromLibrary", refreshFromLibrary),
     ...registerWithEditor(version, log),
 
     vscode.commands.registerCommand("edgefab.importGlb", async () => {

@@ -19,6 +19,8 @@ export interface DeskEntry {
   model?: string;
   /** Its last four-view picture (picture first), when it has one. */
   picture?: PictureTake;
+  /** Where Add to Library put it, under the Library's root, and its version there. */
+  library?: { path: string; version: number };
 }
 
 /** Reads the asset folders on the Desk, newest first. */
@@ -41,7 +43,7 @@ export function listDesk(base = deskDir()): DeskEntry[] {
       const preview = ["preview.webp", "preview.png", "preview.jpg", "preview.jpeg"].map((f) => path.join(raw, f)).find((f) => fs.existsSync(f));
       const model = [prepared?.view, path.join(raw, "view.glb"), path.join(raw, "original.glb")].find((f): f is string => !!f && fs.existsSync(f));
       const picture = readPictures(raw)?.takes.at(-1);
-      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, model, picture, at: fs.statSync(folder).mtimeMs });
+      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, model, picture, library: asset.library, at: fs.statSync(folder).mtimeMs });
     } catch {
       // not one of ours, or half written
     }
@@ -97,6 +99,8 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
       }
       for (const note of p.notes) lines.push({ kind: "line", label: note, icon: "info", tooltip: note });
     }
+    if (entry.library) lines.push({ kind: "line", label: `In the Library, version ${entry.library.version}`, detail: entry.library.path, icon: "library", tooltip: `${entry.library.path}
+Add to Library again updates it there, one version up.` });
     if (entry.license) {
       const label =
         entry.license.source === "tripo" ? (entry.license.plan === "free" ? "Tripo, free plan: not yours to release" : "Tripo, paid plan: yours")

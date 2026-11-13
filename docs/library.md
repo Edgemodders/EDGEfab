@@ -4,7 +4,7 @@ title: Library assets
 
 # Assets in the EDGE <span class="y">Library</span>
 
-**Status: the Library is in F1, decided by the owner on 2026-10-31. The asset item below is a proposal**, to agree with EDGEbuilder (which keeps the Library's shared rules), REDcode and EDGEmat. Anything not yet checked is marked unverified.
+**Status: EDGEfab's part built in F1 on 2026-11-13** ([as built](#as-built-in-f1-2026-11-13), below). The asset item, first proposed here, is in the shared rules every EDGE tool follows since EDGEbuilder's draft 3 ([EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), closed); REDcode's Add to Library ([REDcode #19](https://github.com/Edgemodders/REDcode/issues/19), closed) and EDGEhack's quickhacks use it too. Anything not yet checked is marked unverified.
 
 ## Why
 
@@ -45,10 +45,10 @@ And, the same day: when adding an asset to the Library (any tool's Library), the
 
 | Kept in the Library | Becomes |
 |---|---|
-| A third-party `model.glb` in `Development/Meshes` | EDGEfab's **Make a prop** on it writes `model.prop.asset` next to it, or in a folder the modder picks (`Production/Meshes`). The GLB stays, and the asset records it as its source |
+| A third-party `model.glb` in `Development/Meshes` | EDGEfab's **Make a Prop** on it puts it on the Desk (as built: the Desk is where work in progress waits); **Add to Library** from there brings it back as `model.prop.asset` in the folder the modder picks (`Production/Meshes`). The GLB stays |
 | A game mesh added from REDcode | `comfy_rocker.mesh.asset`, with the mesh, its materials and textures, in the folder the modder picks |
 | The same, with **Use the game path** | The same item, in `base\...\` folders matching the mesh's game path, under the folder picked |
-| A made prop, with **Use the game path** | Its new game path (`<modder>\<asset>\...`, below) gives the folders. If the item's game path changes later (a game asset made new), the tool offers to move the item to match |
+| A made prop, with **Use the game path** | Its game path (`<modder>\props\<name>\`, below) gives the folders. If the item's game path changes later (a game asset made new), the tool offers to move it |
 
 ## The flow
 
@@ -103,8 +103,25 @@ A project's note of what it took, in its own folder (proposed): `source/library.
 |---|---|
 | An asset from the game, not yet changed | Keeps the game's paths. Added to a project as it is, it replaces the game's file, which is sometimes the point (a retexture) |
 | The first change by EDGEfab | EDGEfab offers to **make it a new asset**: its files move under a folder of the modder's own (`<modder>\<asset>\...`, lowercase, no spaces) and the references inside them are changed to match. How the references are rewritten is unverified (REDbridge's `cr2w.patch` on resource paths is the likely way) |
-| A made asset (GLB, Tripo) | New paths from the start, under the same folder |
+| A made asset (GLB, Tripo) | New paths from the start: `<modder>\props\<name>\` for a prop, the modder's own folder asked once, so a Library prop has the same paths in every project |
 | The same asset in two deployed mods | The same files twice: the earlier archive wins (EDGEdeck's `modlist.txt`), harmless while both carry the same version. Different versions are flagged when the projects are packed (unverified how) |
+
+## As built in F1 (2026-11-13)
+
+| | Built |
+|---|---|
+| The root | `%APPDATA%\EDGE\library.json`, as every EDGE tool reads it. The first Add to Library with none set asks, offering `Documents\EDGE Library`; **Set the Library Folder** changes it (not a Relocate: the files stay where they are). Refused inside the game's folder |
+| **Add to Library** (Desk) | Builds the prop's game files into the item, as Add to Project does into a project, with the item as the project: `source\archive\<modder>\props\<name>\` (mesh, materials, textures, the `.ent` with the collision setting's kind), `source
+aw\<modder>\props\<name>\` (the prepared GLB, `<name>.edgefab.json`), beside the Desk item's own sources in `source
+aw\<name>\`. Built in a hidden folder beside its place, then moved there whole. `main` is the `.ent`. Needs REDbridge; about as long as Add to Project |
+| The modder's folder | Asked once (**Set Your Folder in Game Paths**), shared with the MCP server in EDGEfab's settings. A prop's game name is made unique among the Library's props, since two at one game path would replace each other in the game |
+| Folder and Use the game path | A folder of the modder's (the last used offered first, or a new one typed), then Use the game path or not (the last choice first) |
+| Again, after a change | The Desk item keeps its `id` and notes where it went (`library` in its asset.json); Add to Library again updates the item where it is, one version up, at the same game paths |
+| **Library view** | The root's folders, every tool's `.asset` items (other kinds shown, not changed), and model files (GLB, glTF, FBX, `.blend`). On a prop: Add to Project, Open in 3D, Edit on the Desk, Reveal. On a GLB: Make a Prop |
+| **Add to Project** (Library) | A copy of the files the prop's record lists, at their game paths, with no REDbridge; the project's `source/library.json` gets one entry (`by: "edgefab"`, `kind: "prop"`, `id`, `path`, `version`, `files`). Files an earlier version or an earlier Add to Project of it wrote go first |
+| **Refresh Project from Library** | Reads the note, finds each prop by `id`, else `path`; lists newer ones, ticked, and copies those chosen. Missing ones are named |
+| **Edit on the Desk** | Copies a Library prop's own sources back to the Desk with its `id`; a Desk copy with the same id is replaced only when the modder says so |
+| MCP | `fab_library` (list a folder; set the root or the modder's folder when the user says), `fab_library_add`, `fab_library_edit`, `fab_refresh`, `fab_add` with `from: "library"` |
 
 ## Who does what
 
