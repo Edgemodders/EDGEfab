@@ -20,7 +20,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 1. Command palette: **EDGEfab: Set Tripo Key**. Type `abc`: refused in words. Paste the real key: "set, in VS Code's secret storage".
 2. **EDGEfab: Set OpenAI Key**, the same way (`sk-`).
-3. **EDGEfab: Tripo Plan...**: pick Paid.
+3. **EDGEfab: Set Tripo Plan (Paid or Free)**: pick Paid.
 
 **B. A prop from a GLB** (free)
 
