@@ -14,7 +14,7 @@ import * as path from "node:path";
 import { bridgeOver, materialsFromModel, projectAt, type BridgeCall, type FromModelMaterial, type ModelGlow } from "@edgemodders/edgemat-core";
 import { deskDir, slug } from "./config";
 import type { AssetRecord } from "./make";
-import type { PrepareResult } from "./prepare";
+import { readPrepared, type PrepareResult } from "./prepare";
 
 /**
  * How the prop is solid. "physical": one entPhysicalMeshComponent, its box in the mesh's physics data
@@ -285,21 +285,14 @@ export function readItem(item: string): { name: string; asset: AssetRecord; prep
   if (!base.endsWith(".prop.asset")) throw new AddError(`${item} is not a Desk item (a <name>.prop.asset folder).`);
   const name = base.slice(0, -".prop.asset".length);
   const raw = path.join(item, "source", "raw", name);
-  let asset: AssetRecord, prepared: PrepareResult;
+  let asset: AssetRecord;
   try {
     asset = JSON.parse(fs.readFileSync(path.join(item, "asset.json"), "utf8"));
-    prepared = JSON.parse(fs.readFileSync(path.join(raw, "prepared.json"), "utf8"));
   } catch {
-    throw new AddError(`${name} isn't prepared yet: it has no asset.json or prepared.json.`);
+    throw new AddError(`${name} isn't prepared yet: it has no asset.json.`);
   }
-  const here = (f: string | undefined) => (f ? path.join(raw, path.basename(f)) : undefined);
-  prepared = {
-    ...prepared,
-    glb: here(prepared.glb)!,
-    view: prepared.view ? here(prepared.view) : undefined,
-    textures: prepared.textures.map((t) => ({ ...t, file: here(t.file)! })),
-    glow: (prepared.glow ?? []).map((g) => ({ ...g, texture: here(g.texture) })),
-  };
+  const prepared = readPrepared(raw);
+  if (!prepared) throw new AddError(`${name} isn't prepared yet: it has no prepared.json.`);
   if (!fs.existsSync(prepared.glb)) throw new AddError(`${name}'s prepared model is missing: ${prepared.glb}`);
   return { name, asset, prepared, raw };
 }

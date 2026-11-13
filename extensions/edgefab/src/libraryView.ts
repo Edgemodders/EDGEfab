@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { libraryFolder, libraryRoot, recordedLibraryRoot, type LibraryAsset, type PrepareResult } from "./core";
+import { libraryFolder, libraryRoot, readPrepared, recordedLibraryRoot, type LibraryAsset, type PrepareResult } from "./core";
 
 export type LibraryNode =
   | { kind: "folder"; rel: string; name: string }
@@ -28,11 +28,7 @@ const KindWords: Record<string, string> = {
 
 /** A Library prop's prepared model, from its own sources. */
 export function preparedOf(a: LibraryAsset): PrepareResult | undefined {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(a.folder, "source", "raw", a.name, "prepared.json"), "utf8")) as PrepareResult;
-  } catch {
-    return undefined;
-  }
+  return readPrepared(path.join(a.folder, "source", "raw", a.name));
 }
 
 /** The GLB REDcode's 3D view opens for a Library prop: its view.glb, with textures. */

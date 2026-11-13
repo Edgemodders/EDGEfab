@@ -117,7 +117,19 @@ A Desk prop goes into the EDGE Library with its game files built in, from there 
 
 **Fixed on the way:** the update's history lost the first "Added to the Library" line, which went only into the Library's copy; the Desk item now gets the same line (seen in step 7's Desk item). **Not run:** the extension's Library view and its commands in VS Code (the owner's test, with the other Desk commands).
 
-## F1 check: an added prop in the game
+## F1: Rename, and copied items (without the game)
+
+A Desk prop renamed, then changed (Set Size), as a copy of another item: a copied or moved item (Rename, the Library, Edit on the Desk) must change only its own files. Its records keep the absolute paths of where it was made. Run after every change to `renameItem`, `readPrepared` or `readPictures`.
+
+**Steps.** In a session's scratchpad (`libtestun3.cjs`, `EDGEFAB_DATA` a scratch Desk): copy a Desk prop with pictures (`vending_e2e`) from the real Desk into the scratch Desk, and note the real one's files' checksums. `fab_rename` it to "Corner vending machine", `fab_size` 1.9 m, `fab_rename` to "Corner Vending Machine!", then `fab_desk`. Compare the real Desk's checksums.
+
+**Expected.** The folder becomes `corner_vending_machine.prop.asset`, then stays (the same name in files); the title follows. `fab_size` scales the copy. `fab_desk` gives the copy's `view` and picture sheet inside the copy. The real Desk's files are unchanged.
+
+### Run 1, 2026-11-13: passed after a fix
+
+First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** `vending_e2e.glb` and `view.glb` (1.8 to 1.9 m): `setSize` followed `prepared.json`'s absolute paths, which a copy keeps, and `fab_desk` reported them too. Scaled back the same day (both 1.8 m again, the record unchanged). **Fixed:** `readPrepared` and `readPictures` find an item's files in the item itself, as Add to Project and the glow already did; Set Size, the Desk and Library views and `fab_desk` use them. Second run: as expected, the real Desk's files unchanged (checksums). **Not run:** Rename in VS Code (the owner's pass).
+
+
 
 With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. **Run 1 passed, 2026-11-09**, except the normal maps' green (below).
 

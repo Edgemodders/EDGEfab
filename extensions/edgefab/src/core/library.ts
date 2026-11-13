@@ -21,7 +21,7 @@ import * as path from "node:path";
 import { execFileSync } from "node:child_process";
 import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { addToProject, readItem, type Collision, type ProjectFolders } from "./addToProject";
-import { deskDir, readSettings, slug, writeSettings } from "./config";
+import { deskDir, readSettings, renameFolder, slug, writeSettings } from "./config";
 import type { AssetRecord } from "./make";
 
 export class LibraryError extends Error {}
@@ -303,24 +303,6 @@ export interface LibraryAddResult {
   /** Game files in the item. */
   files: number;
   notes: string[];
-}
-
-/**
- * Renames a folder, waiting for Windows: it refuses while anything has a file inside open, and an antivirus
- * or the search indexer opens files just written. Tries for about 13 seconds.
- */
-async function renameFolder(from: string, to: string, waits = [50, 100, 200, 400, 800, 1600, 3200, 6400]): Promise<void> {
-  for (let i = 0; ; i++) {
-    try {
-      fs.renameSync(from, to);
-      return;
-    } catch (e) {
-      const code = (e as NodeJS.ErrnoException).code;
-      if (code !== "EPERM" && code !== "EACCES" && code !== "EBUSY") throw e;
-      if (i >= waits.length) throw new LibraryError(`Could not move ${from} to ${to}: something has a file in it open, such as an antivirus or the search indexer. Try again in a moment. (${code})`);
-      await new Promise((resolve) => setTimeout(resolve, waits[i]));
-    }
-  }
 }
 
 /** A Desk item's own files: everything but what an earlier build put in it. */

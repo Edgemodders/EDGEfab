@@ -16,7 +16,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
 import {
-  addToProject, deskItem, drawPicture, envKey, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
+  addToProject, deskItem, drawPicture, envKey, readPrepared, renameItem, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
 } from "../../../extensions/edgefab/src/core";
@@ -179,7 +179,7 @@ server.registerTool(
           const name = dir.slice(0, -".prop.asset".length);
           const asset = readJson(path.join(folder, "asset.json"));
           const raw = path.join(folder, "source", "raw", name);
-          const prepared = readJson(path.join(raw, "prepared.json"));
+          const prepared = readPrepared(raw);
           const picture = readPictures(raw)?.takes.at(-1);
           return {
             name, folder, title: asset?.name,
@@ -417,6 +417,26 @@ server.registerTool(
         props: lines.map((l) => ({ path: l.prop?.rel ?? l.entry.path, name: l.prop?.title, state: l.state, inProject: l.entry.version, inLibrary: l.prop?.version })),
         updated: update ? updated.map((u) => ({ entity: u.entity, version: u.version })) : undefined,
       });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+server.registerTool(
+  "fab_rename",
+  {
+    description:
+      "Rename: a prop on EDGEfab's Desk gets a new name, and its folder and files take it too (lowercase, no spaces; _2 when taken). It keeps its id, so the Library still knows it. " +
+      "A project it was added to keeps the old name until fab_add again.",
+    inputSchema: {
+      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      name: z.string().describe("The new name, in words, such as Rusty oil drum."),
+    },
+  },
+  async ({ prop, name }) => {
+    try {
+      return text(await renameItem(deskItem(prop), name, { version: __VERSION__ }));
     } catch (e) {
       return failure(e);
     }

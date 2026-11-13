@@ -5,8 +5,8 @@
 import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { readSettings, slug, deskDir, type TripoPlan } from "./config";
-import { prepareModel, type PrepareOptions, type PrepareResult } from "./prepare";
+import { readSettings, renameFolder, slug, deskDir, type TripoPlan } from "./config";
+import { prepareModel, readPrepared, type PrepareOptions, type PrepareResult } from "./prepare";
 import { NodeIO } from "@gltf-transform/core";
 import { quiet } from "./quiet";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
@@ -227,8 +227,9 @@ export async function setSize(folder: string, height: number, opts: { version: s
   const name = itemName(folder);
   const raw = path.join(folder, "source", "raw", name);
   const preparedFile = path.join(raw, "prepared.json");
-  if (!fs.existsSync(preparedFile)) throw new Error(`${name} isn't a model yet: make it first.`);
-  const prepared = JSON.parse(fs.readFileSync(preparedFile, "utf8")) as PrepareResult;
+  // Its own files, wherever the item was made (a copy must never change the original's).
+  const prepared = readPrepared(raw);
+  if (!prepared) throw new Error(`${name} isn't a model yet: make it first.`);
   const k = height / prepared.size.height;
   const io = new NodeIO().setLogger(quiet).registerExtensions(ALL_EXTENSIONS);
   for (const file of [prepared.glb, prepared.view].filter((f): f is string => !!f && fs.existsSync(f))) {
@@ -251,4 +252,48 @@ export async function setSize(folder: string, height: number, opts: { version: s
   asset.history.push({ tool: `EDGEfab ${opts.version}`, did: `Set its size to ${+height.toFixed(3)} m tall`, date: new Date().toISOString() });
   fs.writeFileSync(assetFile, JSON.stringify(asset, null, 2));
   return prepared;
+}
+
+/** Every JSON file under a folder. */
+const jsonFiles = (dir: string): string[] =>
+  fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? jsonFiles(path.join(dir, e.name)) : e.name.endsWith(".json") ? [path.join(dir, e.name)] : []));
+
+/**
+ * Rename: a Desk item's name, and its folder's to match (`<slug>.prop.asset`, `_2` when taken). The paths its
+ * records keep (prepared.json, the pictures') follow. Its id stays, so the Library still knows it; a project
+ * it was added to keeps the old name until Add to Project again.
+ */
+export async function renameItem(folder: string, title: string, opts: { version: string }): Promise<{ folder: string; name: string; renamed: boolean }> {
+  title = title.trim();
+  if (!title) throw new Error("A name, please.");
+  const assetFile = path.join(folder, "asset.json");
+  if (!fs.existsSync(assetFile)) throw new Error(`There is no Desk item at ${folder}.`);
+  const old = itemName(folder);
+  const wanted = slug(title);
+  let target = folder;
+  let name = old;
+  if (wanted !== old) {
+    ({ folder: target, name } = freeFolder(path.dirname(folder), wanted));
+    await renameFolder(folder, target);
+    const oldRaw = path.join(folder, "source", "raw", old);
+    const newRaw = path.join(target, "source", "raw", name);
+    if (fs.existsSync(path.join(target, "source", "raw", old))) fs.renameSync(path.join(target, "source", "raw", old), newRaw);
+    // Its records keep absolute paths: they follow the move.
+    if (fs.existsSync(newRaw)) {
+      const from = [oldRaw, JSON.stringify(oldRaw).slice(1, -1)];
+      const to = [newRaw, JSON.stringify(newRaw).slice(1, -1)];
+      for (const f of jsonFiles(newRaw)) {
+        let text = fs.readFileSync(f, "utf8");
+        const before = text;
+        for (let i = 0; i < from.length; i++) text = text.split(from[i]).join(to[i]);
+        if (text !== before) fs.writeFileSync(f, text);
+      }
+    }
+  }
+  const asset = JSON.parse(fs.readFileSync(path.join(target, "asset.json"), "utf8")) as AssetRecord;
+  const was = asset.name;
+  asset.name = title;
+  asset.history.push({ tool: `EDGEfab ${opts.version}`, did: `Renamed from "${was}" to "${title}"`, date: new Date().toISOString() });
+  fs.writeFileSync(path.join(target, "asset.json"), JSON.stringify(asset, null, 2));
+  return { folder: target, name, renamed: target !== folder };
 }

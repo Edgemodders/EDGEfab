@@ -58,11 +58,23 @@ export function viewsPrompt(words: string): string {
 }
 
 export function readPictures(raw: string): PictureRecord | undefined {
+  let record: PictureRecord;
   try {
-    return JSON.parse(fs.readFileSync(path.join(raw, "picture", "picture.json"), "utf8")) as PictureRecord;
+    record = JSON.parse(fs.readFileSync(path.join(raw, "picture", "picture.json"), "utf8")) as PictureRecord;
   } catch {
     return undefined;
   }
+  // Each take's files, found in this item: the paths recorded are where it was drawn, and a copied or moved
+  // item (Rename, the Library, Edit on the Desk) keeps them.
+  const here = (take: number, f: string) => path.join(raw, "picture", String(take), path.basename(f));
+  return {
+    ...record,
+    takes: record.takes.map((t) => ({
+      ...t,
+      sheet: here(t.take, t.sheet),
+      views: Object.fromEntries(Object.entries(t.views).map(([k, f]) => [k, here(t.take, f)])) as PictureTake["views"],
+    })),
+  };
 }
 
 async function openaiKey(call: PictureCall): Promise<string> {

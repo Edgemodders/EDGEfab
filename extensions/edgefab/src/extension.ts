@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
+  addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, renameItem, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
   addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
   setModderFolder, suggestedLibraryRoot, LibraryError,
   DefaultCollision, DefaultGlowStrength, DetailLevels, GlowLevels, ViewNames,
@@ -752,6 +752,25 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.openPreview", (item: unknown) => {
       const entry = entryOf(item);
       if (entry?.preview) void vscode.commands.executeCommand("vscode.open", vscode.Uri.file(entry.preview));
+    }),
+    vscode.commands.registerCommand("edgefab.rename", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (!entry) return;
+      const title = (await vscode.window.showInputBox({
+        title: `EDGEfab: rename ${entry.title}`,
+        prompt: "Its name on the Desk. Its files take it too, lowercase with no spaces; in a project, after Add to Project again.",
+        value: entry.title,
+        ignoreFocusOut: true,
+        validateInput: (v) => (v.trim() ? null : "A name, please."),
+      }))?.trim();
+      if (!title || title === entry.title) return;
+      try {
+        const r = await renameItem(entry.folder, title, { version });
+        log(`Renamed ${entry.title} to ${title}${r.renamed ? `: ${path.basename(r.folder)}` : ""}`);
+        view.refresh();
+      } catch (e) {
+        void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+      }
     }),
     vscode.commands.registerCommand("edgefab.delete", async (item: unknown) => {
       const entry = entryOf(item);

@@ -375,3 +375,24 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   await io.write(glb, doc);
   return { glb, submeshes, size, materials: materials.map((m) => m.getName()), textures, glow, view, ...(parts ? { parts } : {}), ...(sizeUnknown ? { sizeUnknown } : {}), notes };
 }
+
+/**
+ * An item's prepared.json, its files found beside it: the paths it records are where the model was made, and
+ * an item copied or moved since (Rename, the Library, Edit on the Desk) keeps them. Undefined when there is none.
+ */
+export function readPrepared(raw: string): PrepareResult | undefined {
+  let prepared: PrepareResult;
+  try {
+    prepared = JSON.parse(fs.readFileSync(path.join(raw, "prepared.json"), "utf8")) as PrepareResult;
+  } catch {
+    return undefined;
+  }
+  const here = (f: string) => path.join(raw, path.basename(f));
+  return {
+    ...prepared,
+    glb: here(prepared.glb),
+    view: prepared.view ? here(prepared.view) : undefined,
+    textures: prepared.textures.map((t) => ({ ...t, file: here(t.file) })),
+    glow: (prepared.glow ?? []).map((g) => ({ ...g, texture: g.texture ? here(g.texture) : undefined })),
+  };
+}

@@ -54,3 +54,21 @@ export function slug(words: string, fallback = "model"): string {
   const s = words.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40).replace(/_+$/, "");
   return s || fallback;
 }
+
+/**
+ * Renames a folder, waiting for Windows: it refuses while anything has a file inside open, and an antivirus
+ * or the search indexer opens files just written. Tries for about 13 seconds.
+ */
+export async function renameFolder(from: string, to: string, waits = [50, 100, 200, 400, 800, 1600, 3200, 6400]): Promise<void> {
+  for (let i = 0; ; i++) {
+    try {
+      fs.renameSync(from, to);
+      return;
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code;
+      if (code !== "EPERM" && code !== "EACCES" && code !== "EBUSY") throw e;
+      if (i >= waits.length) throw new Error(`Could not move ${from} to ${to}: something has a file in it open, such as an antivirus or the search indexer. Try again in a moment. (${code})`);
+      await new Promise((resolve) => setTimeout(resolve, waits[i]));
+    }
+  }
+}

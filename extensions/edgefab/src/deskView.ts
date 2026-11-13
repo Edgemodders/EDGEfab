@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { deskDir, glowWords, readPictures, type PictureTake, type PrepareResult } from "./core";
+import { deskDir, glowWords, readPictures, readPrepared, type PictureTake, type PrepareResult } from "./core";
 
 export interface DeskEntry {
   folder: string;
@@ -34,12 +34,7 @@ export function listDesk(base = deskDir()): DeskEntry[] {
     try {
       const asset = JSON.parse(fs.readFileSync(path.join(folder, "asset.json"), "utf8"));
       const raw = path.join(folder, "source", "raw", name);
-      let prepared: PrepareResult | undefined;
-      try {
-        prepared = JSON.parse(fs.readFileSync(path.join(raw, "prepared.json"), "utf8"));
-      } catch {
-        prepared = undefined;
-      }
+      const prepared = readPrepared(raw);
       const preview = ["preview.webp", "preview.png", "preview.jpg", "preview.jpeg"].map((f) => path.join(raw, f)).find((f) => fs.existsSync(f));
       const model = [prepared?.view, path.join(raw, "view.glb"), path.join(raw, "original.glb")].find((f): f is string => !!f && fs.existsSync(f));
       const picture = readPictures(raw)?.takes.at(-1);

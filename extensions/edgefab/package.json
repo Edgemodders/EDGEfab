@@ -268,6 +268,11 @@
         "title": "Refresh Project from Library...",
         "category": "EDGEfab",
         "icon": "$(sync)"
+      },
+      {
+        "command": "edgefab.rename",
+        "title": "Rename...",
+        "category": "EDGEfab"
       }
     ],
     "menus": {
@@ -433,6 +438,11 @@
           "command": "edgefab.library.reveal",
           "when": "view == edgefab.library && viewItem =~ /^lib/",
           "group": "2@0"
+        },
+        {
+          "command": "edgefab.rename",
+          "when": "view == edgefab.desk && viewItem =~ /^(desk|picture)/",
+          "group": "2@0"
         }
       ],
       "commandPalette": [
@@ -518,6 +528,10 @@
         },
         {
           "command": "edgefab.makeProp",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.rename",
           "when": "false"
         }
       ],
