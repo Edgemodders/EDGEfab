@@ -46,6 +46,10 @@ Glow: test 8's vending machine with a glow map made from its bright, saturated p
 
 **Not yet tried:** the extension in VS Code (Import a GLB, Generate with Tripo, the Desk view, Open in 3D in REDcode's view), and `fab_make` with Tripo through the MCP server. Both spend nothing new until a Tripo generation (20 credits).
 
+### Run 5, 2026-11-13: passed (step 1)
+
+After the Library, Rename, `readPrepared` and the core package's changes to `src/core` (`PreparedPart` and `MaxParts` moved to `prepare.ts`). Step 1 on the picture-first vending machine's Tripo model (`original.glb`, in parts): `ok`; 70 pieces into 6 parts, back faces on 5, the quarter turn, the size-unknown note. Steps 2 and 3 not rerun: the import and the server's start are covered by the Library and core-package runs the same day.
+
 ## F1: Add to Project (without the game)
 
 A Desk item becomes a prop in a WolvenKit project, through the bundled core, the MCP server's `fab_add` and (not yet tried) the extension's Add to Project. Run after every change to `addToProject.ts`.
