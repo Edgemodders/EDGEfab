@@ -52,7 +52,7 @@ A Desk item becomes a prop in a WolvenKit project, through the bundled core, the
 
 **Steps.**
 
-1. `npm run build` in `extensions/edgefab` (it needs EDGEmat's checkout beside this repo, [Dev setup](dev-setup.html)).
+1. `npm run build` in `extensions/edgefab` (EDGEmat's core from the npm package `@edgemodders/edgemat-core` since 2026-11-13; before, a checkout beside this repo).
 2. With the core (`dist/core.js`): `startBridge`, then `addToProject` on test 8's glowing vending machine (`vending_glow.prop.asset`) into an empty scratch project, once with each `collision`: `physical`, `box`, `none`.
 3. Read the mesh and entity back (`cr2w.read`): material entries, the appearance, the physics data, the entity's components and `compiledData`.
 4. The MCP server: `tools/list`, then `tools/call` `fab_add` with the prop's folder and the project.
@@ -72,6 +72,19 @@ Bridge 0.11.0, EDGEmat's core at `a7b66a8`.
 | `fab_add` | Listed with `fab_make`, `fab_desk`, `fab_tripo`; 20.0 s including REDbridge's start; the same files; no REDbridge left running |
 
 Found on the way: EDGEmat's copy of the REDbridge client is older than REDcode's (its import has no `template`), so EDGEfab calls REDbridge's methods by name through one call function.
+
+### Run 2, 2026-11-13: passed (EDGEmat's core from npm)
+
+After the switch to `@edgemodders/edgemat-core` 0.3.2 from npm (EDGEmat #7), in place of EDGEmat's checkout. Step 4 only, with the picture-first prop in parts: `fab_add` with `vending_e2e` (6 parts, glow 3) into an empty scratch project, `physical`, then `box`.
+
+| Check | Result |
+|---|---|
+| Typecheck, build | Clean; no source from EDGEmat's checkout in either bundle (source maps) |
+| `physical` | 191.5 s including REDbridge's start: 6 materials, one per part, each a `.mi` with its color, roughness, metal and normal textures, glow where the part glows (front: EV 2.585, white, by its map) |
+| `box` | 185.4 s, the prop replaced |
+| Afterwards | No REDbridge left running from this run; no stray output on the MCP channel |
+
+Much slower than Run 1 (15 s) because 6 parts each convert 4 or 5 textures at up to 4096², against one material at 2048². Steps 2 and 3 (reading the mesh and entity back) not rerun: `addToProject.ts` is unchanged.
 
 ## F1 check: an added prop in the game
 

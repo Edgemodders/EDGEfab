@@ -14,12 +14,7 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "paths": {
-      "@edgemodders/edgemat-core": [
-        "../../../EDGEmat/extensions/edgemat/src/core/index.ts"
-      ]
-    }
+    "esModuleInterop": true
   },
   "include": [
     "src"

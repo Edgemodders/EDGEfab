@@ -34,14 +34,7 @@ npm run typecheck
 npm run smoke -- "<a textured model>.glb"   # makes a prop from it with the bundled core, into a temporary folder
 ```
 
-**EDGEmat's core, from a checkout, for now.** Add to Project makes its materials with EDGEmat's `materialsFromModel` (EDGEmat #4, #6). Until EDGEmat publishes its core as `@edgemodders/edgemat-core` ([EDGEmat #7](https://github.com/Edgemodders/EDGEmat/issues/7)), the build takes it from EDGEmat's source: a checkout beside this repo (`..\EDGEmat`), or the folder in `EDGEMAT_SRC`, with `npm install` run there (its `pngjs` and `vscode-jsonrpc` resolve from its own `node_modules`). `tools/build/edgemat.mjs` points esbuild at it, and both `tsconfig.json` files map the name with `paths`. Development builds only: no release is built this way (docs/tools-together.md, rule 1).
-
-```powershell
-git clone https://github.com/Edgemodders/EDGEmat.git ..\EDGEmat
-cd ..\EDGEmat; npm install; cd ..\EDGEfab
-```
-
-Used since 2026-11-04 at EDGEmat `a7b66a8`; at `3086e03` since 2026-11-05 (its settled glow rule).
+**EDGEmat's core, from npm.** Add to Project makes its materials with EDGEmat's `materialsFromModel` (EDGEmat #4, #6), from the package `@edgemodders/edgemat-core` ([EDGEmat #7](https://github.com/Edgemodders/EDGEmat/issues/7), published with EDGEmat 0.3.2 on 2026-11-13): a devDependency of the extension and the MCP server, bundled into both, so `npm install` is all it needs. Pinned `~0.3.2`: before 1.0, EDGEmat raises at least the middle number when an export's request or result changes (EDGEfab relies on `materialsFromModel`, `bridgeOver` and `BridgeCall`). Until 2026-11-13 the build took EDGEmat's source from a checkout beside this repo (`tools/build/edgemat.mjs`, removed).
 
 F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.json`). `npm run mcp:start` runs the MCP server on stdio.
 
@@ -53,6 +46,7 @@ F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.jso
 | `mikktspace` | 1.1.1 | MIT | MikkTSpace tangents, as Blender makes them; WolvenKit needs tangents. Its `.wasm` is copied beside each bundle by the build |
 | `jpeg-js` | 0.4.4 | BSD-3-Clause | Reads a JPEG color texture in plain JavaScript for Make the Painted Lights Glow, so it works with no game and no REDbridge (Tripo's color textures are JPEG). `npm install -D jpeg-js@0.4.4 -w extensions/edgefab` |
 | `pngjs` | 7.0.0 | MIT | Reads and writes PNG in plain JavaScript: Tripo's normal maps when parts are packed into one picture, and the four views cut from the picture-first sheet. The version EDGEmat uses. `npm install -D pngjs@7.0.0 @types/pngjs@6.0.5 -w extensions/edgefab` |
+| `@edgemodders/edgemat-core` | 0.3.2 | MIT | EDGEmat's core: the materials Add to Project makes (above). `npm install -D "@edgemodders/edgemat-core@~0.3.2" -w extensions/edgefab -w packages/edgefab-mcp` (then `~` in both package.json files) |
 | `@modelcontextprotocol/sdk`, `zod` | 1.32, 3.25 | MIT | The MCP server, as EDGEmat's |
 | `esbuild`, `typescript`, `@types/*` | 0.28, 5.9 | MIT, Apache-2.0 | Building and type checks |
 

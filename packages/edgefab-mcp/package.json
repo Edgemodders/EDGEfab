@@ -34,6 +34,7 @@
     "start": "node dist/server.cjs"
   },
   "devDependencies": {
+    "@edgemodders/edgemat-core": "~0.3.2",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/node": "^24.0.0",
     "esbuild": "^0.28.2",

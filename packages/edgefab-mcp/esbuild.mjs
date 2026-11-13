@@ -2,7 +2,6 @@
 // (it has no VS Code dependency) and the MCP SDK included, so `node dist/server.cjs` needs nothing else.
 import * as esbuild from "esbuild";
 import { inlineMikktspace, noSharp } from "../../tools/build/plugins.mjs";
-import { edgematAlias } from "../../tools/build/edgemat.mjs";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,7 +10,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(fs.readFileSync(path.join(here, "package.json"), "utf8"));
 
 await esbuild.build({
-  plugins: [noSharp, inlineMikktspace, edgematAlias],
+  plugins: [noSharp, inlineMikktspace],
   entryPoints: ["src/server.ts"],
   outfile: "dist/server.cjs",
   bundle: true,

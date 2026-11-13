@@ -3,14 +3,13 @@
 // the extension ships with no node_modules. `node esbuild.mjs --watch` rebuilds on change.
 import * as esbuild from "esbuild";
 import { inlineMikktspace, noSharp } from "../../tools/build/plugins.mjs";
-import { edgematAlias } from "../../tools/build/edgemat.mjs";
 import * as fs from "node:fs";
 
 const watch = process.argv.includes("--watch");
 const mcpVersion = JSON.parse(fs.readFileSync("../../packages/edgefab-mcp/package.json", "utf8")).version;
 const version = JSON.parse(fs.readFileSync("package.json", "utf8")).version;
 
-const common = { bundle: true, platform: "node", format: "cjs", target: "node20", sourcemap: true, logLevel: "info", plugins: [noSharp, inlineMikktspace, edgematAlias] };
+const common = { bundle: true, platform: "node", format: "cjs", target: "node20", sourcemap: true, logLevel: "info", plugins: [noSharp, inlineMikktspace] };
 
 const builds = [
   { ...common, entryPoints: ["src/extension.ts"], outfile: "dist/extension.js", external: ["vscode"], define: { __VERSION__: JSON.stringify(version) } },

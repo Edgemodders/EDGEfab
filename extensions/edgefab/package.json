@@ -389,6 +389,7 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
+    "@edgemodders/edgemat-core": "~0.3.2",
     "@gltf-transform/core": "4.5.1",
     "@gltf-transform/extensions": "4.5.1",
     "@gltf-transform/functions": "4.5.1",
