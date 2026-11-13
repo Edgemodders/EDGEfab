@@ -19,6 +19,7 @@ const out = extension ? join(root, "extensions/edgefab/THIRD-PARTY-NOTICES.txt")
 
 // Each bundled package's folder: the source path up to node_modules/<name> or node_modules/@scope/<name>.
 const packages = new Map();
+const hiddenPackages = { "@edgemodders/edgemat-core": /node_modules[\\/]extensions[\\/]edgemat[\\/]/ };
 for (const map of maps) {
   if (!existsSync(map)) throw new Error(`${map} is missing: build first (npm run build)`);
   for (const source of JSON.parse(readFileSync(map, "utf8")).sources) {
@@ -28,6 +29,15 @@ for (const map of maps) {
     // build machine (gl-matrix's name node_modules/.deno/...), which exist nowhere here.
     // Failing that, the package by its name in the workspace's own node_modules.
     let found = false;
+    // A package whose own source map names its repo's paths above the package, so they land outside it
+    // (node_modules/extensions/edgemat/... for @edgemodders/edgemat-core 0.3.2): known by that path.
+    for (const [name, pattern] of Object.entries(hiddenPackages)) {
+      const dir = join(root, "node_modules", ...name.split("/"));
+      if (pattern.test(file) && existsSync(join(dir, "package.json"))) {
+        packages.set(dir, true);
+        found = true;
+      }
+    }
     for (let at = parts.lastIndexOf("node_modules"); at >= 0 && !found; at = parts.lastIndexOf("node_modules", at - 1)) {
       const name = parts.slice(at + 1, at + (parts[at + 1]?.startsWith("@") ? 3 : 2));
       for (const dir of [parts.slice(0, at + 1 + name.length).join(sep), join(root, "node_modules", ...name)]) {
