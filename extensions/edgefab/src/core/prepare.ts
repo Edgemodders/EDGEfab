@@ -21,9 +21,24 @@ import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, 
 // @ts-expect-error TS1479
 import { MeshoptSimplifier } from "meshoptimizer";
 import { generateTangents } from "mikktspace";
-import { addBackFaces, groupParts, type PreparedPart } from "./parts";
+import { addBackFaces, groupParts } from "./parts";
 
 /** WolvenKit's limit: a submesh's indices are 16-bit. */
+/** At most this many parts: each is one submesh, material and texture set (parts.ts groups them). */
+export const MaxParts = 10;
+
+export interface PreparedPart {
+  /** The part's name in plain words ("body", "glass", "inside", "front"...), before prepare puts the model's name in front. */
+  name: string;
+  /** Its material, as prepare names it. */
+  material: string;
+  /** How many of the model's pieces it holds. */
+  pieces: number;
+  triangles: number;
+  /** Its share of the model's surface, 0 to 1. */
+  share: number;
+}
+
 export const MaxSubmeshVertices = 65535;
 
 export interface LodLevel {

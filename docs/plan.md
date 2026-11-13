@@ -325,6 +325,13 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 
 Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order is F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
+### What other repos need from EDGEfab
+
+| Repo | Need | State |
+|---|---|---|
+| EDGEbuilder | EDGEfab's core as `@edgemodders/edgefab-core`, for its B2d Import a model (a GLB, or a Desk prop, prepared and added to the open project from inside the game, then packed and hot-loaded); the Desk's place and its items' shape kept stable ([EDGEfab #5](https://github.com/Edgemodders/EDGEfab/issues/5), 2026-11-12) | **Built 2026-11-13** (`packages/edgefab-core`), published to npm with EDGEfab's first release |
+| EDGEbuilder | An entity with collision per prop, lowercase paths ([EDGEfab #2](https://github.com/Edgemodders/EDGEfab/issues/2)) | Built in Add to Project 2026-11-04; both collisions solid in the game 2026-11-09; the placing test with EDGEbuilder is F1's |
+
 ### What EDGEfab needs from other repos
 
 Filed as `request` issues when its phase starts, with the shape that would work:

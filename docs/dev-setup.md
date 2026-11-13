@@ -36,6 +36,8 @@ npm run smoke -- "<a textured model>.glb"   # makes a prop from it with the bund
 
 **EDGEmat's core, from npm.** Add to Project makes its materials with EDGEmat's `materialsFromModel` (EDGEmat #4, #6), from the package `@edgemodders/edgemat-core` ([EDGEmat #7](https://github.com/Edgemodders/EDGEmat/issues/7), published with EDGEmat 0.3.2 on 2026-11-13): a devDependency of the extension and the MCP server, bundled into both, so `npm install` is all it needs. Pinned `~0.3.2`: before 1.0, EDGEmat raises at least the middle number when an export's request or result changes (EDGEfab relies on `materialsFromModel`, `bridgeOver` and `BridgeCall`). Until 2026-11-13 the build took EDGEmat's source from a checkout beside this repo (`tools/build/edgemat.mjs`, removed).
 
+**EDGEfab's core as a package** (`packages/edgefab-core`, [EDGEfab #5](https://github.com/Edgemodders/EDGEfab/issues/5), for EDGEbuilder's Import a model): `npm run build` builds it with the rest (`node esbuild.mjs`: one CommonJS file with everything but EDGEmat's core bundled in, mikktspace's WebAssembly inlined, and `dist/THIRD-PARTY-NOTICES.txt`; then `tsc` for `dist/types`). The release workflow publishes it to npm with the MCP server, under EDGEfab's version (`tools/version.mjs` keeps it in step). A tool that needs it before a release builds against an EDGEfab checkout beside it, as EDGEfab built against EDGEmat's, for development only.
+
 F5 in VS Code runs EDGEfab in an extension development host (`.vscode/launch.json`). `npm run mcp:start` runs the MCP server on stdio.
 
 | Package | Version | License | Why |

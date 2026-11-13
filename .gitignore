@@ -14,6 +14,7 @@ rtti-dump*
 # generated from docs/changelog.md when the extension is packaged (tools/release/notes.mjs)
 extensions/edgefab/CHANGELOG.md
 extensions/edgefab/THIRD-PARTY-NOTICES.txt
-# copied beside the MCP server when it goes to npm
+# copied beside the MCP server and the core when they go to npm
 packages/edgefab-mcp/LICENSE
 packages/edgefab-mcp/THIRD-PARTY-NOTICES.txt
+packages/edgefab-core/LICENSE

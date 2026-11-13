@@ -7,7 +7,7 @@ export {
   type Generated, type TextToModel, type TripoBalance, type TripoCall, type TripoTask,
 } from "./tripo";
 export {
-  DefaultLods, MaxSubmeshVertices, prepareModel, readPrepared, PrepareError, type Facing,
+  DefaultLods, MaxParts, MaxSubmeshVertices, prepareModel, readPrepared, PrepareError, type Facing, type PreparedPart,
   type LodLevel, type PrepareOptions, type PrepareResult, type PreparedSubmesh, type PreparedTexture, type PreparedGlow,
 } from "./prepare";
 export { drawPicture, makeModel, renameItem, setSize, type AssetRecord, type FromPictureRequest, type MadeModel, type MakeRequest } from "./make";
@@ -25,5 +25,4 @@ export {
 export {
   glowOff, glowWords, lightsMap, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";
-export { addBackFaces, groupParts, partsInternals, MaxParts, type PreparedPart } from "./parts";
 export { drawViews, readPictures, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";

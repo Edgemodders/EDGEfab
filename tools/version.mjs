@@ -26,8 +26,10 @@ const locked = (workspace) => pattern("package-lock.json", new RegExp(`("${works
 const PARTS = [
   { name: "Extension", ...json("extensions/edgefab/package.json") },
   { name: "MCP server", ...json("packages/edgefab-mcp/package.json") },
+  { name: "Core package", ...json("packages/edgefab-core/package.json") },
   { name: "Lock file, extension", ...locked("extensions/edgefab") },
   { name: "Lock file, MCP server", ...locked("packages/edgefab-mcp") },
+  { name: "Lock file, core package", ...locked("packages/edgefab-core") },
 ];
 
 const arg = process.argv[2];

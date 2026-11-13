@@ -1,0 +1,57 @@
+{
+  "name": "@edgemodders/edgefab-core",
+  "version": "0.1.0",
+  "description": "EDGEfab's core as a library: a textured GLB (or a model made from words) prepared as a Cyberpunk 2077 prop, put into a WolvenKit project or the EDGE Library, for other tools' extensions and Node mods.",
+  "license": "MIT",
+  "author": "Edgemodders",
+  "homepage": "https://edgemodders.github.io/EDGEfab/",
+  "keywords": [
+    "cyberpunk2077",
+    "modding",
+    "3d",
+    "glb",
+    "props",
+    "wolvenkit",
+    "redbridge"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Edgemodders/EDGEfab.git",
+    "directory": "packages/edgefab-core"
+  },
+  "type": "commonjs",
+  "main": "dist/index.cjs",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/index.cjs",
+    "dist/index.cjs.map",
+    "dist/types",
+    "dist/THIRD-PARTY-NOTICES.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node esbuild.mjs && tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@edgemodders/edgemat-core": "~0.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "~5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

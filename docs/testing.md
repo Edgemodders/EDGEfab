@@ -121,7 +121,7 @@ A Desk prop goes into the EDGE Library with its game files built in, from there 
 
 A Desk prop renamed, then changed (Set Size), as a copy of another item: a copied or moved item (Rename, the Library, Edit on the Desk) must change only its own files. Its records keep the absolute paths of where it was made. Run after every change to `renameItem`, `readPrepared` or `readPictures`.
 
-**Steps.** In a session's scratchpad (`libtestun3.cjs`, `EDGEFAB_DATA` a scratch Desk): copy a Desk prop with pictures (`vending_e2e`) from the real Desk into the scratch Desk, and note the real one's files' checksums. `fab_rename` it to "Corner vending machine", `fab_size` 1.9 m, `fab_rename` to "Corner Vending Machine!", then `fab_desk`. Compare the real Desk's checksums.
+**Steps.** In a session's scratchpad (`libtest\run3.cjs`, `EDGEFAB_DATA` a scratch Desk): copy a Desk prop with pictures (`vending_e2e`) from the real Desk into the scratch Desk, and note the real one's files' checksums. `fab_rename` it to "Corner vending machine", `fab_size` 1.9 m, `fab_rename` to "Corner Vending Machine!", then `fab_desk`. Compare the real Desk's checksums.
 
 **Expected.** The folder becomes `corner_vending_machine.prop.asset`, then stays (the same name in files); the title follows. `fab_size` scales the copy. `fab_desk` gives the copy's `view` and picture sheet inside the copy. The real Desk's files are unchanged.
 
@@ -129,7 +129,29 @@ A Desk prop renamed, then changed (Set Size), as a copy of another item: a copie
 
 First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** `vending_e2e.glb` and `view.glb` (1.8 to 1.9 m): `setSize` followed `prepared.json`'s absolute paths, which a copy keeps, and `fab_desk` reported them too. Scaled back the same day (both 1.8 m again, the record unchanged). **Fixed:** `readPrepared` and `readPictures` find an item's files in the item itself, as Add to Project and the glow already did; Set Size, the Desk and Library views and `fab_desk` use them. Second run: as expected, the real Desk's files unchanged (checksums). **Not run:** Rename in VS Code (the owner's pass).
 
+## F1: the core package (EDGEfab #5)
 
+`@edgemodders/edgefab-core` works for a tool outside EDGEfab, as EDGEbuilder's Import a model will use it: installed from its package, its types checked strictly, bundled again with no plugins, and run against REDbridge. A release test: rerun before each release.
+
+**Steps.** In a session's scratchpad (`coretest\`), with `LICENSE` copied into `packages/edgefab-core` for the pack (the release workflow does the same):
+
+1. `npm run build`, then `npm pack --workspace packages/edgefab-core`. List its files.
+2. In an empty folder, `npm install` the tarball (EDGEmat's core comes from npm).
+3. `test.ts` imports `addToProject`, `deskItem`, `makeModel`, `projectFolders`, `readItem`, `setSize`, `startBridge`, `DefaultCollision` and the types `AddResult`, `Collision`, `MadeModel`, `PrepareResult`; `tsc --noEmit --strict` without `skipLibCheck`; `esbuild --bundle --platform=node` with no plugins.
+4. Run the bundle with `EDGEFAB_DATA` a scratch Desk: `makeModel` from a GLB, `deskItem`, `readItem`, `setSize` 1.75 m, `projectFolders`, `startBridge`, `addToProject` into a scratch project. Also `require` the installed package unbundled.
+
+**Expected.** Step 1: `dist/index.cjs`, its map, `dist/types`, `dist/THIRD-PARTY-NOTICES.txt`, `README.md`, `LICENSE`, `package.json`; one dependency, `@edgemodders/edgemat-core`. Step 3: no type errors; one bundle. Step 4: a Desk item, three levels of detail, 1.75 m, then the mesh, material and `.ent` in the project.
+
+### Run 1, 2026-11-13: passed
+
+| Step | Result |
+|---|---|
+| 1 | 19 files, 760 kB packed (`index.cjs` 975 kB: glTF-Transform and 16 more bundled, all MIT, BSD-3-Clause or ISC, in the notices) |
+| 2 | 4 packages: edgefab-core, edgemat-core 0.3.2 and its two dependencies |
+| 3 | Types pass with no `skipLibCheck`. The public types need only EDGEmat's core: `groupParts` and `addBackFaces`, which take glTF-Transform's types, left the public index, and `PreparedPart` and `MaxParts` moved to `prepare.ts`. Bundled again with no plugins: 1.5 MB |
+| 4 | `core_test_drum`: 9 submeshes over 3 levels, 1.8 m, set to 1.75 m; added as `coretest\props\core_test_drum\core_test_drum.ent`, physical, 5 files. Unbundled: 82 exports, all of #5's |
+
+## F1 check: an added prop in the game
 
 With [which collision is solid](#f0-check-which-collision-is-solid-in-the-game), in the same game session. **Run 1 passed, 2026-11-09**, except the normal maps' green (below).
 

@@ -8,26 +8,15 @@
 // game's metal_base draws one), so a thin panel isn't see-through in the game.
 
 import { type Document, type Material, type Primitive, type Texture } from "@gltf-transform/core";
+import { MaxParts, type PreparedPart } from "./prepare";
 import { blank, blit, decode, encodePng, multiply, resize, type Pixels } from "./pixels";
 
 /** At most this many parts: each is a submesh with three levels of detail and its own material. */
-export const MaxParts = 10;
 const AtlasMax = 4096;
 const Pad = 4;
 /** A piece with this share of its kind's surface or more is a part of its own. */
 const SeedShare = 0.04;
 
-export interface PreparedPart {
-  /** The part's name in plain words ("body", "glass", "inside", "front"...), before prepare puts the model's name in front. */
-  name: string;
-  /** Its material, as prepare names it. */
-  material: string;
-  /** How many of the model's pieces it holds. */
-  pieces: number;
-  triangles: number;
-  /** Its share of the model's surface, 0 to 1. */
-  share: number;
-}
 
 type Box = { min: number[]; max: number[] };
 
