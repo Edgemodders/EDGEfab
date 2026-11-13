@@ -30,7 +30,8 @@ for (const map of maps) {
     // Failing that, the package by its name in the workspace's own node_modules.
     let found = false;
     // A package whose own source map names its repo's paths above the package, so they land outside it
-    // (node_modules/extensions/edgemat/... for @edgemodders/edgemat-core 0.3.2): known by that path.
+    // (node_modules/extensions/edgemat/... for @edgemodders/edgemat-core 0.3.2): known by that path. Fixed in
+    // EDGEmat's main (0432330, sources "../src/core/..."), on npm from 0.3.3: drop this once EDGEfab takes it.
     for (const [name, pattern] of Object.entries(hiddenPackages)) {
       const dir = join(root, "node_modules", ...name.split("/"));
       if (pattern.test(file) && existsSync(join(dir, "package.json"))) {
