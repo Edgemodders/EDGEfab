@@ -32,15 +32,15 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 1. Command palette: **EDGEfab: Set Tripo Key**. Type `abc`: refused in words. Paste the real key: "set, in VS Code's secret storage".
 2. **EDGEfab: Set OpenAI Key**, the same way (`sk-`).
-3. **EDGEfab: Set Tripo Plan (Paid or Free)**: pick Paid.
+3. **EDGEfab: Set Tripo Plan (Paid or Free)**: pick Paid: "Tripo plan set to paid".
 
 **B. A prop from a GLB** (free)
 
-4. Desk title bar, **Import a GLB...**: pick a textured GLB (`%LOCALAPPDATA%\EDGEfab\desk\vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` will do). A progress note, then "EDGEfab made ...", with Open in 3D and Reveal.
-5. Expand it on the Desk: its size (or "Size unknown"), levels of detail, textures, parts, license.
-6. Click it: REDcode's 3D view opens it with its textures; its parts and levels of detail can be switched. On the page: a tab named `view.glb`, a canvas with the model on the grid (not "Could not read the file"); in the toolbar a level list (`LOD 1 (most detail)` and two more) and a shading list with **Own textures**; on the side, **Submeshes**, one row per part (number, material, triangles). Another level in the list: fewer triangles in every row. A part's box unticked: that part goes.
+4. Desk title bar, **Import a GLB...**: pick a textured GLB (`%LOCALAPPDATA%\EDGEfab\desk\vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` will do). A progress note, then "EDGEfab made ...", with Set Size (when its size is unknown), Open in 3D and Reveal.
+5. Expand it on the Desk: its size (or "Size unknown", with its stand-in height on the same line), levels of detail, textures, parts, license.
+6. Click it: REDcode's 3D view opens it with its textures; its parts and levels of detail can be switched. On the page: a tab named `view.glb`, a canvas with the model on the grid (not "Could not read the file"); in the toolbar a level list (`LOD 1 (most detail)` and two more) and a shading list with **Own textures**; on the side, **Submeshes**, one row per part (number, material, triangles). Another level in the list: fewer triangles in all (a small part may keep its count: a level stops simplifying where the shape would change too much), and **no dark shards** across the panels at any level. A part's box unticked: that part goes.
 7. Right-click, **Set Size...**: 1.8. The size line changes; the warning goes.
-8. Right-click, **Rename...**: "Test vending machine". The Desk shows the new name; click it: it still opens in 3D.
+8. With its 3D view still open, right-click, **Rename...**: "Test vending machine". The view closes and opens again on the renamed files; the Desk shows the new name. Its parts keep their names (`vending_front`...): they are its materials' names, set when it was made.
 
 **C. Glow**
 
@@ -78,6 +78,31 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 25. Right-click, **Make 3D...**: detail Standard, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours".
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
+
+### Run 1, 2026-11-14: scripted, by the EDGEweb session (in progress)
+
+EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,002 bytes), REDcode 0.10.9, REDbridge 0.12.1; scratch Desk, Library and project as in "A scripted run". The steps as they were written then.
+
+| Step | Result |
+|---|---|
+| 1, 2 | Passed. `abc` refused in words ("Tripo keys start with tsk_", "OpenAI keys start with sk-"); the real keys "set, in VS Code's secret storage" |
+| 3 | Passed. Found: nothing confirms the choice. **Fixed** (a message says the plan) |
+| 4 | Passed, 22 s: "EDGEfab made vending: 3 levels of detail, in 6 parts. Its size is unknown...", with a third button, Set Size (the step now says so) |
+| 5 | Passed. Found: "Size unknown" right above "1.00 m tall" reads as a contradiction. **Changed:** with no real size, one line says both ("1.00 m tall for now, a stand-in") |
+| 6 | Passed: `view.glb`, levels `LOD 1 (most detail)`, `LOD 2`, `LOD 4`, Own textures, six parts, unticking hides one. **Found: dark shards across the panels at LOD 4** (screenshot), and LOD 4 hardly below LOD 2 (12,853 against 14,621 triangles). **Fixed in prepare**, below |
+| 7 | Passed: `abc` refused, 1.8 gives "1.80 m tall, 0.96 × 0.76 m", the warning goes |
+| 8 | **Failed with the 3D view open:** "Could not move ... something has a file in it open ... (EPERM)": REDcode's view watches its folder, which on Windows stops the folder's move. Passed with the view closed. **Fixed:** Rename, Delete, Edit on the Desk's Replace It and a Library update close the item's open tabs first; Rename opens the view again |
+| 9 on | Running |
+
+**The dark shards.** Measured offline on the same GLB (`scratchpad\lod\analyze.cjs`): the share of each level's surface whose vertex normals point more than about 100° from its triangle's facing, which the game and the 3D view draw dark. Prepare simplified by positions alone, so the vertices a level kept carried normals from a different slope. Simplifying with the normals weighed in (meshoptimizer's `simplifyWithAttributes`, weight 0.5) keeps it near LOD 1's; LOD 4 strays a little further (error 0.02 against 0.01) so it still drops:
+
+| Model | LOD 1 | LOD 2 before, after | LOD 4 before, after |
+|---|---|---|---|
+| This one, 6 parts (body, the worst part) | 7,506 triangles, 0.22% | 3,750, 1.04% → 4,482, 0.27% | 3,416, 0.98% → 3,622, 0.46% |
+| This one, all parts | 26,569 | 14,621 → 16,963 | 12,853 → 13,445 |
+| The in-game test's text-to-model machine (one part) | 16,791, 0.07% | 8,389, 0.35% → 8,394, 0.17% | 3,322, 1.71% → 4,300, 0.62% |
+
+The price is fewer triangles saved at LOD 2 on a model already low in triangles. Seen again in step 6 of the next run.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
@@ -118,6 +143,10 @@ Glow: test 8's vending machine with a glow map made from its bright, saturated p
 ### Run 5, 2026-11-13: passed (step 1)
 
 After the Library, Rename, `readPrepared` and the core package's changes to `src/core` (`PreparedPart` and `MaxParts` moved to `prepare.ts`). Step 1 on the picture-first vending machine's Tripo model (`original.glb`, in parts): `ok`; 70 pieces into 6 parts, back faces on 5, the quarter turn, the size-unknown note. Steps 2 and 3 not rerun: the import and the server's start are covered by the Library and core-package runs the same day.
+
+### Run 6, 2026-11-14: passed (step 1)
+
+After the levels of detail were made with the normals weighed in (the owner's pass, Run 1, step 6). Step 1 on the same model and on test 8's plain text-to-model machine: `ok` both; 26,569 / 16,963 / 13,445 and 16,791 / 8,394 / 4,300 triangles. The `.vsix` again: 11 files, no PowerShell, no key files.
 
 ## F1: Add to Project (without the game)
 

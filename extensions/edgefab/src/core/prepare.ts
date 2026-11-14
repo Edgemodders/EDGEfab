@@ -15,7 +15,7 @@ import * as path from "node:path";
 import { Document, NodeIO, type Mesh, type Node, type Primitive, type Texture } from "@gltf-transform/core";
 import { quiet } from "./quiet";
 import { ALL_EXTENSIONS, type EmissiveStrength } from "@gltf-transform/extensions";
-import { clearNodeTransform, cloneDocument, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
+import { clearNodeTransform, cloneDocument, compactPrimitive, flatten, getBounds, normals, prune, simplifyPrimitive, tangents, unweld, weld } from "@gltf-transform/functions";
 // meshoptimizer is an ES module and this package is CommonJS: esbuild bundles it either way, and TypeScript
 // only objects to the module kind.
 // @ts-expect-error TS1479
@@ -46,13 +46,16 @@ export interface LodLevel {
   lod: 1 | 2 | 4 | 8;
   /** The share of triangles kept. */
   ratio: number;
+  /** How far the simplified surface may stray, as a share of the part's size; the level stops there even above its ratio. 0.01 if not given. */
+  error?: number;
 }
 
-/** Full detail, half, a fifth: with the template's switch distances (8 m and 20 m for the barrel in F0). */
+/** Full detail, half, a fifth: with the template's switch distances (8 m and 20 m for the barrel in F0). The last
+ *  strays further, so it drops more on a model already low in triangles. */
 export const DefaultLods: LodLevel[] = [
   { lod: 1, ratio: 1 },
-  { lod: 2, ratio: 0.5 },
-  { lod: 4, ratio: 0.2 },
+  { lod: 2, ratio: 0.5, error: 0.01 },
+  { lod: 4, ratio: 0.2, error: 0.02 },
 ];
 
 export interface PrepareOptions {
@@ -144,6 +147,27 @@ function cloneDeep(doc: Document, prim: Primitive): Primitive {
   const indices = copy.getIndices();
   if (indices) copy.setIndices(indices.clone().setArray(indices.getArray()!.slice()));
   return copy;
+}
+
+/**
+ * A lower level of detail. The normals count as well as the positions: simplified by positions alone, a box-like
+ * model's lower levels kept vertex normals that no longer matched their triangles, which the game and the 3D view
+ * drew as dark shards across flat panels (the owner's pass, 2026-11-14: about 1% of the surface at LOD 2 and 4,
+ * against 0.2% at LOD 1). With the normals weighed in, it stays near LOD 1's.
+ */
+function simplifyLevel(prim: Primitive, level: LodLevel): void {
+  const error = level.error ?? 0.01;
+  const normal = prim.getAttribute("NORMAL")?.getArray();
+  if (!(normal instanceof Float32Array)) {
+    simplifyPrimitive(prim, { simplifier: MeshoptSimplifier, ratio: level.ratio, error });
+    return;
+  }
+  const indices = prim.getIndices()!;
+  const idx = Uint32Array.from(indices.getArray()!);
+  const target = Math.floor((level.ratio * idx.length) / 3) * 3;
+  const [out] = MeshoptSimplifier.simplifyWithAttributes(idx, Float32Array.from(prim.getAttribute("POSITION")!.getArray()!), 3, Float32Array.from(normal), 3, [0.5, 0.5, 0.5], null, target, error, []);
+  indices.setArray(new Uint32Array(out));
+  compactPrimitive(prim);
 }
 
 /** Whether Tripo made the file: its asset generator, read from the file itself (glTF-Transform replaces it on
@@ -342,10 +366,11 @@ export async function prepareModel(input: string, outDir: string, name: string, 
       if (vertexCount(prim) > budget) throw new PrepareError(`Part ${index + 1} has too many vertices for the game (over ${MaxSubmeshVertices}) even simplified. Reduce it in a 3D tool, or ask Tripo for fewer faces.`);
       notes.push(`Part ${index + 1} was simplified from ${before} to ${triangleCount(prim)} triangles to stay under the game's ${MaxSubmeshVertices} vertices per part.`);
     }
-    for (const { lod, ratio } of [...lods].sort((a, b) => a.lod - b.lod)) {
+    for (const level of [...lods].sort((a, b) => a.lod - b.lod)) {
+      const { lod, ratio } = level;
       const meshName = `submesh_${two(index)}_LOD_${lod}`;
       const copy = cloneDeep(doc, prim);
-      if (ratio < 1) simplifyPrimitive(copy, { simplifier: MeshoptSimplifier, ratio, error: 0.01 });
+      if (ratio < 1) simplifyLevel(copy, level);
       const mesh = doc.createMesh(meshName).addPrimitive(copy);
       scene.addChild(doc.createNode(meshName).setMesh(mesh));
       submeshes.push({ name: meshName, lod, material, vertices: 0, triangles: 0, attributes: [] });

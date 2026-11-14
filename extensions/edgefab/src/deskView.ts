@@ -70,8 +70,9 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
       if (!p) lines.push({ kind: "line", label: "Next: Make 3D, or Change the Words", icon: "arrow-right" });
     }
     if (p) {
-      if (p.sizeUnknown) lines.push({ kind: "line", label: "Size unknown: Set Size before adding it", detail: "Tripo gives none for models in parts", icon: "warning" });
-      lines.push({ kind: "line", label: `${metres(p.size.height)} tall`, detail: `${metres(p.size.width)} × ${metres(p.size.depth)}`, icon: "symbol-ruler" });
+      // With no real size, the model's own height (1 m) isn't one: say so on the same line, so the two don't disagree.
+      if (p.sizeUnknown) lines.push({ kind: "line", label: "Size unknown: Set Size before adding it", detail: `${metres(p.size.height)} tall for now, a stand-in. Tripo gives no size for models in parts`, icon: "warning" });
+      else lines.push({ kind: "line", label: `${metres(p.size.height)} tall`, detail: `${metres(p.size.width)} × ${metres(p.size.depth)}`, icon: "symbol-ruler" });
       const byLod = new Map<number, number>();
       for (const s of p.submeshes) byLod.set(s.lod, (byLod.get(s.lod) ?? 0) + s.triangles);
       const lods = [...byLod.entries()].sort((a, b) => a[0] - b[0]).map(([, t]) => t.toLocaleString("en-US"));

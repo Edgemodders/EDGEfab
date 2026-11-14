@@ -6,14 +6,14 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, renameItem, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
-  addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
+  addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, isInside, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
   setModderFolder, suggestedLibraryRoot, LibraryError,
   DefaultCollision, DefaultGlowStrength, DetailLevels, GlowLevels, ViewNames,
   type AssetRecord, type Collision, type Detail, type GlowResult, type LibraryAsset, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
 import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
-import { entryOf, DeskView, type DeskEntry } from "./deskView";
+import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
 
@@ -59,6 +59,9 @@ async function askTripoPlan(): Promise<TripoPlan | undefined> {
     return undefined;
   }
   writeSettings({ tripoPlan: picked.plan });
+  void vscode.window.showInformationMessage(
+    picked.plan === "paid" ? "EDGEfab: Tripo plan set to paid. Models you make are yours to use in mods." : "EDGEfab: Tripo plan set to free. Models you make are marked as Tripo's: they can't go in a released mod.",
+  );
   return picked.plan;
 }
 
@@ -93,6 +96,26 @@ async function openIn3D(glb: string | undefined, preview?: string): Promise<void
     log(`Open in 3D: ${message(e)}`);
     void vscode.window.showErrorMessage(`EDGEfab: REDcode's 3D view didn't open: ${message(e)}`);
   }
+}
+
+/**
+ * Closes the editor tabs showing files inside `folder`, such as an item's 3D view, before the folder is moved or
+ * deleted: on Windows an open view keeps a watch on its folder, and the move fails (the owner's pass, 2026-11-14).
+ * Answers whether any were closed.
+ */
+async function releaseFolder(folder: string): Promise<boolean> {
+  const inside = (uri: vscode.Uri | undefined) => !!uri && uri.scheme === "file" && isInside(folder, uri.fsPath);
+  const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs).filter((t) => {
+    const input = t.input;
+    if (input instanceof vscode.TabInputText || input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputNotebook) return inside(input.uri);
+    if (input instanceof vscode.TabInputTextDiff) return inside(input.original) || inside(input.modified);
+    return false;
+  });
+  if (!tabs.length) return false;
+  await vscode.window.tabGroups.close(tabs);
+  // Give the views a moment to let go of their watches.
+  await new Promise((r) => setTimeout(r, 300));
+  return true;
 }
 
 async function make(run: (progress: (step: string) => void, signal: AbortSignal) => Promise<MadeModel>, view: DeskView): Promise<void> {
@@ -471,6 +494,7 @@ async function addDeskToLibrary(entry: DeskEntry): Promise<void> {
     place = p;
   }
   try {
+    if (existing) await releaseFolder(existing.folder);
     const gameDir = await gameFolder();
     const r = await withBridge(`EDGEfab: ${existing ? "updating" : "adding"} ${entry.title} ${existing ? "in" : "to"} the Library`, (call, step) =>
       addToLibrary({ item: entry.folder, root, folder: place.folder, useGamePath: place.useGamePath, modder, call, collision: collisionSetting(), tool: `EDGEfab ${__VERSION__}`, gameDir, log: step }),
@@ -527,6 +551,8 @@ async function libraryEdit(a: LibraryAsset): Promise<void> {
       if (!(e instanceof LibraryError) || !/on the Desk already/.test(e.message)) throw e;
       const go = await vscode.window.showWarningMessage(`${a.title} is on the Desk already.`, { modal: true, detail: "Replace the Desk's copy with the Library's? The Desk's may have changes not yet in the Library." }, "Replace It");
       if (go !== "Replace It") return;
+      const onDesk = /on the Desk already: (.+)$/.exec(e.message)?.[1];
+      if (onDesk) await releaseFolder(onDesk);
       r = editOnDesk(a, root, { tool, replace: true });
     }
     deskView.refresh();
@@ -765,9 +791,12 @@ export function activate(context: vscode.ExtensionContext): void {
       }))?.trim();
       if (!title || title === entry.title) return;
       try {
+        const wasOpen = await releaseFolder(entry.folder);
         const r = await renameItem(entry.folder, title, { version });
         log(`Renamed ${entry.title} to ${title}${r.renamed ? `: ${path.basename(r.folder)}` : ""}`);
         view.refresh();
+        const now = listDesk().find((e) => e.folder === r.folder);
+        if (wasOpen && now) void openIn3D(now.model, now.preview);
       } catch (e) {
         void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
       }
@@ -777,6 +806,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!entry) return;
       const go = await vscode.window.showWarningMessage(`Delete ${entry.title}?`, { modal: true, detail: `Its folder goes, with the model and its textures: ${entry.folder}` }, "Delete");
       if (go !== "Delete") return;
+      await releaseFolder(entry.folder);
       fs.rmSync(entry.folder, { recursive: true, force: true });
       log(`Deleted ${path.basename(entry.folder)}`);
       view.refresh();
