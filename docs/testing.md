@@ -155,6 +155,34 @@ EDGEweb's check of the fixed file: rays dark at LOD 4 but lit at LOD 1, 648 → 
 Also seen: after a restart VS Code reopens the last session's `view.glb` tab, so two tabs named `view.glb` can be open: check the path in the breadcrumb.
 
 
+## F1: the phase test, props placed with EDGEbuilder (EDGEfab #2)
+
+F1's goal ([plan](plan.html), F1): **a textured prop, one from a GLB and one made by Tripo, is placed in a scene with EDGEbuilder, V cannot walk through it, its levels of detail change with distance, and it stays after a restart.** Also EDGEbuilder's B2c test with EDGEfab's first prop ([EDGEfab #2](https://github.com/Edgemodders/EDGEfab/issues/2)). A release test: the gate for F1's first preview.
+
+**Before.**
+
+| Need | How |
+|---|---|
+| EDGEfab | `dist\edgefab-0.1.0.vsix` of 2026-11-14 15:02 (806,489 bytes) or later: the levels of detail that keep to the texture |
+| EDGEbuilder | 0.9.2 or later in the game, REDbridge allowed for it (F10, Mod Manager, EDGEbuilder, Permissions); REDnode 0.58.0 or later, Codeware |
+| A save | Outdoors, in an open spot, by day (and a look at night for the glow) |
+| A project | A WolvenKit project open in REDcode (a scratch run: the scratch one) |
+
+**Steps.** In VS Code first, then in the game with the Test timer (Start, Mark after each numbered step from 5).
+
+1. **From a GLB:** Make a Prop on a textured GLB (the vending machine's `original.glb`), **Set Size...** 1.8, **Rename...** "F1 vending machine", **Make the Painted Lights Glow...** (The lights, Bright), **Add to Project**.
+2. **Made by Tripo:** Generate from Words "a rusty oil drum with a hazard sticker", Draw it first, Make 3D (Detailed texture, 0.9 m), **Rename...** "F1 drum", **Add to Project**. Spends about 60 Tripo credits and a few cents of OpenAI.
+3. REDcode: **Pack** the project. Copy the packed `.archive` to the project's `tests` folder as `edgefab_f1_phase.archive` (WolvenKit's Pack clears `packed`), then, with the game closed, into the game's `archive\pc\mod`. Write down the file, to take it out after.
+4. Start the game, load the save. EDGEbuilder's log: `Mods: ...` counts the archive's two `.ent` and two `.mesh` files.
+5. EDGEbuilder, Assets, the **Mods** tab: find `f1_vending_machine.ent`; its size about 0.96 x 0.76 x 1.8 m. **Drop where I look**, a few metres in front of V. Then `f1_drum.ent` beside it.
+6. Look at both: their size against V, their textures, fronts facing the way EDGEbuilder turned them, the glow on the machine.
+7. Walk into each, jump onto each, shoot each: V stops, stands on top, sparks.
+8. Walk 25 m away, slowly, watching both, and back: the detail drops and comes back, with **no black shards** on the panels at any distance.
+9. The Scene tab: **Save as** "EDGEfab F1" in the Library. Quit the game, start it, load the save: both props come back where they were (the log: `2 of 2 objects back`).
+10. After: take `edgefab_f1_phase.archive` out of the game's `archive\pc\mod`. The scene can stay; its objects then show as missing.
+
+**Expected.** Every step as written. Then say so on EDGEfab #2 (EDGEbuilder's B2c with EDGEfab's first prop) and close it with a note.
+
 ## F1: prepare a model (smoke test, without VS Code)
 
 The bundled core makes a prop from a GLB on disk, and REDbridge takes the result. Run after every change to `src/core`.
