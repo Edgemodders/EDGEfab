@@ -185,6 +185,25 @@ F1's goal ([plan](plan.html), F1): **a textured prop, one from a GLB and one mad
 
 **Expected.** Every step as written. Then say so on EDGEfab #2 (EDGEbuilder's B2c with EDGEfab's first prop) and close it with a note.
 
+### Run 1, 2026-11-14: scripted, by the EDGEweb session: steps 1 to 6 passed, 7 and 8 in part, 9 and 10 left to the owner
+
+The 806,489-byte build; EDGEbuilder 0.9.2, REDnode 0.63.1, REDbridge 0.12.1, game 2.5. Scratch project `S:\fab_phase`, only the two props. Spent 1 GPT Image picture and 60 Tripo credits (960 before).
+
+| Step | Result |
+|---|---|
+| 1 | Passed. Set Size 1.8 ("1.80 m tall now, 0.96 × 0.76 m"), Rename, glow The lights at Bright, Add to Project in 151 s: "solid (a physical mesh with a box). Place f1_vending_machine.ent with EDGEbuilder, or spawn it." |
+| 2 | Passed. The picture in 35 s; Make 3D priced first ("About 60 credits and 3 to 4 minutes. You have 960."), made in 227 s: 3 levels of detail (38,008 / 19,098 / 14,490 triangles), 8 parts named by place, 90 cm tall, 58 × 57 cm, paid plan. Rename, Add to Project in 72 s |
+| 3 | Passed. REDcode's Pack gave `packed\archive\pc\mod\fab_phase.archive` (91,377,664 bytes); copied to `tests\edgefab_f1_phase.archive`, then into the game's `archive\pc\mod` with the game closed |
+| 4 | Passed. `Mods: 30 meshes and entities in 12 archives` (26 in 11 before): the archive's 4 files |
+| 5 | Passed. Mods tab, Entities, "f1_": both `.ent` files, "edgefab_f1_phase entity", sizes 1.0 x 0.8 x 1.8 m and 0.6 x 0.6 x 0.9 m. Dropped in 408 ms and 444 ms, about 3 m in front of V. The drum landed half inside the machine (Drop where I look aims at the same spot); moved 0.85 m on the Scene tab. Scene "EDGEfab F1 test" under This PC (not the owner's Library), "2 objects", "This scene needs: edgefab_f1_phase" |
+| 6 | Passed (by the session's eye, pictures for the owner's). The machine a little taller than V, its front facing V; the lit strip and the products glow at night; the drum rusty with its sticker; both cast shadows by day |
+| 7 | In part. **Walking into each: V stops** (machine about 0.5 m short of its front, drum about 0.4 m short of its edge). Jumping onto each and shooting each not done: V's jump carried clean over the drum, and no weapon was fired in the owner's game |
+| 8 | In part. Stills at about 6, 16 and 22 m by day: **no black shards on either at any distance.** The change of detail itself not watched while walking |
+| 9 | Not done. The scene saves after every change under This PC; the game hung on quit (ReShade, the owner's to look into) and the owner took over. Still to do: start the game, load the save, and read `EDGEfab F1 test: 2 of 2 objects back in the world.` |
+| 10 | Not done. `edgefab_f1_phase.archive` is still in the game's `archive\pc\mod`, and EDGEbuilder's open scene is still "EDGEfab F1 test" |
+
+**Open, the owner's:** step 7's jump onto each and shooting each; step 8's walk, watching the detail drop and come back; step 9's restart; step 10's removal. Then EDGEfab #2.
+
 ## F1: prepare a model (smoke test, without VS Code)
 
 The bundled core makes a prop from a GLB on disk, and REDbridge takes the result. Run after every change to `src/core`.
