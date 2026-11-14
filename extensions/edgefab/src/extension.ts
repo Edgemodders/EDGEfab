@@ -3,12 +3,13 @@
 
 import * as vscode from "vscode";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import {
   addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, renameItem, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
   addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, isInside, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
   setModderFolder, suggestedLibraryRoot, LibraryError,
-  DefaultCollision, DefaultGlowStrength, DetailLevels, GlowLevels, ViewNames,
+  DefaultCollision, DefaultGlowStrength, percent, DetailLevels, GlowLevels, ViewNames,
   type AssetRecord, type Collision, type Detail, type GlowResult, type LibraryAsset, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
 import type { BridgeCall } from "@edgemodders/edgemat-core";
@@ -382,7 +383,8 @@ async function askLibraryRoot(always = false): Promise<string | undefined> {
   if (!picked) return undefined;
   let where = picked.where;
   if (!where) {
-    const chosen = await vscode.window.showOpenDialog({ title: "The EDGE Library's folder", openLabel: "Use This Folder", canSelectFolders: true, canSelectFiles: false, canSelectMany: false });
+    const documents = path.join(os.homedir(), "Documents");
+    const chosen = await vscode.window.showOpenDialog({ title: "The EDGE Library's folder", defaultUri: vscode.Uri.file(fs.existsSync(documents) ? documents : os.homedir()), openLabel: "Use This Folder", canSelectFolders: true, canSelectFiles: false, canSelectMany: false });
     if (!chosen?.[0]) return undefined;
     where = chosen[0].fsPath;
   }
@@ -457,7 +459,23 @@ async function askLibraryPlace(root: string, gameFolderOf: string): Promise<{ fo
   return { folder: folder ?? "", useGamePath: way.useGamePath };
 }
 
+/** Desk items being added to the Library: a second Add to Library on one waits its turn by being refused. */
+const addingToLibrary = new Set<string>();
+
 async function addDeskToLibrary(entry: DeskEntry): Promise<void> {
+  if (addingToLibrary.has(entry.folder)) {
+    void vscode.window.showInformationMessage(`EDGEfab: ${entry.title} is being added to the Library already.`);
+    return;
+  }
+  addingToLibrary.add(entry.folder);
+  try {
+    await addDeskToLibraryOnce(entry);
+  } finally {
+    addingToLibrary.delete(entry.folder);
+  }
+}
+
+async function addDeskToLibraryOnce(entry: DeskEntry): Promise<void> {
   if (!entry.prepared) {
     void vscode.window.showWarningMessage(`EDGEfab: ${entry.title} isn't a model yet. Make 3D first.`);
     return;
@@ -528,7 +546,7 @@ async function libraryToProject(a: LibraryAsset): Promise<void> {
     for (const f of r.files) log(`  ${f}`);
     const actions = [...(redcode()?.packAndTry ? ["Pack and Try"] : []), "Reveal Entity"];
     const pick = await vscode.window.showInformationMessage(
-      `EDGEfab ${r.replaced ? "updated" : "added"} ${a.title} (version ${r.version}) from the Library in ${project.name}. Place ${path.win32.basename(r.entity)} with EDGEbuilder, or spawn it.`,
+      `EDGEfab ${r.replaced ? "updated" : "added"} ${a.title} (version ${r.version}) from the Library into ${project.name}. Place ${path.win32.basename(r.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
     );
     if (pick === "Pack and Try") await redcode()?.packAndTry?.();
@@ -675,7 +693,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!(await getKey("openai"))) {
         const picked = await vscode.window.showQuickPick(
           [
-            { label: "$(file-media) Draw it first", description: "(recommended)", detail: "OpenAI's GPT Image draws it from four sides in about 30 seconds, for a few cents of your OpenAI credit: change the words until it's right, then make it 3D. Needs your own OpenAI key (the one EDGEmat uses).", how: "picture" as const },
+            { label: "$(file-media) Draw it first", description: "(recommended)", detail: "OpenAI's GPT Image draws it from four sides in about 30 seconds, for a few cents of your OpenAI credit: change the words until it's right, then make it 3D. Needs your own OpenAI key (set with Set OpenAI Key, or asked for now).", how: "picture" as const },
             { label: "$(sparkle) Straight to 3D", detail: "Tripo makes it from the words alone: less true to them, and its back and sides are Tripo's guesses.", how: "words" as const },
           ],
           { title: `EDGEfab: how to make "${words}"?`, ignoreFocusOut: true },
@@ -750,8 +768,8 @@ export function activate(context: vscode.ExtensionContext): void {
       const strength = await askStrength("EDGEfab: how strongly should they glow?", DefaultGlowStrength);
       if (strength === undefined) return;
       await changeGlow(view, entry, () => paintedLightsGlow(entry.folder, { amount: amount.amount, strength, version }), (r) => {
-        const share = r.lit?.map((l) => `${Math.round(l.share * 100)}%`).join(", ");
-        return `${entry.title}'s painted lights glow, ${glowWords(strength)}: ${share} of its texture.`;
+        const share = r.lit?.filter((l) => l.share > 0).map((l) => `${l.material} ${percent(l.share)}`).join(", ");
+        return `${entry.title}'s painted lights glow, ${glowWords(strength)}. Lit, of each part's texture: ${share}.`;
       });
     }),
     vscode.commands.registerCommand("edgefab.glowStrength", async (item: unknown) => {
@@ -769,7 +787,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       const strength = await askStrength(`EDGEfab: how strongly should ${material ?? entry.title} glow?`, (glow.find((g) => g.material === material) ?? glow[0]).strength);
       if (strength === undefined) return;
-      await changeGlow(view, entry, () => setGlowStrength(entry.folder, strength, { material, version }), () => `${material ?? entry.title} glows ${glowWords(strength)} now (strength ${strength}).`);
+      await changeGlow(view, entry, () => setGlowStrength(entry.folder, strength, { material, version }), () => `${material ?? entry.title}'s glow is ${glowWords(strength)} now (strength ${strength}).`);
     }),
     vscode.commands.registerCommand("edgefab.glowOff", async (item: unknown) => {
       const entry = entryOf(item);
@@ -798,6 +816,7 @@ export function activate(context: vscode.ExtensionContext): void {
         const now = listDesk().find((e) => e.folder === r.folder);
         if (wasOpen && now) void openIn3D(now.model, now.preview);
       } catch (e) {
+        log(`Rename failed: ${message(e)}`);
         void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
       }
     }),

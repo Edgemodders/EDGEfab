@@ -171,6 +171,13 @@ export interface GlowResult {
   notes: string[];
 }
 
+/** A share as a percentage that never reads 0% when something lights: 6%, 0.4%, under 0.1%. */
+export function percent(share: number): string {
+  if (share <= 0) return "0%";
+  if (share >= 0.01) return `${Math.round(share * 100)}%`;
+  return share >= 0.001 ? `${(share * 100).toFixed(1)}%` : "under 0.1%";
+}
+
 /**
  * Makes the painted lights of a Desk item glow: each material's color texture gives a glow map. A material with a
  * glow of its own keeps it. Doing it again replaces what it painted before. Spends nothing, and changes the item only.
@@ -219,7 +226,7 @@ export async function paintedLightsGlow(folder: string, opts: { amount?: number;
   }
   p.glow = [...p.glow.filter((g) => !g.painted || !lit.some((l) => l.material === g.material)), ...painted];
   await drawInView(item);
-  const share = lit.map((l) => `${l.material} ${Math.round(l.share * 100)}%`).join(", ");
+  const share = lit.map((l) => `${l.material} ${percent(l.share)}`).join(", ");
   save(item, `Painted lights made to glow: ${share}, ${glowWords(strength)} (strength ${strength})`, opts.version ?? "");
   return { glow: p.glow, lit, view: p.view, notes };
 }

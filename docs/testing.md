@@ -20,6 +20,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 | What | How |
 |---|---|
+| Questions in boxes | The setting `"window.dialogStyle": "custom"`: VS Code draws its own question boxes (Update It?, Delete?, Replace It?) instead of Windows' |
 | File pickers | The setting `"files.simpleDialog.enable": true`: VS Code's own picker, which takes a typed path (steps 4 and 12, and 11 if no project is open) |
 | The Desk and EDGEfab's settings | A redirected `LOCALAPPDATA`, or `EDGEFAB_DATA` set to a scratch folder in the editor's environment |
 | The Library | `EDGE_LIBRARY_CONFIG` set to a scratch `library.json` (not there yet) in the editor's environment. Step 12 then asks for the Library's folder: **Choose a folder...**, a scratch folder. Never the suggested `Documents\EDGE Library`, which is the owner's |
@@ -44,8 +45,8 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **C. Glow**
 
-9. Right-click, **Make the Painted Lights Glow...**: "The lights", then Bright. Open in 3D: the lit areas glow.
-10. **Glow Strength...** on one part: Soft. **Stop the Glow**: the glow line goes.
+9. Right-click, **Make the Painted Lights Glow...**: "The lights", then Bright. The message gives each part's lit share (under 1% with a decimal, never 0% for a part that glows; a part with no light is named as not glowing). Open in 3D: the lit areas glow.
+10. **Glow Strength...** on one part: Soft ("...'s glow is soft glow now"). **Stop the Glow**: the glow line goes.
 
 **D. Add to Project**
 
@@ -55,8 +56,8 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 12. Right-click the prop, **Add to Library...**. Your Library is already set up (`Documents\EDGE Library`), so it isn't asked for (a scripted run: asked, see above). Asked once: your own folder in game paths (type your modder name). Pick **New folder...** `Production/Props`, then **In folders matching its game path**. A progress note, then "is in the Library".
 13. The Desk prop shows "In the Library, version 1". The **Library** view shows `Production`, down to the prop, `v1`; expand it: version, the `.ent`, size, parts, license.
-14. In the Library view, right-click the prop, **Add to Project**: almost instant; the message says version 1.
-15. On the Desk, **Glow Strength...** (any), then **Add to Library...** again: "Update ... in the Library?", version 2, the same place.
+14. In the Library view, right-click the prop, **Add to Project**: almost instant; the message says version 1. The project now has the prop twice, as meant: step 11's under the project's own folder (`<project>\props\`), the Library's under yours (`<modder>\props\`), the same in every project.
+15. On the Desk, **Make the Painted Lights Glow...** again (step 10 stopped it), then **Add to Library...** again: "Update ... in the Library?", version 2, the same place. **Add to Library** once more while it runs: "is being added to the Library already".
 16. Library view title, **Refresh Project from Library...**: the prop ticked, "version 1 → 2"; OK: refreshed.
 17. Library view, right-click the prop, **Edit on the Desk**: "is on the Desk already", Replace It: the Desk's copy replaced.
 18. In VS Code's Explorer, right-click any `.glb`, **Make a Prop (EDGEfab)**: it lands on the Desk.
@@ -73,13 +74,13 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **H. From words** (spends credits)
 
-23. Desk title bar, **Generate from Words...**: "a rusty oil drum with a hazard sticker". It asks for the OpenAI key (cleared in 22): paste it. About 30 s: the four-view picture opens; the Desk shows a picture item.
+23. Desk title bar, **Generate from Words...**: "a rusty oil drum with a hazard sticker", then **Draw it first**. It asks for the OpenAI key (cleared in 22): paste it. About 30 s: the four-view picture opens; the Desk shows a picture item.
 24. Right-click it, **Change the Words...**: "... with a dented lid": picture 2.
-25. Right-click, **Make 3D...**: detail Standard, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours".
+25. Right-click, **Make 3D...**: **Detailed texture**, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours", and a row "N parts, a material each" with their names.
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
 
-### Run 1, 2026-11-14: scripted, by the EDGEweb session (in progress)
+### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes, reruns open
 
 EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,002 bytes), REDcode 0.10.9, REDbridge 0.12.1; scratch Desk, Library and project as in "A scripted run". The steps as they were written then.
 
@@ -92,7 +93,27 @@ EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,00
 | 6 | Passed: `view.glb`, levels `LOD 1 (most detail)`, `LOD 2`, `LOD 4`, Own textures, six parts, unticking hides one. **Found: dark shards across the panels at LOD 4** (screenshot), and LOD 4 hardly below LOD 2 (12,853 against 14,621 triangles). **Fixed in prepare**, below |
 | 7 | Passed: `abc` refused, 1.8 gives "1.80 m tall, 0.96 × 0.76 m", the warning goes |
 | 8 | **Failed with the 3D view open:** "Could not move ... something has a file in it open ... (EPERM)": REDcode's view watches its folder, which on Windows stops the folder's move. Passed with the view closed. **Fixed:** Rename, Delete, Edit on the Desk's Replace It and a Library update close the item's open tabs first; Rename opens the view again |
-| 9 on | Running |
+| 9 | Passed: "...glow, bright: 2%, 0%, 0%, 6%, 0%, 0% of its texture. vending_base: nothing ... looks like a light"; the Desk "emissive" and "Glows in places, from its glow map: bright". Found: parts glowing under 0.5% read 0%. **Fixed** (each part named, its share with a decimal under 1%) |
+| 10 | Passed. Found: "glows soft glow now" reads oddly. **Fixed** ("'s glow is soft glow now"). Stop the Glow doesn't ask first: meant, it is made again in a moment |
+| 11 | Passed, about 3 minutes: `.ent`, `.mesh`, six `.mi` and the `.xbm` files under `source\archive\fab_f1\props\test_vending_machine` |
+| 12 | Passed, 173 s, through a scratch Library (asked for: none set). Found: Choose a folder... opened in the Desk item's folder. **Fixed** (it opens in Documents) |
+| 13 | Passed: "In the Library, version 1"; the Library view down to "Test vending machine v1" with its version, `.ent`, size, parts, license |
+| 14 | Passed, 5 s. Found: "from the Library in fab_f1". **Fixed** ("into"). The prop twice in the project is meant (the step says so now) |
+| 15 | Passed after the step's change (Stop the Glow had left no glow to change): version 2 in 205 s. Found: a second Add to Library while the first waited queued a second, stale question. **Fixed** (refused while one runs) |
+| 16 | Passed: "version 1 → 2", "1 prop refreshed in fab_f1"; the project's `source\library.json` says version 2 |
+| 17 | Passed (no 3D view open): Replace It, "version 3" next |
+| 18 | Passed, 22 s: a second "vending" on the Desk |
+| 19 | Passed from the command palette: "Keep it where it is" first; the modder box holds `edgemodders`. The `...` menu's items weren't readable by script |
+| 20 | Passed, scripted form: both clipboards right, no key in them; the server file there (2,127,899 bytes). **Open:** the real registration, the owner's |
+| 21 | Passed: asked first, gone from the Desk and the disk |
+| 22 | Passed: asked first; after a restart the OpenAI key is asked for again in 23, the Tripo key not in 25 |
+| 23 | Passed, 33 s: the four views, "Picture 1: four views", "A picture by OpenAI: yours". Found: the Draw it first row said "the one EDGEmat uses", untrue since the keys moved to each tool. **Fixed** |
+| 24 | Passed, 35 s: "Picture 2" with the new words |
+| 25 | Passed, 247 s, 60 credits (1,020 before): 0.90 m, 38,146 / 19,320 / 8,162 triangles, "Tripo, paid plan: yours". The step said Standard; the choices are Detailed texture and High detail (the step says so now). Found: no parts row, submeshes named `_00` to `_09`: with 10 pieces or fewer, prepare kept Tripo's own names. **Fixed:** a Tripo model's few parts are named by place too (body, top, middle, top_2, base...) |
+
+**Expected**, no error boxes: only step 8's. The output channel had no error lines; step 8's error wasn't logged (**fixed**). Spent: two GPT Image pictures, 60 Tripo credits.
+
+**Fixed, to rerun on the next build** (`edgefab-0.1.0.vsix` of 2026-11-14 14:21): steps 3, 5, 6, 8 (with the 3D view open), 9, 10, 12, 14, 15 (twice), 17 and 21 (with the 3D view open), 23, and 25's parts row on the drum's `original.glb` made again with Make a Prop (free).
 
 **The dark shards.** Measured offline on the same GLB (`scratchpad\lod\analyze.cjs`): the share of each level's surface whose vertex normals point more than about 100° from its triangle's facing, which the game and the 3D view draw dark. Prepare simplified by positions alone, so the vertices a level kept carried normals from a different slope. Simplifying with the normals weighed in (meshoptimizer's `simplifyWithAttributes`, weight 0.5) keeps it near LOD 1's; LOD 4 strays a little further (error 0.02 against 0.01) so it still drops:
 

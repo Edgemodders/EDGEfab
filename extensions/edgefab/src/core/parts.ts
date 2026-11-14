@@ -389,14 +389,17 @@ function merge(doc: Document, pieces: Piece[], material: Material | null): Primi
  * nodes must have no transforms left (prepare bakes them first). Each part's material is named as the part.
  * Answers the parts, largest first, or undefined when the model has few enough pieces to keep as they are.
  */
-export function groupParts(doc: Document, notes: string[]): PreparedPart[] | undefined {
+export function groupParts(doc: Document, notes: string[], opts: { nameFew?: boolean } = {}): PreparedPart[] | undefined {
   const root = doc.getRoot();
   const scene = root.getDefaultScene() ?? root.listScenes()[0];
   const nodes = root.listNodes().filter((n) => n.getMesh());
   const prims = nodes.flatMap((n) => n.getMesh()!.listPrimitives());
-  if (prims.length <= MaxParts) return undefined;
+  // Few enough pieces: kept as they are, but Tripo's (tripo_part_0...) are named by place, so each is a part to change.
+  const few = prims.length <= MaxParts;
+  if (few && (!opts.nameFew || prims.length < 2)) return undefined;
   const pieces = prims.map(pieceOf);
-  const groups = groupPieces(pieces);
+  // Largest first, so the largest of parts named alike gets the plain name (top, then top_2...).
+  const groups = (few ? pieces.map((p, i): Group => ({ members: [i], cluster: false, kind: p.kind })) : groupPieces(pieces)).sort((a, b) => areaOf(pieces, b.members) - areaOf(pieces, a.members));
   const names = nameGroups(pieces, groups);
   const total = pieces.reduce((s, p) => s + p.area, 0);
   const order = groups.map((_, i) => i).sort((a, b) => areaOf(pieces, groups[b].members) - areaOf(pieces, groups[a].members));
@@ -416,7 +419,7 @@ export function groupParts(doc: Document, notes: string[]): PreparedPart[] | und
   }
   for (const m of oldMaterials) m.dispose();
   for (const t of root.listTextures()) if (!root.listMaterials().some((m) => [m.getBaseColorTexture(), m.getMetallicRoughnessTexture(), m.getNormalTexture(), m.getOcclusionTexture(), m.getEmissiveTexture()].includes(t))) t.dispose();
-  notes.push(`Its ${pieces.length} pieces were grouped into ${parts.length} parts, each with its own material: ${parts.map((p) => p.name).join(", ")}.`);
+  notes.push(few ? `Its ${parts.length} parts were named by where they sit, each with its own material: ${parts.map((p) => p.name).join(", ")}.` : `Its ${pieces.length} pieces were grouped into ${parts.length} parts, each with its own material: ${parts.map((p) => p.name).join(", ")}.`);
   return parts;
 }
 

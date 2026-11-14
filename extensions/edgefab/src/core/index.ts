@@ -23,6 +23,6 @@ export {
   type FromLibraryResult, type LibraryAddRequest, type LibraryAddResult, type LibraryAsset, type LibraryFolder, type Note, type NoteItem, type RefreshLine,
 } from "./library";
 export {
-  glowOff, glowWords, lightsMap, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
+  glowOff, glowWords, lightsMap, percent, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";
 export { drawViews, readPictures, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";

@@ -296,7 +296,7 @@ export async function prepareModel(input: string, outDir: string, name: string, 
     notes.push("Normals were missing and were made.");
   }
   // Many pieces into a few named parts (Tripo's generate_parts).
-  const parts = options.parts === false ? undefined : groupParts(doc, notes);
+  const parts = options.parts === false ? undefined : groupParts(doc, notes, { nameFew: byTripo });
   await doc.transform(weld());
   await MeshoptSimplifier.ready;
 
