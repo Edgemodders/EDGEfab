@@ -80,7 +80,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
 
-### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes; step 6 to rerun on the build of 15:02
+### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes
 
 EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,002 bytes), REDcode 0.10.9, REDbridge 0.12.1; scratch Desk, Library and project as in "A scripted run". The steps as they were written then.
 
@@ -151,6 +151,8 @@ The price is fewer triangles saved at LOD 2 on a model already low in triangles.
 | The drum, 10 parts | → 0.08% at most | 38,146 / 19,322 / 8,040 → 38,146 / 20,836 / 17,210 |
 
 EDGEweb's check of the fixed file: rays dark at LOD 4 but lit at LOD 1, 648 → 59 of 16,200, the 59 within 0.6 mm of the model's own dark lines; no shards in Blender at LOD 2 and 4 or in REDcode's 3D view at LOD 4 (with back faces, as made). Left: the panels a little wavy along the door edges at LOD 4, and one small notch at the top front edge. **The price:** lower levels drop less on Tripo's textures (LOD 4 about half of LOD 1 instead of a quarter). A new, simpler texture layout baked for the lower levels would cure it: later.
+
+**Step 6 again on the build of 15:02 (806,489 bytes): passed.** A fresh Make a Prop, 13 s; the Desk "26,569 / 19,828 / 17,774 triangles" (back faces counted); every part's count falls from each level to the next (LOD 4: 4,384 / 4,814 / 3,538 / 2,198 / 1,520 / 1,320); no shards at LOD 1, 2 or 4, the panels whole, LOD 4 a little wavy. **Open from the pass:** step 20's real registration (the owner's).
 
 Also seen: after a restart VS Code reopens the last session's `view.glb` tab, so two tabs named `view.glb` can be open: check the path in the breadcrumb.
 
