@@ -16,6 +16,18 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **Before.** Install `dist\edgefab-0.1.0.vsix` (Extensions view, `...`, Install from VSIX), or press F5 in this repo for a development window. REDcode installed, with a WolvenKit project open in it (a scratch one, such as `Projects\EDGEfab_F1`). Open the EDGEfab icon in the activity bar: the **Desk** and the **Library** views. Write down anything that reads oddly, not only what fails.
 
+**A scripted run** (another session driving the editor, with no hands on Windows' own dialogs) sets up the same, all of it scratch, so the owner's Desk, Library and Claude Code are never touched:
+
+| What | How |
+|---|---|
+| File pickers | The setting `"files.simpleDialog.enable": true`: VS Code's own picker, which takes a typed path (steps 4 and 12, and 11 if no project is open) |
+| The Desk and EDGEfab's settings | A redirected `LOCALAPPDATA`, or `EDGEFAB_DATA` set to a scratch folder in the editor's environment |
+| The Library | `EDGE_LIBRARY_CONFIG` set to a scratch `library.json` (not there yet) in the editor's environment. Step 12 then asks for the Library's folder: **Choose a folder...**, a scratch folder. Never the suggested `Documents\EDGE Library`, which is the owner's |
+| A GLB | Copy `vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` from the owner's real Desk (the real `%LOCALAPPDATA%\EDGEfab\desk`) (24 MB, read only) into a scratch folder, and open that folder as the editor's workspace (step 18 uses it too) |
+| A project | A new WolvenKit project in a scratch folder, open in REDcode |
+| Clicks that leave the editor | Skip **Reveal**, **Reveal Entity** (check the file on disk instead) and **Pack and Try** |
+| The 3D view | A screenshot of the view for steps 6, 8 and 9, saved to a file, with its path in the result |
+
 **A. Keys and plan**
 
 1. Command palette: **EDGEfab: Set Tripo Key**. Type `abc`: refused in words. Paste the real key: "set, in VS Code's secret storage".
@@ -26,7 +38,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 4. Desk title bar, **Import a GLB...**: pick a textured GLB (`%LOCALAPPDATA%\EDGEfab\desk\vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` will do). A progress note, then "EDGEfab made ...", with Open in 3D and Reveal.
 5. Expand it on the Desk: its size (or "Size unknown"), levels of detail, textures, parts, license.
-6. Click it: REDcode's 3D view opens it with its textures; its parts and levels of detail can be switched.
+6. Click it: REDcode's 3D view opens it with its textures; its parts and levels of detail can be switched. On the page: a tab named `view.glb`, a canvas with the model on the grid (not "Could not read the file"); in the toolbar a level list (`LOD 1 (most detail)` and two more) and a shading list with **Own textures**; on the side, **Submeshes**, one row per part (number, material, triangles). Another level in the list: fewer triangles in every row. A part's box unticked: that part goes.
 7. Right-click, **Set Size...**: 1.8. The size line changes; the warning goes.
 8. Right-click, **Rename...**: "Test vending machine". The Desk shows the new name; click it: it still opens in 3D.
 
@@ -41,7 +53,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **E. The Library**
 
-12. Right-click the prop, **Add to Library...**. Your Library is already set up (`Documents\EDGE Library`), so it isn't asked for. Asked once: your own folder in game paths (type your modder name). Pick **New folder...** `Production/Props`, then **In folders matching its game path**. A progress note, then "is in the Library".
+12. Right-click the prop, **Add to Library...**. Your Library is already set up (`Documents\EDGE Library`), so it isn't asked for (a scripted run: asked, see above). Asked once: your own folder in game paths (type your modder name). Pick **New folder...** `Production/Props`, then **In folders matching its game path**. A progress note, then "is in the Library".
 13. The Desk prop shows "In the Library, version 1". The **Library** view shows `Production`, down to the prop, `v1`; expand it: version, the `.ent`, size, parts, license.
 14. In the Library view, right-click the prop, **Add to Project**: almost instant; the message says version 1.
 15. On the Desk, **Glow Strength...** (any), then **Add to Library...** again: "Update ... in the Library?", version 2, the same place.
@@ -52,7 +64,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **F. Assistants**
 
-20. **EDGEfab: Connect an Assistant (MCP)...**: it registers with Claude Code; a new Claude Code session lists `fab_*` tools.
+20. **EDGEfab: Connect an Assistant (MCP)...**: it registers with Claude Code; a new Claude Code session lists `fab_*` tools. A scripted run doesn't register (that would point the owner's Claude Code at a scratch copy of the server): **Copy the Claude Code command**, then **Copy a JSON entry**, and report both from the clipboard (they hold no key), and whether the server file they name exists.
 
 **G. Delete and keys again**
 
