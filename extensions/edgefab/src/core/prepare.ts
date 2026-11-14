@@ -150,24 +150,117 @@ function cloneDeep(doc: Document, prim: Primitive): Primitive {
 }
 
 /**
- * A lower level of detail. The normals count as well as the positions: simplified by positions alone, a box-like
- * model's lower levels kept vertex normals that no longer matched their triangles, which the game and the 3D view
- * drew as dark shards across flat panels (the owner's pass, 2026-11-14: about 1% of the surface at LOD 2 and 4,
- * against 0.2% at LOD 1). With the normals weighed in, it stays near LOD 1's.
+ * A lower level of detail. The simplifier weighs the normals beside the positions, so the kept vertices' normals
+ * suit their triangles. It knows nothing of the texture, though: Tripo's textures are many small charts with black
+ * between them, and a simplified triangle larger than its chart runs over that black, even with its corners on the
+ * chart. The game and the 3D view drew those as black shards on flat panels (the owner's pass, 2026-11-14: 1 to 7%
+ * of each part at LOD 4, under 0.1% at LOD 1). So after each pass, the original vertices under any triangle that
+ * leaves the texels the original covers are kept, and the level is made again, a few times over. The price: lower
+ * levels drop less on such textures.
  */
-function simplifyLevel(prim: Primitive, level: LodLevel): void {
+function simplifyLevel(prim: Primitive, level: LodLevel, from: { triangles: number; covered?: Uint8Array }): void {
   const error = level.error ?? 0.01;
   const normal = prim.getAttribute("NORMAL")?.getArray();
+  const uv = prim.getAttribute("TEXCOORD_0")?.getArray();
+  const indices = prim.getIndices()!;
+  // The level's share is of the original's triangles; prim may be the level before, already simpler.
+  const ratio = Math.min(1, (level.ratio * from.triangles) / (indices.getCount() / 3));
+  if (ratio >= 1) return;
   if (!(normal instanceof Float32Array)) {
-    simplifyPrimitive(prim, { simplifier: MeshoptSimplifier, ratio: level.ratio, error });
+    simplifyPrimitive(prim, { simplifier: MeshoptSimplifier, ratio, error });
     return;
   }
-  const indices = prim.getIndices()!;
   const idx = Uint32Array.from(indices.getArray()!);
-  const target = Math.floor((level.ratio * idx.length) / 3) * 3;
-  const [out] = MeshoptSimplifier.simplifyWithAttributes(idx, Float32Array.from(prim.getAttribute("POSITION")!.getArray()!), 3, Float32Array.from(normal), 3, [0.5, 0.5, 0.5], null, target, error, []);
+  const pos = Float32Array.from(prim.getAttribute("POSITION")!.getArray()!);
+  const nor = Float32Array.from(normal);
+  const n = pos.length / 3;
+  const target = Math.floor((ratio * idx.length) / 3) * 3;
+  const lock = new Uint8Array(n);
+  const covered = from.covered;
+  let out: Uint32Array = idx;
+  for (let pass = 0; pass < 8; pass++) {
+    [out] = MeshoptSimplifier.simplifyWithAttributes(idx, pos, 3, nor, 3, [0.5, 0.5, 0.5], lock, target, error, []) as unknown as [Uint32Array, number];
+    if (!uv || !covered) break;
+    const astray = offTexture(out, uv, covered);
+    if (!astray.length) break;
+    let locked = 0;
+    for (const t of astray) locked += lockUnder(out, t, pos, lock);
+    if (!locked) break;
+  }
   indices.setArray(new Uint32Array(out));
   compactPrimitive(prim);
+}
+
+/** The texture's size for the coverage check: fine enough for Tripo's small charts, quick to draw. */
+const CoverSize = 1024;
+
+/** The texels a mesh's triangles touch in its texture (any part of a texel), grown by one texel. */
+function coverage(idx: ArrayLike<number>, uv: ArrayLike<number>): Uint8Array {
+  const R = CoverSize;
+  const m = new Uint8Array(R * R);
+  const e = (ax: number, ay: number, bx: number, by: number, x: number, y: number) => (bx - ax) * (y - ay) - (by - ay) * (x - ax);
+  for (let t = 0; t < idx.length; t += 3) {
+    const xs = [0, 1, 2].map((k) => uv[2 * idx[t + k]] * R), ys = [0, 1, 2].map((k) => uv[2 * idx[t + k] + 1] * R);
+    const area = e(xs[0], ys[0], xs[1], ys[1], xs[2], ys[2]);
+    if (area === 0) continue;
+    const x0 = Math.max(0, Math.floor(Math.min(...xs))), x1 = Math.min(R - 1, Math.floor(Math.max(...xs)));
+    const y0 = Math.max(0, Math.floor(Math.min(...ys))), y1 = Math.min(R - 1, Math.floor(Math.max(...ys)));
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        for (const [dx, dy] of [[0.5, 0.5], [0, 0], [1, 0], [0, 1], [1, 1]]) {
+          const w0 = e(xs[1], ys[1], xs[2], ys[2], x + dx, y + dy), w1 = e(xs[2], ys[2], xs[0], ys[0], x + dx, y + dy), w2 = e(xs[0], ys[0], xs[1], ys[1], x + dx, y + dy);
+          if (area > 0 ? w0 >= 0 && w1 >= 0 && w2 >= 0 : w0 <= 0 && w1 <= 0 && w2 <= 0) {
+            m[y * R + x] = 1;
+            break;
+          }
+        }
+      }
+    }
+    // A triangle smaller than a texel still marks its own.
+    m[Math.min(R - 1, Math.max(0, Math.floor(ys[0]))) * R + Math.min(R - 1, Math.max(0, Math.floor(xs[0])))] = 1;
+  }
+  const grown = m.slice();
+  for (let y = 1; y < R - 1; y++) for (let x = 1; x < R - 1; x++) if (m[y * R + x]) grown[y * R + x - 1] = grown[y * R + x + 1] = grown[(y - 1) * R + x] = grown[(y + 1) * R + x] = 1;
+  return grown;
+}
+
+/** The triangles (index of their first corner) whose texture runs off the covered texels at any of a grid of points inside. */
+function offTexture(idx: ArrayLike<number>, uv: ArrayLike<number>, covered: Uint8Array): number[] {
+  const R = CoverSize;
+  const astray: number[] = [];
+  const N = 6;
+  for (let t = 0; t < idx.length; t += 3) {
+    const a = idx[t], b = idx[t + 1], c = idx[t + 2];
+    let off = false;
+    for (let i = 0; i <= N && !off; i++) {
+      for (let j = 0; j <= N - i && !off; j++) {
+        const wa = (i + 1 / 3) / (N + 1), wb = (j + 1 / 3) / (N + 1), wc = 1 - wa - wb;
+        if (wc < 0) continue;
+        const s = wa * uv[2 * a] + wb * uv[2 * b] + wc * uv[2 * c], r = wa * uv[2 * a + 1] + wb * uv[2 * b + 1] + wc * uv[2 * c + 1];
+        const x = Math.min(R - 1, Math.max(0, Math.floor(s * R))), y = Math.min(R - 1, Math.max(0, Math.floor(r * R)));
+        if (!covered[y * R + x]) off = true;
+      }
+    }
+    if (off) astray.push(t);
+  }
+  return astray;
+}
+
+/** Locks the original vertices within a turned triangle's bounds (a little wider), so the next pass keeps them. */
+function lockUnder(idx: ArrayLike<number>, t: number, pos: Float32Array, lock: Uint8Array): number {
+  const c = [idx[t], idx[t + 1], idx[t + 2]];
+  const lo = [0, 1, 2].map((k) => Math.min(...c.map((v) => pos[3 * v + k])));
+  const hi = [0, 1, 2].map((k) => Math.max(...c.map((v) => pos[3 * v + k])));
+  const pad = 0.05 * Math.max(...[0, 1, 2].map((k) => hi[k] - lo[k]));
+  let added = 0;
+  for (let i = 0; i < lock.length; i++) {
+    if (lock[i]) continue;
+    if ([0, 1, 2].every((k) => pos[3 * i + k] >= lo[k] - pad && pos[3 * i + k] <= hi[k] + pad)) {
+      lock[i] = 1;
+      added++;
+    }
+  }
+  return added;
 }
 
 /** Whether Tripo made the file: its asset generator, read from the file itself (glTF-Transform replaces it on
@@ -366,11 +459,19 @@ export async function prepareModel(input: string, outDir: string, name: string, 
       if (vertexCount(prim) > budget) throw new PrepareError(`Part ${index + 1} has too many vertices for the game (over ${MaxSubmeshVertices}) even simplified. Reduce it in a 3D tool, or ask Tripo for fewer faces.`);
       notes.push(`Part ${index + 1} was simplified from ${before} to ${triangleCount(prim)} triangles to stay under the game's ${MaxSubmeshVertices} vertices per part.`);
     }
+    // Each level is made from the one before, so a farther level is never heavier; every level keeps to the texels
+    // the original covers.
+    const uvs = prim.getAttribute("TEXCOORD_0")?.getArray();
+    const source = { triangles: triangleCount(prim), covered: uvs ? coverage(prim.getIndices()?.getArray() ?? Uint32Array.from({ length: vertexCount(prim) }, (_, i) => i), uvs) : undefined };
+    let before = prim;
     for (const level of [...lods].sort((a, b) => a.lod - b.lod)) {
       const { lod, ratio } = level;
       const meshName = `submesh_${two(index)}_LOD_${lod}`;
-      const copy = cloneDeep(doc, prim);
-      if (ratio < 1) simplifyLevel(copy, level);
+      const copy = cloneDeep(doc, before);
+      if (ratio < 1) {
+        simplifyLevel(copy, level, source);
+        before = copy;
+      }
       const mesh = doc.createMesh(meshName).addPrimitive(copy);
       scene.addChild(doc.createNode(meshName).setMesh(mesh));
       submeshes.push({ name: meshName, lod, material, vertices: 0, triangles: 0, attributes: [] });

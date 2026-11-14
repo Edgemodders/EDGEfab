@@ -80,7 +80,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
 
-### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes, the shards open
+### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes; step 6 to rerun on the build of 15:02
 
 EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,002 bytes), REDcode 0.10.9, REDbridge 0.12.1; scratch Desk, Library and project as in "A scripted run". The steps as they were written then.
 
@@ -131,7 +131,7 @@ The price is fewer triangles saved at LOD 2 on a model already low in triangles.
 |---|---|
 | 3 | Passed: "Tripo plan set to paid. Models you make are yours to use in mods." |
 | 5 | Passed: one line, "Size unknown: Set Size before adding it", "1.00 m tall for now, a stand-in..." |
-| 6 | Levels as measured offline: 26,569 / 16,963 / 13,445. **Still dark shards at LOD 2 and 4.** Diagnosed: none with Flat colours (so no holes); with Own textures on the body part, the same triangles from every angle, no flicker. Not texture coordinates in empty atlas space, not broken tangents (both checked offline). Open: three variants of the view model (as made; no back faces; back faces with single-sided materials, as the game draws) to tell whether the added back faces are what the view draws dark |
+| 6 | Levels as measured offline: 26,569 / 16,963 / 13,445. **Still dark shards at LOD 2 and 4.** Diagnosed: none with Flat colours (so no holes); with Own textures on the body part, the same triangles from every angle, no flicker. Not texture coordinates in empty atlas space, not broken tangents (both checked offline). **Found and fixed, below** |
 | 8 | Passed (14:24): with the view open, renamed, the view opened again on the renamed files |
 | 9 | Passed: "Lit, of each part's texture: vending_front 2%, vending_body under 0.1%, vending_back 0.1%, vending_middle 6%..." |
 | 10 | Passed: "vending_front's glow is soft glow now (strength 1)" |
@@ -141,6 +141,16 @@ The price is fewer triangles saved at LOD 2 on a model already low in triangles.
 | 17, 21 | Passed (14:24) with the 3D view open: the tab closes, then Replace It and Delete go through |
 | 23 | The "how to make" list shows only when no OpenAI key is set, by design; its new text wasn't read |
 | 25 | Passed on the drum's GLB made again (Make a Prop, free): "10 parts, a material each: body, top, middle, top_2, base, top_3, base_2, base_3, front, top_4" and their note; submeshes `drum_body`... |
+
+**The dark shards, found** (EDGEweb and Claude together, 2026-11-14). Ruled out one by one, each by a variant of the view model opened in the 3D view and rendered in Blender (Workbench, the colour texture only, which drew them too, so they are in the model): the added back faces and double-sided materials, the vertex normals (remade per level), the normal map (removed), holes, inside-out triangles, triangles reaching into the model, triangles turned over in the texture (repaired: no change). **The cause**, from EDGEweb's ray trace (5,400 rays at each of three faces, the same ray at LOD 1 and LOD 4): Tripo's textures are many small charts with black between them, and a simplified triangle larger than its chart runs over that black even with its three corners on the chart. Where LOD 4 was dark and LOD 1 lit, the UV under the same surface point differed by 0.038 (median), with the surface moved 0.1 mm. **The measure** (`scratchpad\lod\uvcover.cjs`): each level's triangles sampled in UV space against the texels LOD 1 covers, by 3D area. **The fix:** after each simplify pass, the original vertices under any triangle that leaves those texels are kept and the pass runs again (up to 8), and each level is made from the one before, so LOD 4 is never heavier than LOD 2.
+
+| Model | Off the texture at LOD 4, by part, before → after | Triangles LOD 1 / 2 / 4, before → after |
+|---|---|---|
+| This vending machine, 6 parts (no back faces) | 1.4, 4.5, 6.6, 7.5, 1.4, 3.3% → 0.43, 0.16, 0.37, 0.06, 0.12, 0.14% | 16,415 / 10,914 / 8,741 → 16,415 / 12,423 / 11,079 |
+| Test 8's text-to-model machine | → 0.21% | 16,791 / 8,394 / 4,300 → 16,791 / 9,885 / 8,295 |
+| The drum, 10 parts | → 0.08% at most | 38,146 / 19,322 / 8,040 → 38,146 / 20,836 / 17,210 |
+
+EDGEweb's check of the fixed file: rays dark at LOD 4 but lit at LOD 1, 648 → 59 of 16,200, the 59 within 0.6 mm of the model's own dark lines; no shards in Blender at LOD 2 and 4 or in REDcode's 3D view at LOD 4 (with back faces, as made). Left: the panels a little wavy along the door edges at LOD 4, and one small notch at the top front edge. **The price:** lower levels drop less on Tripo's textures (LOD 4 about half of LOD 1 instead of a quarter). A new, simpler texture layout baked for the lower levels would cure it: later.
 
 Also seen: after a restart VS Code reopens the last session's `view.glb` tab, so two tabs named `view.glb` can be open: check the path in the breadcrumb.
 
@@ -188,6 +198,10 @@ After the Library, Rename, `readPrepared` and the core package's changes to `src
 ### Run 6, 2026-11-14: passed (step 1)
 
 After the levels of detail were made with the normals weighed in (the owner's pass, Run 1, step 6). Step 1 on the same model and on test 8's plain text-to-model machine: `ok` both; 26,569 / 16,963 / 13,445 and 16,791 / 8,394 / 4,300 triangles. The `.vsix` again: 11 files, no PowerShell, no key files.
+
+### Run 7, 2026-11-14: passed (step 1)
+
+After the levels were made to keep to the texture's charts (the owner's pass, Run 1, step 6). Step 1 on the vending machine, test 8's machine and the drum: `ok` all three; LOD 4 below LOD 2 on each. The `.vsix` again: 11 files, no PowerShell, no key files.
 
 ## F1: Add to Project (without the game)
 
