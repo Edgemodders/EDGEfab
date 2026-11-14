@@ -80,7 +80,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
 
-### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes, reruns open
+### Run 1, 2026-11-14: scripted, by the EDGEweb session: passed with fixes, the shards open
 
 EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,002 bytes), REDcode 0.10.9, REDbridge 0.12.1; scratch Desk, Library and project as in "A scripted run". The steps as they were written then.
 
@@ -90,7 +90,7 @@ EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,00
 | 3 | Passed. Found: nothing confirms the choice. **Fixed** (a message says the plan) |
 | 4 | Passed, 22 s: "EDGEfab made vending: 3 levels of detail, in 6 parts. Its size is unknown...", with a third button, Set Size (the step now says so) |
 | 5 | Passed. Found: "Size unknown" right above "1.00 m tall" reads as a contradiction. **Changed:** with no real size, one line says both ("1.00 m tall for now, a stand-in") |
-| 6 | Passed: `view.glb`, levels `LOD 1 (most detail)`, `LOD 2`, `LOD 4`, Own textures, six parts, unticking hides one. **Found: dark shards across the panels at LOD 4** (screenshot), and LOD 4 hardly below LOD 2 (12,853 against 14,621 triangles). **Fixed in prepare**, below |
+| 6 | Passed: `view.glb`, levels `LOD 1 (most detail)`, `LOD 2`, `LOD 4`, Own textures, six parts, unticking hides one. **Found: dark shards across the panels at LOD 4** (screenshot), and LOD 4 hardly below LOD 2 (12,853 against 14,621 triangles). **Not fixed yet**, below |
 | 7 | Passed: `abc` refused, 1.8 gives "1.80 m tall, 0.96 × 0.76 m", the warning goes |
 | 8 | **Failed with the 3D view open:** "Could not move ... something has a file in it open ... (EPERM)": REDcode's view watches its folder, which on Windows stops the folder's move. Passed with the view closed. **Fixed:** Rename, Delete, Edit on the Desk's Replace It and a Library update close the item's open tabs first; Rename opens the view again |
 | 9 | Passed: "...glow, bright: 2%, 0%, 0%, 6%, 0%, 0% of its texture. vending_base: nothing ... looks like a light"; the Desk "emissive" and "Glows in places, from its glow map: bright". Found: parts glowing under 0.5% read 0%. **Fixed** (each part named, its share with a decimal under 1%) |
@@ -115,7 +115,7 @@ EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,00
 
 **Fixed, to rerun on the next build** (`edgefab-0.1.0.vsix` of 2026-11-14 14:21): steps 3, 5, 6, 8 (with the 3D view open), 9, 10, 12, 14, 15 (twice), 17 and 21 (with the 3D view open), 23, and 25's parts row on the drum's `original.glb` made again with Make a Prop (free).
 
-**The dark shards.** Measured offline on the same GLB (`scratchpad\lod\analyze.cjs`): the share of each level's surface whose vertex normals point more than about 100° from its triangle's facing, which the game and the 3D view draw dark. Prepare simplified by positions alone, so the vertices a level kept carried normals from a different slope. Simplifying with the normals weighed in (meshoptimizer's `simplifyWithAttributes`, weight 0.5) keeps it near LOD 1's; LOD 4 strays a little further (error 0.02 against 0.01) so it still drops:
+**The dark shards, first try.** Measured offline on the same GLB (`scratchpad\lod\analyze.cjs`): the share of each level's surface whose vertex normals point more than about 100° from its triangle's facing, which the game and the 3D view draw dark. Prepare simplified by positions alone, so the vertices a level kept carried normals from a different slope. Simplifying with the normals weighed in (meshoptimizer's `simplifyWithAttributes`, weight 0.5) keeps it near LOD 1's; LOD 4 strays a little further (error 0.02 against 0.01) so it still drops:
 
 | Model | LOD 1 | LOD 2 before, after | LOD 4 before, after |
 |---|---|---|---|
@@ -123,7 +123,27 @@ EDGEkit 1.140.6 with a trial profile, `edgefab-0.1.0.vsix` of 2026-11-13 (803,00
 | This one, all parts | 26,569 | 14,621 → 16,963 | 12,853 → 13,445 |
 | The in-game test's text-to-model machine (one part) | 16,791, 0.07% | 8,389, 0.35% → 8,394, 0.17% | 3,322, 1.71% → 4,300, 0.62% |
 
-The price is fewer triangles saved at LOD 2 on a model already low in triangles. Seen again in step 6 of the next run.
+The price is fewer triangles saved at LOD 2 on a model already low in triangles. **It didn't remove the shards** (the reruns below): the measure was of something else. Kept, since the levels shade closer to LOD 1 anyway.
+
+**Reruns, 2026-11-14,** on the builds of 14:21 (804,390 bytes) and 14:24 (804,413: Rename's tab check had its two paths the wrong way round, so no tab closed and step 8 failed the same way; found by EDGEweb from the bundle):
+
+| Step | Result |
+|---|---|
+| 3 | Passed: "Tripo plan set to paid. Models you make are yours to use in mods." |
+| 5 | Passed: one line, "Size unknown: Set Size before adding it", "1.00 m tall for now, a stand-in..." |
+| 6 | Levels as measured offline: 26,569 / 16,963 / 13,445. **Still dark shards at LOD 2 and 4.** Diagnosed: none with Flat colours (so no holes); with Own textures on the body part, the same triangles from every angle, no flicker. Not texture coordinates in empty atlas space, not broken tangents (both checked offline). Open: three variants of the view model (as made; no back faces; back faces with single-sided materials, as the game draws) to tell whether the added back faces are what the view draws dark |
+| 8 | Passed (14:24): with the view open, renamed, the view opened again on the renamed files |
+| 9 | Passed: "Lit, of each part's texture: vending_front 2%, vending_body under 0.1%, vending_back 0.1%, vending_middle 6%..." |
+| 10 | Passed: "vending_front's glow is soft glow now (strength 1)" |
+| 12 | Passed: Choose a folder... starts in Documents |
+| 14 | Passed: "...from the Library into fab_f1" |
+| 15 | Passed: the second Add to Library at once: "is being added to the Library already", no second question; version 3 |
+| 17, 21 | Passed (14:24) with the 3D view open: the tab closes, then Replace It and Delete go through |
+| 23 | The "how to make" list shows only when no OpenAI key is set, by design; its new text wasn't read |
+| 25 | Passed on the drum's GLB made again (Make a Prop, free): "10 parts, a material each: body, top, middle, top_2, base, top_3, base_2, base_3, front, top_4" and their note; submeshes `drum_body`... |
+
+Also seen: after a restart VS Code reopens the last session's `view.glb` tab, so two tabs named `view.glb` can be open: check the path in the breadcrumb.
+
 
 ## F1: prepare a model (smoke test, without VS Code)
 

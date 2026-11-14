@@ -105,7 +105,7 @@ async function openIn3D(glb: string | undefined, preview?: string): Promise<void
  * Answers whether any were closed.
  */
 async function releaseFolder(folder: string): Promise<boolean> {
-  const inside = (uri: vscode.Uri | undefined) => !!uri && uri.scheme === "file" && isInside(folder, uri.fsPath);
+  const inside = (uri: vscode.Uri | undefined) => !!uri && uri.scheme === "file" && isInside(uri.fsPath, folder);
   const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs).filter((t) => {
     const input = t.input;
     if (input instanceof vscode.TabInputText || input instanceof vscode.TabInputCustom || input instanceof vscode.TabInputNotebook) return inside(input.uri);
