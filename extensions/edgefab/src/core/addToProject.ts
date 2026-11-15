@@ -48,7 +48,9 @@ export interface AddRequest {
   mod?: string;
   collision?: Collision;
   template?: string;
-  /** Flip the normal maps' green (glTF's are green up). Which way the game reads them is unverified: for that check. */
+  /** Flip the normal maps' green: on by default. glTF's normal maps are green up (OpenGL); the game's are green down
+   *  (DirectX, the RedModding wiki's "normal maps in Cyberpunk"), and its meshes carry the same tangent frame as the ones
+   *  EDGEfab makes (testing.md, "the normal maps' green"), so the green is turned over. false keeps it as glTF has it. */
   flipNormalGreen?: boolean;
   log?: (line: string) => void;
 }
@@ -392,7 +394,7 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
     folder,
     glow: glow.length ? glow : undefined,
     made,
-    flipNormalGreen: req.flipNormalGreen,
+    flipNormalGreen: req.flipNormalGreen ?? true,
     log,
   });
   for (const f of materials.files) written.add(rel(onDisk(req.project.archive, f)));

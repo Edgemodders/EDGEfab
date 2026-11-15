@@ -294,6 +294,10 @@ After the switch to `@edgemodders/edgemat-core` 0.3.2 from npm (EDGEmat #7), in 
 
 Much slower than Run 1 (15 s) because 6 parts each convert 4 or 5 textures at up to 4096², against one material at 2048². Steps 2 and 3 (reading the mesh and entity back) not rerun: `addToProject.ts` is unchanged.
 
+### Run 3, 2026-11-15: passed (the normal maps' green flipped by default)
+
+After [the normal maps' green](#f1-check-the-normal-maps-green-offline) was settled: Add to Project now turns each normal map's green over. Step 4 only: `fab_add` with `vending_e2e` (6 parts) into an empty scratch project, `physical`: 133.7 s, 6 materials applied, each with its `_n01.xbm`. The front's `_n01.xbm` decoded back to PNG against the Desk item's `vending_e2e_front_normal.png` (both 4096²): green against the source's green, mean difference 31.6; against 255 minus it, **0.1**; red, 0.1. So green is flipped and nothing else changed.
+
 ## F1: the Library (without the game)
 
 A Desk prop goes into the EDGE Library with its game files built in, from there into a project as a copy noted in the project's `source/library.json`, is updated one version up, refreshed in the project, and copied back to the Desk; through the MCP server, in scratch folders. Run after every change to `core/library.ts`.
@@ -396,10 +400,26 @@ Game 2.5, REDnode 0.58.0, at night, then by day; outside Embers' area (about -19
 | Glow | Visible. At night only the orange shelf strips and keypad light, the body stays dark. **The owner: strength 3 (Bright, EV 2.585) is the most appropriate**; 0.25 and 1 are faint at night on thin painted strips |
 | Collision | **Both pass:** `vending_glow` (`physical`) and `vending_glow_box` (`box`) each stop V, hold V standing on top and spark under fire. The drums (test 7) test the same two components on another mesh and were skipped |
 | Levels of detail | **Passed:** walking 25 m away, the owner: "the LOD transitions look to be pretty smooth" |
-| Normal maps' green | **Open.** `vending_glow` and `vending_flipped` look the same in low side light. Flipping green only changes up-and-down shading, which side light doesn't test. WolvenKit's importer doesn't touch the green channel, so the game reads it as written; which convention the game uses is to settle offline (a test normal map of a known dome, or a game texture on a known shape). On Tripo's models the difference didn't show |
+| Normal maps' green | **Open here; settled offline 2026-11-15** ([the normal maps' green](#f1-check-the-normal-maps-green-offline): flipped, now the default). `vending_glow` and `vending_flipped` look the same in low side light. Flipping green only changes up-and-down shading, which side light doesn't test. WolvenKit's importer doesn't touch the green channel, so the game reads it as written; which convention the game uses is to settle offline (a test normal map of a known dome, or a game texture on a known shape). On Tripo's models the difference didn't show |
 | Up close | The owner: the textures look low resolution, with jaggies and rough corners. Tripo's standard 2048² texture over the whole machine, and 20,000 triangles. See [Tripo's quality settings](#f1-check-tripos-quality-settings-in-the-game) |
 
 Also found: with nine or more similar objects spawned, the owner couldn't tell them apart or find them; neither the game's debug text (`DrawText3D`, not drawn in the release game) nor a map pin (`RegisterMappin`, minimap only) labels them in the world. Asked of REDnode as world pins ([REDnode #43](https://github.com/Edgemodders/REDnode/issues/43)). Spawning one object at a time in front of V worked for the collision checks.
+
+## F1 check: the normal maps' green (offline)
+
+Which way the game reads a normal map's green, so Add to Project writes glTF's maps (green up, OpenGL) the way the game wants them. Open since [an added prop in the game](#f1-check-an-added-prop-in-the-game) (2026-11-09), where low side light couldn't tell. Not a release test; it decides a default.
+
+**How.** Two facts decide it: which way the game's textures point (green up or down), and whether the game's meshes carry the same tangent frame as EDGEfab's. With the same frame, EDGEfab's maps must follow the game's textures.
+
+| Check | Result |
+|---|---|
+| The tangent frame of EDGEfab's meshes (`vending_e2e.glb`, every submesh and level): the bitangent `cross(N, T) × w` against the UVs' own direction | Points **up the image** (against growing v) on 95 to 99.6% of the surface; T along +u |
+| The same for game meshes exported through REDbridge (`barrel_drum_a.mesh`, `q302_presidential_coin_a.mesh`, the Militech Ticon's body and magazine) | Up the image on **100%**: the same frame. WolvenKit's export and import read tangents the same way, so this is how the game has them |
+| The game's textures: the [RedModding wiki](https://wiki.redmodding.org/cyberpunk-2077-modding/for-mod-creators-theory/materials/textures/normal-maps-in-cyberpunk) | "Cyberpunk uses DirectX normal maps"; normal maps baked in Blender (whose tangent frame is glTF's) for the game use -Y, green down |
+| The textures read from the maps themselves (a baked map turns smoothed normals back toward the face at hard edges; decoded both ways, which comes closer?) on the coin's and the Ticon's maps | **No answer**: 47 to 53% either way, both farther than no map. The game's low-poly meshes have curved and split normals where the method needs smoothed hard edges, and the Ticon's `tpp` map belongs to levels WolvenKit's export leaves out |
+| REDbridge's `texture.toPng` against WolvenKit's export of the coin's map | Identical (largest channel difference 0): neither flips |
+
+**Result: flip.** The game wants green down, its meshes have glTF's frame, and glTF's maps are green up, so Add to Project turns green over (`flipNormalGreen`, now on by default; false keeps glTF's). Checked on the written files in [Add to Project, Run 3](#run-3-2026-11-15-passed-the-normal-maps-green-flipped-by-default). **Unverified in the game:** a look at a prop's panel lit from above (the sun high, or a lamp overhead) beside one added before 2026-11-15 would show it; side light can't. EDGEmat's own `materialsFromModel` (default off) and its made materials (`normalMap`, green up) are EDGEmat's to look at: EDGEmat #11.
 
 ## F1 check: Tripo's quality settings in the game
 
