@@ -4,7 +4,7 @@ The source of EDGEfab's Nexus Mods page lives here, so updates are edits in the 
 
 | File | What it is |
 |---|---|
-| `description.bbcode` | The page's description, in Nexus's BBCode. Placeholders in parentheses (SCREENSHOT) are filled in or taken out before the first release |
+| `description.bbcode` | The page's description, in Nexus's BBCode |
 | `nexus.json` | The page, the main file's upload settings (`upload`), and after a pull the ids found and the hash of the description last pulled |
 | `README.md` | This page: the other fields of the Nexus form, the download file, and how to update |
 
@@ -31,15 +31,9 @@ From the first release on, the Release workflow's **Update Nexus Mods** box uplo
 
 Tags cannot be set through Nexus's v3 API (only read): set them by hand on the page.
 
-## Screenshots
+## Pictures and video
 
-The description has three placeholders, in parentheses. For each: upload the picture to the page's Images tab and put its `staticdelivery.nexusmods.com` link in place of the placeholder, as EDGEmat's page does; or save it in `images/` here and link it from this repo's `main` branch (`https://raw.githubusercontent.com/Edgemodders/EDGEfab/main/nexus/images/<name>`). Take out any placeholder with no picture before the release, or it shows on the page as text.
-
-| Placeholder | Shows | A candidate |
-|---|---|---|
-| A made prop placed in the game, by night | The first look: a prop EDGEfab made, standing in Night City | The phase test's night picture of the vending machine and the drum (2026-11-14) |
-| The Desk | A prop open on the Desk: size, levels of detail, parts, glow, license | A VS Code screenshot |
-| The vending machine at night | Make the Painted Lights Glow | The phase test's night picture, closer |
+The description has no screenshots: their placeholders were taken out on 2026-11-15 (the owner's choice). The owner is recording a video for the page, added on Nexus before the page goes live. A picture added later goes in the same way as EDGEmat's: upload it to the page's Images tab and put its `staticdelivery.nexusmods.com` link in `description.bbcode`, or save it in `images/` here and link it from this repo's `main` branch (`https://raw.githubusercontent.com/Edgemodders/EDGEfab/main/nexus/images/<name>`). An edit made on Nexus's page (a video embedded in the description, say) is pulled back with `npm run nexus:pull` before the next release, or the release stops.
 
 Before publishing a picture, check it for personal data: Windows user names in paths, account names, keys.
 
@@ -69,4 +63,4 @@ The Nexus tool is shared, in [EDGErepo](https://github.com/Edgemodders/EDGErepo)
 
 ## BBCode used
 
-Nexus's BBCode has no tables or Markdown, so the page uses only: `[b]`, `[i]`, `[size=2..5]`, `[color=#hex]`, `[center]`, `[quote]`, `[line]`, `[list]` with `[*]`, `[url=...]` and `[img]`. Square brackets that are not tags confuse the checker, so placeholders use parentheses. The banner is linked from this repo's `main` branch on GitHub, so it must stay at its path. The colours are the house palette: yellow `#fcee0a` for headings, cyan `#19f3ff` for highlights.
+Nexus's BBCode has no tables or Markdown, so the page uses only: `[b]`, `[i]`, `[size=2..5]`, `[color=#hex]`, `[center]`, `[quote]`, `[line]`, `[list]` with `[*]`, `[url=...]` and `[img]`. Square brackets that are not tags confuse the checker. The banner is linked from this repo's `main` branch on GitHub, so it must stay at its path. The colours are the house palette: yellow `#fcee0a` for headings, cyan `#19f3ff` for highlights.
