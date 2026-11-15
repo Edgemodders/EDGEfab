@@ -24,7 +24,7 @@ From the first release on, the Release workflow's **Update Nexus Mods** box uplo
 | Brief overview | Turn a 3D model, or your words, into a prop for Cyberpunk 2077, in VS Code: real size, levels of detail, materials and collision, into your mod project, ready to place. Or ask Claude. A preview, and a VS Code extension, not a game mod. (255 characters at most; this is 235) |
 | Author | Edgemodders |
 | Language | English |
-| Primary image | `docs/assets/brand/nexus.png` (1280 x 640, the props layout with a Desk, room at the top for the EDGEmodders header the owner adds by hand). The banner (`docs/assets/brand/banner.png`) is already at the top of the description |
+| Primary image | `docs/assets/brand/nexus.png` (1280 x 640, the props layout with a Desk, and the EDGEmodders header the owner added by hand on 2026-11-15. `tools/brand/render.ps1` draws it without the header: rendering it again means adding the header again). The banner (`docs/assets/brand/banner.png`) is already at the top of the description |
 | Requirements | On Nexus: REDcode (35421); EDGEbuilder (36627) to place props, optional. Off-site: VS Code 1.70 or later (or VSCodium, or EDGEkit); optional Tripo and OpenAI API keys, for props from words |
 | Permissions | MIT: open source, free to modify and redistribute with the license notice. Bundled packages keep their licenses (`THIRD-PARTY-NOTICES.txt`). REDbridge, which comes with REDcode, is GPL-3.0 |
 | Tags | Modders resource, utility, tools |
