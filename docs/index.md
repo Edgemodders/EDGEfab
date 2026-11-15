@@ -18,12 +18,12 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-13. The first build (F1) is agreed and nearly built; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
+As of 2026-11-15. The first build (F1) is built and has passed its tests; its first release (0.1.0, a preview) is next; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
 
 | Phase | Status |
 |---|---|
 | F0 Decisions | Tripo and the GLB import over a game prop checked; open: which collision is solid in the game |
-| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. In the game 2026-11-09: both collisions solid, the facing right. Generate from Words (picture first, in parts) and Set Size built 2026-11-10; keys in VS Code's secret storage 2026-11-11; **the Library** (Add to Library, the Library view, Add to Project from it, Refresh) and Make a Prop in the Explorer built 2026-11-13. Next: Rename, the normal maps' green, the owner's VS Code pass, then F1's test in the game with EDGEbuilder |
+| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. In the game 2026-11-09: both collisions solid, the facing right. Generate from Words (picture first, in parts) and Set Size built 2026-11-10; keys in VS Code's secret storage 2026-11-11; **the Library** (Add to Library, the Library view, Add to Project from it, Refresh) and Make a Prop in the Explorer built 2026-11-13. Rename built the same day. The owner's VS Code pass and **F1's phase test in the game with EDGEbuilder passed** 2026-11-14 and 15; the normal maps' green flipped by default, confirmed in the game. Next: the first release, 0.1.0 |
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |
