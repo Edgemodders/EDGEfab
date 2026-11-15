@@ -1,11 +1,17 @@
 {
-  "page": null,
+  "page": 38605,
   "upload": {
     "name": "EDGEfab",
     "category": "main",
     "primary": true,
     "modManager": false,
     "archivePrevious": true,
-    "description": "EDGEfab {version}, the VS Code extension and its MCP server. A preview: turns a textured 3D model into a prop for the game. Extract, then in VS Code: Extensions view, ..., Install from VSIX. Not a game mod: no Vortex."
+    "description": "EDGEfab {version}, the VS Code extension and its MCP server: not a game mod, so no Mod Manager Download. A preview: turns a textured 3D model, or your words, into a prop for the game. Needs REDcode. Extract, then in VS Code: Extensions view, ..., Install from VSIX. Or install it from the Marketplace or Open VSX, where it updates itself."
+  },
+  "mod": "14315126036173",
+  "pulled": {
+    "sha256": "e88e9f9149515b2c8b8b2d5c00bc829cf0233541f0d737c25f86055af384ab8a",
+    "at": "2026-11-15T20:02:31.124Z",
+    "version": "1.0"
   }
 }

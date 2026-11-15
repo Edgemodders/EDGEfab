@@ -1,8 +1,10 @@
 <!doctype html>
-<!-- Source for the README banner and the GitHub social preview.
+<!-- Source for the README banner, the GitHub social preview and the Nexus picture.
      Rendered to PNG by tools/brand/render.ps1 with headless Chrome:
        brand.html?banner  -> 1280 x 320
-       brand.html?social  -> 1280 x 640 -->
+       brand.html?social  -> 1280 x 640
+       brand.html?nexus   -> 1280 x 640, the social layout 55 px lower, with room at the top for the
+                             EDGEmodders header the owner adds by hand (as REDsave's) -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -68,6 +70,28 @@ h1 span { color: var(--yellow); }
 .y { color: var(--yellow); } .c { color: var(--cyan); } .g { color: var(--green); }
 .social .panel { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 28px; font-size: 15px; }
 .social .panel .row { border-bottom: 0; flex-direction: column; gap: 4px; }
+.nexus .frame { height: 640px; padding: 127px 80px 17px; grid-template-columns: 1fr 470px; gap: 56px; align-content: center; }
+.nexus h1 { font-size: 132px; }
+.nexus .eyebrow { font-size: 17px; }
+.nexus .tag { font-size: 32px; max-width: 30ch; }
+.nexus .panel, .desk { display: none; }
+
+/* The Desk, as EDGEfab's sidebar shows it: props in the works, each with its size, levels and parts. Nexus only. */
+.nexus .desk {
+  display: block; background: rgba(16,19,27,.92); border: 1px solid var(--line); padding: 16px 18px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  font-family: var(--mono); font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim);
+}
+.desk .head { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 8px 10px; margin-bottom: 10px; color: var(--fg); }
+.desk .head::before { content: "/"; color: var(--yellow); }
+.desk .head .chip { margin-left: auto; border: 1px solid var(--cyan); color: var(--cyan); padding: 0 6px; font-size: 11px; }
+.prop { padding: 9px 6px; border-bottom: 1px solid var(--line); }
+.prop:last-child { border-bottom: 0; }
+.prop b { display: block; font-weight: 500; color: var(--fg); letter-spacing: .04em; }
+.prop small { display: block; font-size: 11px; margin-top: 3px; }
+.prop .c { color: var(--cyan); } .prop .y { color: var(--yellow); } .prop .g { color: var(--green); }
+.prop.on { background: rgba(252,238,10,.07); box-shadow: inset 3px 0 0 var(--yellow); }
+.prop.on b { color: var(--yellow); }
 </style>
 </head>
 <body>
@@ -83,9 +107,21 @@ h1 span { color: var(--yellow); }
     <div class="row"><span>Engine</span><b class="y">REDbridge</b></div>
     <div class="row"><span>License</span><b class="g">MIT</b></div>
   </div>
+  <div class="desk">
+    <div class="head">Desk<span class="chip">4 props</span></div>
+    <div class="prop on"><b>Rusty oil drum</b><small><span class="c">From words</span> &middot; 0.90 m &middot; 8 parts &middot; 3 LODs</small></div>
+    <div class="prop"><b>Vending machine</b><small><span class="c">From a GLB</span> &middot; 1.80 m &middot; <span class="y">Glows</span> &middot; 6 parts</small></div>
+    <div class="prop"><b>Street bench</b><small><span class="c">From words</span> &middot; 1.60 m &middot; In the Library v2</small></div>
+    <div class="prop"><b>Neon street lamp</b><small><span class="c">From words</span> &middot; 3.20 m &middot; <span class="y">Glows</span> &middot; <span class="g">In a project</span></small></div>
+  </div>
 </div>
 <script>
   if (location.search.includes("social")) document.body.classList.add("social");
+  if (location.search.includes("nexus")) {
+    document.body.classList.add("nexus");
+    // What the first release makes: props. The banner keeps the whole tool's line.
+    document.querySelector(".tag").textContent = "Turn a 3D model, or your words, into a prop for the game.";
+  }
 </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 // Builds the Nexus Mods file: dist/EDGEfab-<version>-nexus.zip with the .vsix, the MCP server, how to
 // install them, and the licenses. Run after the VSIX is packaged and the MCP server built (the release
 // workflow's Package step, or npm run edgefab:package and npm run mcp:build). The workflow attaches the
-// zip to the GitHub release; it is uploaded to Nexus by hand (nexus/README.md). The same way as REDcode's.
+// zip to the GitHub release, and with Update Nexus Mods uploads it to the page (nexus/README.md). The same way as REDcode's.
 //   node tools/release/nexus-zip.mjs
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -31,7 +31,7 @@ fs.writeFileSync(
   path.join(stage, "README.txt"),
   [
     `EDGEfab ${version}: the EDGE asset maker for Cyberpunk 2077, a VS Code extension.`,
-    "A preview: it turns a textured 3D model, your own or made by Tripo from your words, into a prop for the game.",
+    "A preview: it turns a textured 3D model, your own or made from your words, into a prop for the game.",
     "",
     "This is a VS Code extension, not a game mod. Do not install it with Vortex.",
     "",
@@ -42,14 +42,16 @@ fs.writeFileSync(
     "  1. In VS Code (or VSCodium, or EDGEkit), open the Extensions view (Ctrl+Shift+X).",
     "  2. Click ... at its top, choose Install from VSIX..., and pick",
     `     edgefab-${version}.vsix from this folder.`,
-    "  3. Click the EDGEfab icon in the activity bar, then Import a GLB... or Generate with Tripo...",
+    "  3. Click the EDGEfab icon in the activity bar, then Import a GLB... or Generate from Words...",
     "",
     "Or from a terminal:",
     `  code --install-extension edgefab-${version}.vsix`,
     "",
     "Needs Windows 10 or 11, 64-bit, and VS Code 1.70 or later.",
-    "Generate with Tripo needs your own Tripo API key (platform.tripo3d.ai); each model costs about 20 credits.",
-    "Add to Project needs REDcode (https://github.com/Edgemodders/REDcode).",
+    "Add to Project, packing and the 3D view need REDcode (https://www.nexusmods.com/cyberpunk2077/mods/35421).",
+    "To place props in the game: EDGEbuilder (https://www.nexusmods.com/cyberpunk2077/mods/36627).",
+    "Generate from Words needs your own Tripo API key (platform.tripo3d.ai), about 60 credits a model,",
+    "and optionally your own OpenAI API key, for a picture first (a few cents). EDGEfab asks for them.",
     "",
     `For AI assistants: edgefab-mcp-${version}.cjs is EDGEfab's MCP server (Node.js 20 or later).`,
     "Keep it somewhere stable, then for Claude Code run once:",

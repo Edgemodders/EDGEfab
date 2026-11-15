@@ -1,0 +1,80 @@
+[center][img]https://raw.githubusercontent.com/Edgemodders/EDGEfab/main/docs/assets/brand/banner.png[/img][/center]
+
+[center][size=5][b][color=#fcee0a]Turn a 3D model, or your words, into a prop you can place in Night City.[/color][/b][/size][/center]
+
+[center][size=3]EDGEfab is the EDGE asset maker for Cyberpunk 2077, in VS Code. Bring a textured model of your own, or describe an object and let AI draw it and build it in 3D. EDGEfab gets it ready for the game (real size, levels of detail, materials, collision) and puts it into your mod project, ready to place with EDGEbuilder or spawn. Claude and other AI assistants can do all of it too.[/size][/center]
+
+[line]
+
+[quote][size=4][b][color=#fcee0a]STATUS: PREVIEW[/color][/b][/size]
+Version 0.1.0 makes props: objects that stand in the world, such as a vending machine, a crate or a lamp. Clothing, characters and animation come in later versions. Everything on this page is built and tested on the developer's PC, with game version 2.5.
+[b]This is a VS Code extension, not a game mod.[/b] It never changes your game's files: it writes into a WolvenKit project, which REDcode packs into a mod. Do not install it with Vortex.[/quote]
+
+[line]
+
+(SCREENSHOT: a made prop placed in the game, by night, its painted lights glowing)
+
+[size=5][b][color=#fcee0a]What EDGEfab is[/color][/b][/size]
+
+A new object in Cyberpunk 2077 is more than a model. The game wants a mesh in its own format with levels of detail, materials and textures it can read, an entity that makes it solid, and the right paths for every file. Until now that meant Blender, WolvenKit and a good deal of know-how. EDGEfab does those steps for you, from a model or from a sentence.
+
+EDGEfab is built by [url=https://edgemodders.ai/]EDGEmodders[/url], a modding community whose idea is simple: [b]anyone can mod[/b]. Plain words first, raw values one click away, and every feature in the buttons and for an AI assistant alike.
+
+[size=5][b][color=#fcee0a]Highlights[/color][/b][/size]
+
+[size=4][b][color=#19f3ff]From your words: a picture first, then 3D[/color][/b][/size]
+Describe it, "a rusty oil drum with a hazard sticker". OpenAI's image model draws it from four sides in about 30 seconds, for a few cents. Not right yet? Change the words and draw it again; earlier takes are kept. When it looks right, [b]Make 3D[/b]: Tripo builds the model from the four views, true to every side, with crisp 4096 x 4096 textures. EDGEfab says what it will cost and your Tripo balance before anything is paid (about 60 credits, a few minutes). Both services use [b]your own keys[/b], and nothing is sent anywhere until you press the button.
+
+[size=4][b][color=#19f3ff]From a model of your own[/color][/b][/size]
+[b]Import a GLB[/b] takes a textured model from Blender, a store or anywhere else. Right-click a [i].glb[/i] in VS Code's Explorer and choose [b]Make a Prop[/b], the same thing.
+
+(SCREENSHOT: the Desk, a prop open with its size, levels of detail and parts)
+
+[size=4][b][color=#19f3ff]Ready for the game, without Blender[/color][/b][/size]
+EDGEfab does the work a game prop needs:
+[list]
+[*][b]Its real size[/b], standing on its base. [b]Set Size[/b] changes it any time.
+[*][b]Three levels of detail[/b] (full, half, a fifth), so it costs less to draw from afar. They keep to the texture, without black shards across flat panels.
+[*][b]Named parts[/b], each with its own material: body, front, base, glass... so EDGEmat can give one part a new look.
+[*][b]Facing forward[/b]: Tripo's models are turned so their front faces the way the game's props do.
+[*][b]Not see-through[/b]: thin panels and open shells get back faces.
+[/list]
+
+[size=4][b][color=#19f3ff]Painted lights that really glow[/color][/b][/size]
+AI-made models have their lights painted on. [b]Make the Painted Lights Glow[/b] finds the bright, strongly colored areas and makes them glow in the game, from a deep color to white-hot, your choice per part. It works offline and costs nothing. A model that already glows (from Blender or a store) keeps its glow.
+
+(SCREENSHOT: the vending machine at night, its lit strip and products glowing)
+
+[size=4][b][color=#19f3ff]See it in 3D[/color][/b][/size]
+Click a prop on the Desk and it turns in REDcode's 3D viewer, with its textures, its parts to show or hide, and a picker for its levels of detail.
+
+[size=4][b][color=#19f3ff]Add to Project: one click into your mod[/color][/b][/size]
+The prop goes into your open REDcode project as the files the game uses: its mesh with its levels of detail, its textures as game materials, and an entity that is [b]solid[/b], so V can't walk through it, can stand on it, and bullets hit it. Place the entity with [url=https://www.nexusmods.com/cyberpunk2077/mods/36627]EDGEbuilder[/url], or spawn it. A note of where the model came from and its license goes into the project too.
+
+[size=4][b][color=#19f3ff]The EDGE Library: props you reuse[/color][/b][/size]
+The Library is one folder that every EDGE tool shares, outside any project, in folders you name yourself. [b]Add to Library[/b] keeps a prop there with its game files made, ready for any mod. Change it later, add it again, and the Library's copy goes up a version; [b]Refresh Project from Library[/b] brings your projects up to date. Optional: without it, everything else works the same.
+
+[size=4][b][color=#19f3ff]For AI assistants[/color][/b][/size]
+EDGEfab carries an MCP server. [b]Connect an Assistant[/b] registers it with Claude Code in one click; AI agents in VS Code see it on their own. Then ask: "make a neon street lamp, 3 metres tall, and add it to my project."
+
+[size=5][b][color=#fcee0a]Who owns what you make[/color][/b][/size]
+Pictures made with your OpenAI key are yours. Models made with Tripo are yours on a [b]paid[/b] Tripo plan; on a free plan Tripo keeps the rights, so they are not yours to release in a mod. EDGEfab asks your plan once, records it in each prop's license, and warns on the free plan. Models you import: record their source and license yourself.
+
+[size=5][b][color=#fcee0a]Requirements[/color][/b][/size]
+[list]
+[*]Windows 10 or 11, 64-bit, and VS Code 1.70 or later (or VSCodium, or EDGEkit).
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/35421]REDcode[/url], for Add to Project, packing the mod, and the 3D view. It brings REDbridge, which reads and writes the game's files.
+[*]To make props from words: your own [url=https://platform.tripo3d.ai/]Tripo[/url] API key (credits), and optionally your own OpenAI API key for the picture first. Without OpenAI, Straight to 3D makes the model from the words alone.
+[*]To place props in the game: [url=https://www.nexusmods.com/cyberpunk2077/mods/36627]EDGEbuilder[/url] (on REDnode).
+[/list]
+
+[size=5][b][color=#fcee0a]Install[/color][/b][/size]
+The easy way: search for [b]EDGEfab[/b] in VS Code's Extensions view (Ctrl+Shift+X) and click Install. It updates itself from then on.
+Or download the file here, extract it, and in VS Code's Extensions view click [b]...[/b], [b]Install from VSIX...[/b], and pick the [i].vsix[/i]. The zip's README.txt says how to connect the MCP server to Claude Code by hand.
+
+[size=5][b][color=#fcee0a]Coming next[/color][/b][/size]
+FBX and Blender files, changing a prop by words, animated props, clothing fitted to the body, and whole characters with their clothes and animations. The plan: [url=https://edgemodders.github.io/EDGEfab/plan.html]the build plan[/url].
+
+[line]
+
+[size=2]Docs: [url=https://edgemodders.github.io/EDGEfab/]edgemodders.github.io/EDGEfab[/url] · Source and issues: [url=https://github.com/Edgemodders/EDGEfab]GitHub[/url] · MIT license; bundled packages keep their own (THIRD-PARTY-NOTICES.txt). EDGEfab talks to REDbridge (GPL-3.0) only as a separate program. It contains no game files. Single-player modding only. Not affiliated with CD Projekt RED, Tripo or OpenAI.[/size]
