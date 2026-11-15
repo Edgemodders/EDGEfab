@@ -497,6 +497,10 @@ The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the M
 
 Step 1 again, after EDGEmat committed its keys change (`aeda9c1`, EDGEmat #10; its working copy clean, so the build is its HEAD): `edgefab-0.1.0.vsix`, 11 files, **no match**, no key files. Steps 2 and 3 not rerun (2 unchanged since Run 1; 3 is still the owner's).
 
+### Run 3, 2026-11-14: step 3 passed, in the owner's pass
+
+Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), Run 1, steps 1, 2, 22, 23 and 25: keys without `tsk_` or `sk-` refused in words, both keys set in VS Code's secret storage, Clear OpenAI Key asked for it again, and after a restart the Tripo key still there (no key asked in 25). Step 1 was checked again on each build that day: 11 files, no PowerShell, no key files.
+
 ## F1: picture first and parts (without the game)
 
 Generate from Words as built (core `picture.ts`, `parts.ts`, Tripo's multiview with `generate_parts` and the texture step, Set Size), through the MCP server as an assistant uses it. A release test: rerun before F1's release.
