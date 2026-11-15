@@ -152,7 +152,7 @@ The price is fewer triangles saved at LOD 2 on a model already low in triangles.
 
 EDGEweb's check of the fixed file: rays dark at LOD 4 but lit at LOD 1, 648 → 59 of 16,200, the 59 within 0.6 mm of the model's own dark lines; no shards in Blender at LOD 2 and 4 or in REDcode's 3D view at LOD 4 (with back faces, as made). Left: the panels a little wavy along the door edges at LOD 4, and one small notch at the top front edge. **The price:** lower levels drop less on Tripo's textures (LOD 4 about half of LOD 1 instead of a quarter). A new, simpler texture layout baked for the lower levels would cure it: later.
 
-**Step 6 again on the build of 15:02 (806,489 bytes): passed.** A fresh Make a Prop, 13 s; the Desk "26,569 / 19,828 / 17,774 triangles" (back faces counted); every part's count falls from each level to the next (LOD 4: 4,384 / 4,814 / 3,538 / 2,198 / 1,520 / 1,320); no shards at LOD 1, 2 or 4, the panels whole, LOD 4 a little wavy. **Open from the pass:** step 20's real registration (the owner's).
+**Step 6 again on the build of 15:02 (806,489 bytes): passed.** A fresh Make a Prop, 13 s; the Desk "26,569 / 19,828 / 17,774 triangles" (back faces counted); every part's count falls from each level to the next (LOD 4: 4,384 / 4,814 / 3,538 / 2,198 / 1,520 / 1,320); no shards at LOD 1, 2 or 4, the panels whole, LOD 4 a little wavy. **Step 20, the real registration, passed 2026-11-15 (the owner):** Connect Claude Code, then a new Claude Code session lists `edgefab` as connected in `/mcp`, names the `fab_*` tools and reads the Desk with `fab_desk`; asked for Tripo's status, it says the key isn't set in the server's environment and how to set it. **The owner's pass has passed.**
 
 Also seen: after a restart VS Code reopens the last session's `view.glb` tab, so two tabs named `view.glb` can be open: check the path in the breadcrumb.
 
@@ -185,7 +185,7 @@ F1's goal ([plan](plan.html), F1): **a textured prop, one from a GLB and one mad
 
 **Expected.** Every step as written. Then say so on EDGEfab #2 (EDGEbuilder's B2c with EDGEfab's first prop) and close it with a note.
 
-### Run 1, 2026-11-14: scripted, by the EDGEweb session: steps 1 to 6 passed, 7 and 8 in part, 9 and 10 left to the owner
+### Run 1, 2026-11-14 and 15: passed (steps 1 to 6 scripted by the EDGEweb session, 7 to 10 by the owner)
 
 The 806,489-byte build; EDGEbuilder 0.9.2, REDnode 0.63.1, REDbridge 0.12.1, game 2.5. Scratch project `S:\fab_phase`, only the two props. Spent 1 GPT Image picture and 60 Tripo credits (960 before).
 
@@ -202,7 +202,9 @@ The 806,489-byte build; EDGEbuilder 0.9.2, REDnode 0.63.1, REDbridge 0.12.1, gam
 | 9 | Not done. The scene saves after every change under This PC; the game hung on quit (ReShade, the owner's to look into) and the owner took over. Still to do: start the game, load the save, and read `EDGEfab F1 test: 2 of 2 objects back in the world.` |
 | 10 | Not done. `edgefab_f1_phase.archive` is still in the game's `archive\pc\mod`, and EDGEbuilder's open scene is still "EDGEfab F1 test" |
 
-**Open, the owner's:** step 7's jump onto each and shooting each; step 8's walk, watching the detail drop and come back; step 9's restart; step 10's removal. Then EDGEfab #2.
+**The rest, 2026-11-15, by the owner in the game: passed.** Step 9: after a restart and the save loaded, both props back where they were (`EDGEfab F1 test: 2 of 2 objects back in the world.`). Step 7: V stands on top of each, and shots spark on them. Step 8: walking to 25 m and back, the detail drops and comes back, no black shards. Step 10: `edgefab_f1_phase.archive` taken out of the game's `archive\pc\mod` (a copy stays in the scratch project's `tests`).
+
+**F1's phase test has passed.** EDGEfab #2 closed with a note.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
