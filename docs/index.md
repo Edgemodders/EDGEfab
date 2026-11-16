@@ -27,7 +27,7 @@ As of 2026-11-15. The first build (F1) is built and has passed its tests; its fi
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |
-| F5a Characters, seen (with the animation index) | Not started |
+| F5a Characters, seen | Not started |
 | F5b Characters, heard and read | Not started |
 | FA The agent (moved out of F2, 2026-11-04) | Not started |
 | F6 Characters, edited | Not started |
