@@ -4,7 +4,7 @@ EDGEfab for AI assistants over MCP (stdio): make a Cyberpunk 2077 prop from a te
 
 | Tool | Does |
 |---|---|
-| `fab_make` | A prop from a `.glb` or `.gltf` (`from: "file"`), or from words through Tripo (`from: "tripo"`, about 20 credits): real size, standing on its base, three levels of detail, tangents, textures written out |
+| `fab_make` | A prop from a `.glb` or `.gltf` (`from: "file"`), or from words through Tripo (`from: "tripo"`, about 50 credits in parts with the detailed texture), or from a picture made with `fab_picture` (`from: "picture"`, about 60): real size, standing on its base, three levels of detail, tangents, textures written out |
 | `fab_desk` | What is on the Desk: the props made so far, waiting to go into a project or the Library |
 | `fab_tripo` | Whether a Tripo key is set (never the key itself), the plan recorded (paid or free), the credit balance; `set_plan` records the plan |
 

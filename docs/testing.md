@@ -12,18 +12,18 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-16. Each row links to its test. **Before the release (0.1.0):** the three marked **Rerun** run again on the final build.
+Last updated 2026-11-16. Each row links to its test. **Every test has passed for 0.1.0**: the three release tests (the smoke test, the core package, the keys test's package check) ran again on its final build on 2026-11-16.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
-| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-14 | Pass. **Rerun before the release**: the core changed on 2026-11-15 |
+| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated | F1 | 2026-11-13 | Pass, after a fix |
-| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-13 | Pass. **Rerun before the release**: it goes to npm |
-| [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-14 | Pass. **Step 1 rerun before each release** (last 2026-11-12) |
+| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
+| [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-16 | **Pass**; step 1 on the final build for 0.1.0. Step 1 reruns before each release |
 | [Picture first and parts (without the game)](#f1-picture-first-and-parts-without-the-game) | Automated, with OpenAI and Tripo keys | F1 | 2026-11-10 | Pass, after a fix |
 | [The glow on a Desk item (without the game)](#f1-the-glow-on-a-desk-item-without-the-game) | Automated | F1 | 2026-11-05 | Pass |
 | [Check: An added prop in the game](#f1-check-an-added-prop-in-the-game) | In the game | F1 | 2026-11-09 | Pass: both collisions solid, the facing right, glow strength 3 |
@@ -282,6 +282,10 @@ After the levels of detail were made with the normals weighed in (the owner's pa
 
 After the levels were made to keep to the texture's charts (the owner's pass, Run 1, step 6). Step 1 on the vending machine, test 8's machine and the drum: `ok` all three; LOD 4 below LOD 2 on each. The `.vsix` again: 11 files, no PowerShell, no key files.
 
+### Run 8, 2026-11-16: passed (step 1), the final build for 0.1.0
+
+After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the build released as 0.1.0. Step 1 on the picture-first vending machine (in parts) and the drum in parts: `ok` both. The vending machine: 70 pieces into 6 parts (front, body, back, middle, base, details), back faces on 5, the quarter turn, the size-unknown note. The drum: 10 parts named by place, back faces on all 10. Steps 2 and 3 are covered by the core package's Run 2 the same day.
+
 ## F1: Add to Project (without the game)
 
 A Desk item becomes a prop in a WolvenKit project, through the bundled core, the MCP server's `fab_add` and (not yet tried) the extension's Add to Project. Run after every change to `addToProject.ts`.
@@ -390,6 +394,15 @@ First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** 
 | 2 | 4 packages: edgefab-core, edgemat-core 0.3.2 and its two dependencies |
 | 3 | Types pass with no `skipLibCheck`. The public types need only EDGEmat's core: `groupParts` and `addBackFaces`, which take glTF-Transform's types, left the public index, and `PreparedPart` and `MaxParts` moved to `prepare.ts`. Bundled again with no plugins: 1.5 MB |
 | 4 | `core_test_drum`: 9 submeshes over 3 levels, 1.8 m, set to 1.75 m; added as `coretest\props\core_test_drum\core_test_drum.ent`, physical, 5 files. Unbundled: 82 exports, all of #5's |
+
+### Run 2, 2026-11-16: passed, the final build for 0.1.0
+
+| Step | Result |
+|---|---|
+| 1 | 20 files, 766 kB packed (`index.cjs` 1.0 MB, its map, 13 type files, the notices, README, LICENSE). One dependency, `@edgemodders/edgemat-core` `~0.3.2` |
+| 2 | 4 packages: edgefab-core 0.1.0, edgemat-core 0.3.2, pngjs, vscode-jsonrpc |
+| 3 | Types pass with `--strict` and no `skipLibCheck`; bundled again with esbuild and no plugins: 1.5 MB |
+| 4 | `core_test_drum` from the drum in parts: 30 submeshes (10 parts, 3 levels), 1.00 m, set to 1.75 m; added as `coretest\props\core_test_drum\core_test_drum.ent`, physical, 54 files (10 materials with their textures). Unbundled: 83 exports, all of #5's |
 
 ## F1 check: an added prop in the game
 
@@ -552,6 +565,10 @@ Step 1 again, after EDGEmat committed its keys change (`aeda9c1`, EDGEmat #10; i
 ### Run 3, 2026-11-14: step 3 passed, in the owner's pass
 
 Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), Run 1, steps 1, 2, 22, 23 and 25: keys without `tsk_` or `sk-` refused in words, both keys set in VS Code's secret storage, Clear OpenAI Key asked for it again, and after a restart the Tripo key still there (no key asked in 25). Step 1 was checked again on each build that day: 11 files, no PowerShell, no key files.
+
+### Run 4, 2026-11-16: step 1 passed, the final build for 0.1.0
+
+`edgefab-0.1.0.vsix`, 11 files (the extension, its MCP server, icons, license, notices, readme, changelog): **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
