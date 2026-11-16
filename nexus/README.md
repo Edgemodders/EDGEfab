@@ -7,6 +7,7 @@ The source of EDGEfab's Nexus Mods page lives here, so updates are edits in the 
 | `description.bbcode` | The page's description, in Nexus's BBCode |
 | `nexus.json` | The page, the main file's upload settings (`upload`), and after a pull the ids found and the hash of the description last pulled |
 | `README.md` | This page: the other fields of the Nexus form, the download file, and how to update |
+| `video-script.md` | The shot script for the page's video (2026-11-16): what to set up, the shots in order, privacy checks |
 
 ## The page
 
