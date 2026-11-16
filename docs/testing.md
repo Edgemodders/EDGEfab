@@ -10,6 +10,34 @@ In-game steps start with the Test timer: switch on REDnode's **Test timer** app,
 
 F1's tests come first, then F0's checks.
 
+## At a glance
+
+Last updated 2026-11-16. Each row links to its test. **Before the release (0.1.0):** the three marked **Rerun** run again on the final build.
+
+| Test | Kind | Phase | Last run | Result |
+|---|---|---|---|---|
+| [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
+| [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
+| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-14 | Pass. **Rerun before the release**: the core changed on 2026-11-15 |
+| [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
+| [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
+| [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated | F1 | 2026-11-13 | Pass, after a fix |
+| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-13 | Pass. **Rerun before the release**: it goes to npm |
+| [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-14 | Pass. **Step 1 rerun before each release** (last 2026-11-12) |
+| [Picture first and parts (without the game)](#f1-picture-first-and-parts-without-the-game) | Automated, with OpenAI and Tripo keys | F1 | 2026-11-10 | Pass, after a fix |
+| [The glow on a Desk item (without the game)](#f1-the-glow-on-a-desk-item-without-the-game) | Automated | F1 | 2026-11-05 | Pass |
+| [Check: An added prop in the game](#f1-check-an-added-prop-in-the-game) | In the game | F1 | 2026-11-09 | Pass: both collisions solid, the facing right, glow strength 3 |
+| [Check: The normal maps' green (offline)](#f1-check-the-normal-maps-green-offline) | Offline; confirmed in the game by EDGEmat's check | F1 | 2026-11-15 | **Pass: flip** (the game reads green down) |
+| [Check: Tripo's quality settings in the game](#f1-check-tripos-quality-settings-in-the-game) | In the game, with a Tripo key | F1 | 2026-11-09 | Done: detailed texture the default, High detail a choice |
+| [Check: Parts from Tripo](#f1-check-parts-from-tripo) | With a Tripo key | F1 | 2026-11-09 | Done: parts from `generate_parts`, grouped |
+| [Check: Shape cleanup in Blender](#f1-check-shape-cleanup-in-blender) | Offline, Blender in the background | F1 | 2026-11-09 | Done: ripples gone at 15°; left for later (F3) |
+| [Check: Picture first](#f1-check-picture-first) | With OpenAI and Tripo keys | F1 | 2026-11-09 | Done: four views, then Tripo's multiview |
+| [Check: Tripo's model and its front](#f1-check-tripos-model-and-its-front) | With a Tripo key | F1 | 2026-11-04 | Pass: the +X front turned |
+| [Check: Tripo text to model](#f0-check-tripo-text-to-model) | With a Tripo key | F0 | 2026-10-31 | Pass |
+| [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
+| [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
+| [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
+
 ## F1: the extension in VS Code (the owner's pass)
 
 Every command of the extension, in VS Code, in one go. The sections below test the same features without VS Code; this one is the only test of the buttons, menus, boxes and views themselves. A release test: rerun before each release. Parts A to G cost nothing; part H spends about 60 Tripo credits and a few cents of OpenAI.
