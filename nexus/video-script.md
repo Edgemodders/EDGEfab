@@ -27,9 +27,9 @@ A shot list for the Nexus page's video (and the Marketplace or YouTube, if wante
 | 1 | 0:00 to 0:08 | **Cold open, in the game by night** | The finished hero prop glowing on a street. V walks up and jumps onto it | "Made from one sentence." |
 | 2 | 0:08 to 0:15 | VS Code, the EDGEfab icon in the activity bar, the Desk | Click the icon; the Desk opens | "EDGEfab: props for Cyberpunk 2077, in VS Code" |
 | 3 | 0:15 to 0:35 | **Generate from Words...** | Type the words (below). Give the height when asked (for example 2.2 m). The cost and your balance show before anything is paid: accept | "Describe it. EDGEfab says the cost first." |
-| 4 | 0:35 to 0:45 | The four-view picture on the Desk | Open it: front, sides, back. Cut the 30 seconds' wait | "A picture first, from four sides" |
-| 5 | 0:45 to 0:55 | (Optional) **Change the Words** | Add a detail ("...with a red awning"), a second picture. The first one stays | "Not right? Change the words." |
-| 6 | 0:55 to 1:05 | **Make 3D** | Click it; the progress note; cut the 2 to 4 minutes | "Then Tripo makes it 3D, in named parts" |
+| 4 | 0:35 to 0:45 | The **Pictures** tab opens on the four-view picture | Front, sides, back. Cut the 30 seconds' wait | "A picture first, from four sides" |
+| 5 | 0:45 to 0:55 | **Change This Picture** | Type a change ("make the cabinet red and the glow blue"), Ctrl+Enter. The new picture appears with the first one below it in the history, each with its words and time. Click back to the first to show it's kept | "Not right? Change just that." |
+| 6 | 0:55 to 1:05 | **Make 3D from This Picture** | Click it with the picture you like in view; the progress note; cut the 2 to 4 minutes | "Then Tripo makes it 3D, in named parts" |
 | 7 | 1:05 to 1:25 | **Open in 3D** (click the prop on the Desk) | Turn it slowly. Hide a part and show it again. Step through the levels of detail | "Real size, named parts, three levels of detail" |
 | 8 | 1:25 to 1:40 | **Make the Painted Lights Glow**, then **Glow Strength** | Pick how much counts as a light; the 3D view shows the glow; pick a strength | "Painted lights that really glow" |
 | 9 | 1:40 to 1:50 | **Add to Project** | Right-click the prop. REDcode's project tree shows its folder: the mesh, materials, the `.ent` | "One click into your mod" |

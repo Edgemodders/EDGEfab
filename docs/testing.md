@@ -12,10 +12,11 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-16. Each row links to its test. **Every test has passed for 0.1.0**: the three release tests (the smoke test, the core package, the keys test's package check) ran again on its final build on 2026-11-16.
+Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pictures tab (added 2026-11-17 at the owner's ask) has passed offline, and its VS Code steps are the owner's. Then the three release tests (the smoke test, the core package, the keys test's package check) run again on the final build.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
+| [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B **not run** |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
@@ -233,6 +234,39 @@ The 806,489-byte build; EDGEbuilder 0.9.2, REDnode 0.63.1, REDbridge 0.12.1, gam
 **The rest, 2026-11-15, by the owner in the game: passed.** Step 9: after a restart and the save loaded, both props back where they were (`EDGEfab F1 test: 2 of 2 objects back in the world.`). Step 7: V stands on top of each, and shots spark on them. Step 8: walking to 25 m and back, the detail drops and comes back, no black shards. Step 10: `edgefab_f1_phase.archive` taken out of the game's `archive\pc\mod` (a copy stays in the scratch project's `tests`).
 
 **F1's phase test has passed.** EDGEfab #2 closed with a note.
+
+## F1: the Pictures tab
+
+Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, the picture opens in EDGEfab's own **Pictures** tab, not a PNG tab. It shows the picture being viewed, large, and a history of every picture of that item with the words that made it and when. Any picture can be changed by new words (GPT Image's edit: that picture is sent with the words, and the rest is kept), and **Make 3D from This Picture** uses the picture being viewed. MCP: `fab_picture` takes `from` (the picture to change), `fab_make` takes `take`.
+
+**Part A, offline (Claude):** after `npm run build`, run `node scripts/pictures-check.mjs` in `extensions/edgefab`. Stand-ins answer for OpenAI and Tripo, so no key or credit is used, in a scratch Desk. Expected: `all passed`. It checks:
+
+- A first picture asks OpenAI for a new image (JSON). A change asks for an edit (multipart) and sends the chosen picture's sheet, at 2048², high quality, the same model.
+- The edit's words name the object and the change.
+- Each change records the picture it came from, the object's first words, and the modder's own words. A change of a change keeps the object's words.
+- Changing an older picture sends that older one, not the last.
+- Draw New in the same item asks for a new image.
+- picture.json keeps every picture with its date, and asset.json's history says each change.
+- Mistakes are refused in plain words without calling OpenAI: a missing picture, a change without its item, empty words.
+- Make 3D from picture 2 of 5 uploads picture 2's own four views, in Tripo's order. A missing picture is refused. A failed Make 3D keeps the item and its pictures.
+- After Rename, every picture and what it came from are still there.
+
+**Part B, in VS Code (the owner):** needs the OpenAI key (a few cents a picture) and, for step 8, the Tripo key (about 60 credits).
+
+1. **Generate from Words...**, **Draw it first**: "a battered cyberpunk vending machine with glowing product shelves". Expected: after about 30 s the **Pictures** tab opens (not a PNG tab), with picture 1 large. The history shows one card with its words, date and time. The cursor is in the box under the picture.
+2. Type "make the cabinet red and the glow blue", then press Ctrl+Enter (or **Change This Picture**). Expected: a spinner says "Changing picture 1...", with **Cancel**. After 30 to 60 s, picture 2 shows "changed from picture 1" and sits at the top of the history, and the box is empty again. The cabinet is red and the glow blue, with the shape the same.
+3. Click picture 1 in the history, type "add a striped awning on top", **Change This Picture**. Expected: picture 3, "changed from picture 1", in picture 1's colours.
+4. Type "a neon noodle stand sign on a metal post", **Draw New from Words**. Expected: picture 4, drawn from the words alone, with no "changed from".
+5. Start a change, then **Cancel**. Expected: the spinner stops, no new picture appears, and no error shows.
+6. Close the tab, then click the item on the Desk. Expected: the tab opens again with all four pictures. Right-click the item, **Change the Picture...**: the tab opens with the cursor in the box.
+7. With the tab open, ask Claude Code: "change picture 2 of the vending machine on EDGEfab's Desk to have a cracked screen". Expected: it calls `fab_picture` with `from: 2`, and picture 5 appears in the open tab without reopening it.
+8. Click picture 2, **Make 3D from This Picture**. Expected: the detail, height and cost are asked as before, and Tripo makes it. The Desk item becomes a model. In the tab, picture 2 says "The 3D model on the Desk is made from this", and its history card says "3D".
+9. With the tab open, rename the item on the Desk. Expected: the tab closes and opens again on the renamed item, with every picture.
+10. Make a picture-only item, open its tab, and delete the item from the Desk. Expected: the tab closes and the folder goes.
+
+### Run 1, 2026-11-17: part A passed
+
+By Claude on the worktree build (`picture-tab`, from main `46025be`): 23 checks, `all passed`. The tab's page was also rendered in Chrome with a stand-in for VS Code, using the Desk's vending machine pictures read without changing them. That check found and fixed three things: the history sat far from the picture on a wide window, a hovered history card turned yellow with unreadable text, and the picture pushed the box below the fold. Clicking a card shows that picture; Ctrl+Enter sends the change from the picture viewed; the busy state shows the spinner and Cancel. Part B: not run.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
