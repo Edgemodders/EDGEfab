@@ -37,6 +37,7 @@ Last updated 2026-11-16. Each row links to its test. **Every test has passed for
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
 | [Lip sync, reading the game (without VS Code)](#fl1-lip-sync-reading-the-game-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL1 (the `lipsync` branch) | 2026-11-17 | Pass. **The tab in VS Code and the voice: not run** |
+| [Spike LS1: the jaw on command](#spike-ls1-the-jaw-on-command) | Automated build of the test archive; in the game by the owner | LS (the `lipsync` branch) | 2026-11-17 | The archive builds. **In the game: not run** |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
 
 ## F1: the extension in VS Code (the owner's pass)
@@ -741,6 +742,34 @@ For the Lip Sync tab's first slice ([Made lip sync](lipsync.html), "Review, and 
 | Run | Result |
 |---|---|
 | 2026-11-17, REDbridge 0.14.0, game 2.5 | Steps 1 to 3 **pass**. Step 1: 806 characters, all named (v 487, johnny 301, panam 84); lines in 2.6 s (the game's line index loads once), a clip in 0.24 s, again in 0.11 s; 99 of 414 tracks move (lipsync 44, override 30, control 7, pose 18). Found and fixed: a scene can list a character twice (V), so the lines missed a set the count had. Step 3: Play in the browser was not timed (a background tab). Step 4 not run |
+
+## Spike LS1: the jaw on command
+
+The key spike of live lip sync ([Made lip sync](lipsync.html#live-lip-sync-a-line-made-while-the-game-runs)), on the `lipsync` branch: can a script move a live NPC's jaw? It decides whether the live course goes on. Needs the game (2.5), REDbridge, REDnode with Codeware. Not a test of a released build.
+
+**What is tested.** A test archive replaces the women's face graph (`woman_average_sermo.animgraph`) with a copy that has six new nodes before the pose solver (`Sermo`): each adds a number to one track. At rest every number is 0, so the face should look as it always does.
+
+| Track | Set with `SetInputFloat` | Or through the anim feature `edgefab_lipsync` (the game's `AnimFeature_Bump` class) |
+|---|---|---|
+| `jaw_mid_openLipsyncPoseOutput` | `edgefab_jaw` | `direction` |
+| `lipSyncEnvelope` | `edgefab_envelope` | `source` |
+| `jaw_mid_openAnimOverrideWeight` | `edgefab_override` | `intensity` |
+
+1. `npm run build`, then `npm run lipsync:jaw --workspace extensions/edgefab -- <outFolder>` (a folder outside the repo). **Expected:** every line `ok`, then `ok`; `<outFolder>\tests\edgefab_ls1_jaw.archive` (about 20 KB).
+2. Put `edgefab_ls1_jaw.archive` in the game's `archive\pc\mod` folder (with the game closed). In REDnode's Settings add `tools\spikes\ls1-jaw` of this repo as a development folder. Start the game, load a save, stand somewhere quiet. Start REDnode's Test timer.
+3. **The control:** look at women in the street. **Expected:** faces as always (talking, blinking). A crash on load or frozen faces means the changed graph is at fault: remove the archive and say so.
+4. Switch on **EDGEfab spike LS1** in the Mod Manager. **Spawn the person**. **Expected:** a woman stands facing V; the log says her `face_rig` was found.
+5. **Say it** (the bark). Say whether her lips move with the line.
+6. Under **3. Inputs**: **jaw 1**, then **jaw 0**. If nothing moves: **envelope 1**, then **jaw 1** again; then **override 1**, then **jaw 1**. Say what the mouth does at each press.
+7. If step 6 moved nothing: **All to 0**, then the same presses under **4. The same through an anim feature**.
+8. With a way that moved the jaw: **10 a second**, then **30 a second**, then **Stop the wave**. Say whether the jaw opens and closes smoothly; the log gives the time per change.
+9. **Remove**, switch the app off, close the game and take the archive out.
+
+**Passes when** the jaw follows the number (step 6 or 7) and the wave is smooth at 30 a second (step 8). If nothing moves the jaw, the spike's next tries are in the plan (the input placed elsewhere in the graph, then a workspot of mouth-shape clips).
+
+| Run | Result |
+|---|---|
+| 2026-11-17, REDbridge 0.14.0, game 2.5 | Step 1 **passes**: the graph reads as JSON, takes 12 new nodes (475 to 487) and a declared feature, writes back (56,552 bytes), reads back with the new nodes wired as written, and packs (20,480 bytes). The test app is written from REDnode's Animation test and the game's type dump and **has not run in the game**. Steps 2 to 9 not run |
 
 ## F5a check: a game animation through REDbridge
 

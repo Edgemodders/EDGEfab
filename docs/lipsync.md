@@ -316,6 +316,8 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 | LS4 Words to a shape schedule (no game) | Does text and timings give a believable sequence? | In core: words to speech sounds (CMUdict, BSD, with rules for unknown words), spread over each word's span, mapped to about 15 shapes made by hand from the track names, with the lead and blends; shown in the Lip Sync tab's lanes and mouth sketch under LS3's audio | The sketch reads as the line when played with the audio |
 | **LS5 An NPC says a typed line** (in the game; the phase test) | The whole path | A REDnode test app: type a line; ElevenLabs speaks it; `audio.play`; LS4's schedule drives LS2's inputs on a spawned NPC | The owner sees the mouth move in time with a line that did not exist before, and judges the delay and the look |
 
+**Built for LS1, 2026-11-17 (not run in the game):** the test archive's builder (`npm run lipsync:jaw --workspace extensions/edgefab -- <outFolder>`: the women's face graph with three numbers added to the jaw's lip sync track, the lip sync envelope and the jaw's override weight, each settable by `SetInputFloat` and through an anim feature) and a REDnode test app (`tools/spikes/ls1-jaw`: spawn, bark, the numbers, a wave at 10 and 30 changes a second). Found while building: the graph round trips through REDbridge's JSON with new nodes; a graph's inputs with a group read an **anim feature** declared in the graph (name and class), so the second way in uses a game class with three floats under a new feature name. The steps are on the [Tests](testing.html#spike-ls1-the-jaw-on-command) page.
+
 **Order:** LS1 steps 1 to 3 first. LS3 and LS4 beside it. LS2 and LS5 only after LS1 passes.
 
 ### Open, and who owns it
