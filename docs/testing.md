@@ -6,7 +6,7 @@ title: Tests
 
 Every test of EDGEfab, with the steps to run it again, what should happen, and each run's result. Add a test here when it is first run. **Release gate (the owner's rule):** no release until every test of the builds since the last release has passed. Untested or failed stops it.
 
-In-game steps start with the Test timer: switch on REDnode's **Test timer** app, press **Start**, and press **Mark** after each numbered step, so log lines can be tied to steps.
+In-game steps use REDnode's **Test timer** (Start, then Mark after each numbered step) only when a test says it needs it, to tie log lines to steps. The owner's word on what they saw is the record otherwise (owner, 2026-11-17).
 
 F1's tests come first, then F0's checks.
 
@@ -17,7 +17,7 @@ Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pic
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B **not run** |
-| [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | Prepared; **in the game not run** |
+| [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
@@ -296,6 +296,10 @@ Found on the way: the game's layered `.mi` files embed their setup. A copy point
 4. By night. Expected: the blue back glows clearly; the red still reads as red.
 5. Walk 25 m away and back. Expected: the materials hold at every level of detail.
 6. Say whether it's good enough to build into 0.1.0's workflow, and what you'd want to pick for each part.
+
+### Run 1, 2026-11-17: passed (the owner, in the game)
+
+The archive copied into the game's `archivepcmod` by Claude with the game closed; the owner restarted, found `vending_parts.ent` in EDGEbuilder's Mods tab and placed it. **Steps 1 to 5 passed:** "Everything looked proper in the game for each test": the red car paint on the cabinet, the blue glow on the back, the glass drinks, by day and night, at every level of detail. No Test timer (see the top of this page). Step 6, whether 0.1.0 waits for it, is the owner's call. A game surface and game `.mi` files work on a generated prop's parts; the buttons are EDGEmat #12.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
