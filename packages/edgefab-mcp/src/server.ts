@@ -69,22 +69,27 @@ server.registerTool(
   {
     description:
       "Picture first, step 1 of making a prop from words (the extension's Generate from Words): OpenAI's GPT Image draws the object from four sides (front, left, back, right) as one 2 by 2 picture, " +
-      "with the modder's own OpenAI key from OPENAI_API_KEY in this server's environment. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG) and let them change the words: " +
-      "pass prop to draw another take into the same Desk item. When they like it, fab_make with from 'picture' makes the 3D model from the four views with Tripo, which follows each side closely. " +
+      "with the modder's own OpenAI key from OPENAI_API_KEY in this server's environment. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG). " +
+      "To change a picture (the extension's Pictures tab, Change This Picture): pass prop and from (a take number) with words saying only what to change, such as 'make the cabinet red and the glow blue': " +
+      "that picture goes to GPT Image with the words and comes back changed only as they say. To draw afresh into the same item, pass prop without from, with words describing the whole object. Every take is kept (fab_desk lists them). " +
+      "When they like one, fab_make with from 'picture' (and take, default the last) makes the 3D model from its four views with Tripo, which follows each side closely. " +
       "Returns the Desk item, the picture files, and what Make 3D would cost.",
     inputSchema: {
-      words: z.string().describe("One object, such as 'a cyberpunk vending machine with a glowing screen on the front'. A brief for game props (flat panels, crisp details, plain background) is added."),
-      prop: z.string().optional().describe("A Desk item (its name or folder) to draw another take into, for changed words. Default: a new item."),
+      words: z.string().describe("One object, such as 'a cyberpunk vending machine with a glowing screen on the front'. A brief for game props (flat panels, crisp details, plain background) is added. With from: only what to change."),
+      prop: z.string().optional().describe("A Desk item (its name or folder) to draw another take into. Default: a new item."),
+      from: z.number().int().positive().optional().describe("With prop: the take to change (its picture is sent with the words). Without it, the words are drawn afresh."),
       name: z.string().optional().describe("For a new item: its name; default from the words."),
     },
   },
-  async ({ words, prop, name }) => {
+  async ({ words, prop, from, name }) => {
     try {
-      const drawn = await drawPicture(words, { version: __VERSION__, item: prop ? deskItem(prop) : undefined, name });
+      if (from !== undefined && !prop) throw new Error("Pass prop with from: the Desk item whose picture to change.");
+      const drawn = await drawPicture(words, { version: __VERSION__, item: prop ? deskItem(prop) : undefined, from, name });
       return text({
         prop: drawn.name,
         folder: drawn.folder,
         take: drawn.take.take,
+        ...(drawn.take.from !== undefined ? { changedFrom: drawn.take.from } : {}),
         sheet: drawn.take.sheet,
         views: drawn.take.views,
         seconds: drawn.take.seconds,
@@ -111,6 +116,7 @@ server.registerTool(
       from: z.enum(["file", "picture", "tripo"]),
       file: z.string().optional().describe("For from 'file': the .glb or .gltf."),
       prop: z.string().optional().describe("For from 'picture': the Desk item fab_picture made (its name or folder)."),
+      take: z.number().int().positive().optional().describe("For from 'picture': which of its pictures (fab_desk lists them). Default: the last."),
       prompt: z.string().optional().describe("For from 'tripo': one object, such as 'a rusty oil drum'."),
       name: z.string().optional().describe("For 'file' and 'tripo': a name for it; default from the file name or the words."),
       detail: z.enum(["standard", "high"]).default("standard").describe("For Tripo: 'standard' is the detailed 4096² texture; 'high' adds Tripo's detailed shape and about 3 times the triangles (+20 credits)."),
@@ -119,7 +125,7 @@ server.registerTool(
       plan: z.enum(["paid", "free"]).optional().describe("For Tripo: the modder's plan, if not set with fab_tripo."),
     },
   },
-  async ({ from, file, prop, prompt, name, detail, parts, height, plan }) => {
+  async ({ from, file, prop, take, prompt, name, detail, parts, height, plan }) => {
     try {
       const version = __VERSION__;
       const progress = (step: string) => log(step);
@@ -133,7 +139,7 @@ server.registerTool(
       const settings: Omit<TextToModel, "prompt"> = { ...DetailLevels[detail as Detail].settings, parts };
       if (from === "picture") {
         if (!prop) throw new Error("Pass prop: the Desk item with the picture (fab_picture made it).");
-        return text(describe(await makeModel({ from: "picture", item: deskItem(prop), request: settings, plan: p }, { version, onProgress: progress, prepare })));
+        return text(describe(await makeModel({ from: "picture", item: deskItem(prop), take, request: settings, plan: p }, { version, onProgress: progress, prepare })));
       }
       if (!prompt?.trim()) throw new Error("Pass prompt: the object for Tripo to make.");
       return text(describe(await makeModel({ from: "tripo", request: { ...settings, prompt }, name, plan: p }, { version, onProgress: progress, prepare })));
@@ -180,12 +186,15 @@ server.registerTool(
           const asset = readJson(path.join(folder, "asset.json"));
           const raw = path.join(folder, "source", "raw", name);
           const prepared = readPrepared(raw);
-          const picture = readPictures(raw)?.takes.at(-1);
+          const takes = readPictures(raw)?.takes ?? [];
+          const picture = takes.at(-1);
           return {
             name, folder, title: asset?.name,
             state: prepared ? "model" : picture ? "picture: Make 3D next (fab_make from 'picture')" : "unfinished",
             from: asset?.from, license: asset?.license,
             picture: picture ? { take: picture.take, words: picture.words, sheet: picture.sheet } : undefined,
+            pictures: takes.length > 1 ? takes.map((t) => ({ take: t.take, words: t.words, ...(t.from !== undefined ? { from: t.from } : {}), date: t.date, sheet: t.sheet })) : undefined,
+            madeFromPicture: asset?.from?.tripo?.picture?.take,
             size: prepared?.size, sizeUnknown: prepared?.sizeUnknown, parts: prepared?.parts?.map((x: { name: string; material: string }) => ({ name: x.name, material: x.material })),
             submeshes: prepared?.submeshes?.length, view: prepared?.view, glow: prepared?.glow?.length ? prepared.glow : undefined, notes: prepared?.notes,
             library: asset?.library ? { path: asset.library.path, version: asset.library.version, note: "In the Library: fab_library_add again updates it there" } : undefined,

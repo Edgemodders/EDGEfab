@@ -25,4 +25,4 @@ export {
 export {
   glowOff, glowWords, lightsMap, percent, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";
-export { drawViews, readPictures, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";
+export { changePrompt, drawViews, readPictures, takeWhat, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";

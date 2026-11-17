@@ -10,7 +10,7 @@ import { prepareModel, readPrepared, type PrepareOptions, type PrepareResult } f
 import { NodeIO } from "@gltf-transform/core";
 import { quiet } from "./quiet";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
-import { drawViews, readPictures, type PictureCall, type PictureTake } from "./picture";
+import { drawViews, readPictures, takeWhat, type PictureCall, type PictureTake } from "./picture";
 import { generateModel, type TextToModel, type TripoCall, type TripoTask } from "./tripo";
 
 /** Tripo's settings for a model from an item's pictures (the words and views come from the item). */
@@ -19,8 +19,8 @@ export type FromPictureRequest = Omit<TextToModel, "prompt" | "views">;
 export type MakeRequest =
   | { from: "file"; file: string; name?: string }
   | { from: "tripo"; request: TextToModel; name?: string; plan?: TripoPlan }
-  /** Make 3D: Tripo's multiview model from the last picture of a Desk item drawn with drawPicture. */
-  | { from: "picture"; item: string; request?: FromPictureRequest; plan?: TripoPlan };
+  /** Make 3D: Tripo's multiview model from a picture of a Desk item drawn with drawPicture (`take`, default the last). */
+  | { from: "picture"; item: string; take?: number; request?: FromPictureRequest; plan?: TripoPlan };
 
 export interface MadeModel {
   /** The asset folder. */
@@ -80,14 +80,16 @@ const PictureNote = "So far a picture, drawn by OpenAI's GPT Image from your wor
 const itemName = (folder: string) => path.basename(folder).replace(/\.prop\.asset$/, "");
 
 /**
- * Picture first, step 1: the four views drawn from words, into a new Desk item, or another take into `item`
- * (Change the Words). The item waits on the Desk until Make 3D.
+ * Picture first, step 1: the four views drawn from words, into a new Desk item, or another take into `item`.
+ * With `from` (a take of `item`), a change: that picture changed by the words, the rest kept. The item waits on
+ * the Desk until Make 3D.
  */
 export async function drawPicture(
   words: string,
-  opts: { version: string; item?: string; name?: string; base?: string; call?: PictureCall },
+  opts: { version: string; item?: string; from?: number; name?: string; base?: string; call?: PictureCall },
 ): Promise<{ folder: string; name: string; take: PictureTake }> {
   let folder: string, name: string;
+  if (opts.from !== undefined && !opts.item) throw new Error("A change needs the Desk item its picture is in.");
   if (opts.item) {
     folder = opts.item;
     name = itemName(folder);
@@ -98,11 +100,11 @@ export async function drawPicture(
   const raw = path.join(folder, "source", "raw", name);
   fs.mkdirSync(raw, { recursive: true });
   try {
-    const take = await drawViews(words, raw, opts.call);
+    const take = await drawViews(words, raw, opts.call, { from: opts.from });
     const assetFile = path.join(folder, "asset.json");
     const old: AssetRecord | undefined = fs.existsSync(assetFile) ? JSON.parse(fs.readFileSync(assetFile, "utf8")) : undefined;
     const picture = { words: take.words, model: take.model, take: take.take };
-    const did = `Drew picture ${take.take} from "${take.words}"`;
+    const did = take.from !== undefined ? `Changed picture ${take.from} into picture ${take.take}: "${take.words}"` : `Drew picture ${take.take} from "${take.words}"`;
     const asset: AssetRecord = old
       ? { ...old, from: "tripo" in old.from ? old.from : { picture }, history: [...old.history, { tool: `EDGEfab ${opts.version}`, did, date: take.date }] }
       : {
@@ -161,10 +163,12 @@ export async function makeModel(
       let request: TextToModel;
       let picture: { words: string; model: string; take: number } | undefined;
       if (req.from === "picture") {
-        const take = readPictures(raw)?.takes.at(-1);
-        if (!take) throw new Error(`${name} has no picture yet: draw one first.`);
+        const takes = readPictures(raw)?.takes ?? [];
+        const take = req.take !== undefined ? takes.find((t) => t.take === req.take) : takes.at(-1);
+        if (!take) throw new Error(req.take !== undefined ? `${name} has no picture ${req.take}.` : `${name} has no picture yet: draw one first.`);
         picture = { words: take.words, model: take.model, take: take.take };
-        request = { ...req.request, prompt: take.words, views: take.views };
+        // Tripo's multiview task takes no words; its record keeps the object's, not a change's ("make it red").
+        request = { ...req.request, prompt: takeWhat(take), views: take.views };
       } else request = req.request;
       progress(request.views ? "Sending the four views to Tripo..." : "Asking Tripo for the model...");
       const made = await generateModel(request, raw, opts.call, (t, step) => progress(`Tripo${step === "texture" ? ", texturing the parts" : ""}: ${t.status}${t.progress !== undefined ? ` ${t.progress}%` : ""}`, t));

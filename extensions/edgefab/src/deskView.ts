@@ -67,7 +67,7 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
     if (entry.picture) {
       const t = entry.picture;
       lines.push({ kind: "line", label: p ? `From picture ${t.take}` : `Picture ${t.take}: four views`, detail: t.words, icon: "file-media", tooltip: [`"${t.words}"`, `${t.model}, ${t.seconds} s`, t.sheet].join("\n") });
-      if (!p) lines.push({ kind: "line", label: "Next: Make 3D, or Change the Words", icon: "arrow-right" });
+      if (!p) lines.push({ kind: "line", label: "Next: change it or Make 3D, in its Pictures tab", detail: "click it", icon: "arrow-right" });
     }
     if (p) {
       // With no real size, the model's own height (1 m) isn't one: say so on the same line, so the two don't disagree.
@@ -125,7 +125,7 @@ Add to Library again updates it there, one version up.` });
     t.contextValue = !entry.prepared && entry.picture ? "picture" : `desk${entry.preview ? ".preview" : ""}${entry.prepared?.glow?.length ? ".glow" : ""}${entry.picture ? ".views" : ""}`;
     t.resourceUri = vscode.Uri.file(entry.folder);
     if (entry.model) t.command = { command: "edgefab.view", title: "Open in 3D", arguments: [item] };
-    else if (entry.picture) t.command = { command: "edgefab.openPicture", title: "Open the Picture", arguments: [item] };
+    else if (entry.picture) t.command = { command: "edgefab.openPicture", title: "Open the Pictures", arguments: [item] };
     return t;
   }
 }

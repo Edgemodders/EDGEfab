@@ -107,13 +107,13 @@
       },
       {
         "command": "edgefab.redraw",
-        "title": "Change the Words...",
+        "title": "Change the Picture...",
         "category": "EDGEfab",
         "icon": "$(edit)"
       },
       {
         "command": "edgefab.openPicture",
-        "title": "Open the Picture",
+        "title": "Open the Pictures",
         "category": "EDGEfab",
         "icon": "$(file-media)"
       },

@@ -17,6 +17,7 @@ import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
+import { closePicturesUnder, openPictures, type PictureTabHooks } from "./pictureTab";
 
 declare const __VERSION__: string;
 
@@ -38,6 +39,7 @@ function redcode(): REDcodeApi | undefined {
 }
 
 let output: vscode.OutputChannel;
+let extensionUri: vscode.Uri | undefined;
 let deskView: DeskView;
 let libraryView: LibraryView;
 const log = (line: string) => output.appendLine(`${new Date().toLocaleTimeString()} ${line}`);
@@ -105,6 +107,7 @@ async function openIn3D(glb: string | undefined, preview?: string): Promise<void
  * Answers whether any were closed.
  */
 async function releaseFolder(folder: string): Promise<boolean> {
+  const pictures = closePicturesUnder(folder);
   const inside = (uri: vscode.Uri | undefined) => !!uri && uri.scheme === "file" && isInside(uri.fsPath, folder);
   const tabs = vscode.window.tabGroups.all.flatMap((g) => g.tabs).filter((t) => {
     const input = t.input;
@@ -112,7 +115,10 @@ async function releaseFolder(folder: string): Promise<boolean> {
     if (input instanceof vscode.TabInputTextDiff) return inside(input.original) || inside(input.modified);
     return false;
   });
-  if (!tabs.length) return false;
+  if (!tabs.length) {
+    if (pictures) await new Promise((r) => setTimeout(r, 300));
+    return pictures;
+  }
   await vscode.window.tabGroups.close(tabs);
   // Give the views a moment to let go of their watches.
   await new Promise((r) => setTimeout(r, 300));
@@ -211,19 +217,35 @@ async function askTripoSettings(title: string, fromPicture: boolean, key: string
   return { request: { ...DetailLevels[picked.d].settings, parts }, height };
 }
 
-/** Make 3D: Tripo's model from a Desk item's last picture. */
-async function make3d(folder: string, title: string, view: DeskView): Promise<void> {
+/** Make 3D: Tripo's model from a Desk item's picture (`take`, default the last). */
+async function make3d(folder: string, title: string, view: DeskView, take?: number): Promise<void> {
   const tripo = await readyForTripo();
   if (!tripo) return;
   const settings = await askTripoSettings(title, true, tripo.key);
   if (!settings) return;
   await make(
-    (progress, signal) => makeModel({ from: "picture", item: folder, request: settings.request, plan: tripo.plan }, { version: __VERSION__, onProgress: progress, call: { signal, key: tripo.key }, prepare: settings.height ? { height: settings.height } : undefined }),
+    (progress, signal) => makeModel({ from: "picture", item: folder, take, request: settings.request, plan: tripo.plan }, { version: __VERSION__, onProgress: progress, call: { signal, key: tripo.key }, prepare: settings.height ? { height: settings.height } : undefined }),
     view,
   );
 }
 
-/** Picture first, step 1: draws the four views, shows them, and offers Make 3D or other words. */
+/** What the Pictures tab needs from here. */
+function pictureHooks(view: DeskView): PictureTabHooks {
+  return {
+    openaiKey: async () => (await getKey("openai")) ?? (await setKey("openai")),
+    make3d: (folder, title, take) => make3d(folder, title, view, take),
+    changed: () => view.refresh(),
+    log,
+    icon: extensionUri ? vscode.Uri.joinPath(extensionUri, "images", "icon.png") : undefined,
+  };
+}
+
+/** Opens a Desk item's Pictures tab. */
+function showPictures(folder: string, view: DeskView, opts: { select?: number; focusPrompt?: boolean } = {}): void {
+  openPictures(folder, pictureHooks(view), opts);
+}
+
+/** Picture first, step 1: draws the four views, then opens them in the Pictures tab, where they're changed or made 3D. */
 async function drawAndOffer(words: string, item: string | undefined, view: DeskView): Promise<void> {
   const key = (await getKey("openai")) ?? (await setKey("openai"));
   if (!key) return;
@@ -242,19 +264,7 @@ async function drawAndOffer(words: string, item: string | undefined, view: DeskV
   }
   log(`Drew ${drawn.name}, picture ${drawn.take.take}, in ${drawn.take.seconds} s: ${drawn.take.sheet}`);
   view.refresh();
-  void vscode.commands.executeCommand("vscode.open", vscode.Uri.file(drawn.take.sheet), { preview: true });
-  const pick = await vscode.window.showInformationMessage(
-    `EDGEfab drew ${drawn.name} from four sides. Make it 3D, or change the words? It waits on the Desk either way.`,
-    "Make 3D",
-    "Change the Words",
-  );
-  if (pick === "Make 3D") await make3d(drawn.folder, drawn.name, view);
-  if (pick === "Change the Words") await redraw(drawn.folder, drawn.take.words, view);
-}
-
-async function redraw(folder: string, words: string, view: DeskView): Promise<void> {
-  const changed = await vscode.window.showInputBox({ title: "EDGEfab: Change the Words", prompt: "Change what it is or how it looks; it's drawn again from four sides. The earlier pictures are kept.", value: words, ignoreFocusOut: true });
-  if (changed?.trim()) await drawAndOffer(changed.trim(), folder, view);
+  showPictures(drawn.folder, view, { select: drawn.take.take, focusPrompt: true });
 }
 
 /** How strongly to glow, in plain words, with a number one click away. */
@@ -619,6 +629,7 @@ async function refreshFromLibrary(): Promise<void> {
 
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
+  extensionUri = context.extensionUri;
   initKeys(context);
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
@@ -718,11 +729,11 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("edgefab.redraw", async (item: unknown) => {
       const entry = entryOf(item);
-      if (entry?.picture) await redraw(entry.folder, entry.picture.words, view);
+      if (entry?.picture) showPictures(entry.folder, view, { select: entry.picture.take, focusPrompt: true });
     }),
     vscode.commands.registerCommand("edgefab.openPicture", (item: unknown) => {
       const entry = entryOf(item);
-      if (entry?.picture) void vscode.commands.executeCommand("vscode.open", vscode.Uri.file(entry.picture.sheet));
+      if (entry?.picture) showPictures(entry.folder, view);
     }),
     vscode.commands.registerCommand("edgefab.setSize", async (item: unknown) => {
       const entry = entryOf(item);
@@ -809,12 +820,14 @@ export function activate(context: vscode.ExtensionContext): void {
       }))?.trim();
       if (!title || title === entry.title) return;
       try {
+        const picturesOpen = closePicturesUnder(entry.folder);
         const wasOpen = await releaseFolder(entry.folder);
         const r = await renameItem(entry.folder, title, { version });
         log(`Renamed ${entry.title} to ${title}${r.renamed ? `: ${path.basename(r.folder)}` : ""}`);
         view.refresh();
         const now = listDesk().find((e) => e.folder === r.folder);
-        if (wasOpen && now) void openIn3D(now.model, now.preview);
+        if (wasOpen && now?.model) void openIn3D(now.model, now.preview);
+        if (picturesOpen && now) showPictures(now.folder, view);
       } catch (e) {
         log(`Rename failed: ${message(e)}`);
         void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);

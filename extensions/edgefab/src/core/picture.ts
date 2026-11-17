@@ -15,6 +15,7 @@ import { ViewNames, type ViewName } from "./tripo";
 
 export const PictureModel = "gpt-image-2.5-sunburst";
 const OpenAI = "https://api.openai.com/v1/images/generations";
+const OpenAIEdit = "https://api.openai.com/v1/images/edits";
 
 export class PictureError extends Error {
   constructor(message: string, readonly status?: number) {
@@ -32,7 +33,12 @@ export interface PictureCall {
 /** One drawing of the four views. */
 export interface PictureTake {
   take: number;
+  /** The modder's words for this take: what the object is, or, for a change, what to change. */
   words: string;
+  /** For a change: the take it was made from (its picture sent with the words). */
+  from?: number;
+  /** The object as first described, carried through changes (Tripo's record and the item's name use it). */
+  what?: string;
   model: string;
   /** The 2 by 2 picture. */
   sheet: string;
@@ -56,6 +62,21 @@ export function viewsPrompt(words: string): string {
     "Clean hard-surface design: flat, straight panels and crisp edges, sharp fine details (buttons, labels, vents, screws), realistic materials. Soft, even studio light, plain white background, no ground shadow, no text, labels, borders or other objects.",
   ].join(" ");
 }
+
+/** The words sent to change a take: the same sheet back, changed only as the words say (EDGEmat's Reshape's change). */
+export function changePrompt(what: string, words: string): string {
+  const it = what.trim().replace(/\.$/, "") || "object";
+  return [
+    `The picture shows one ${it} from four sides, on a plain white background, as a 2 by 2 grid of orthographic views: top left from the front, top right from its left side, bottom left from the back, bottom right from its right side.`,
+    `Change it: ${words.trim().replace(/\.$/, "")}.`,
+    "A changed part replaces the old one: the old part is gone, not kept inside, under or beside the new one.",
+    "Show the changed object in the same four views and the same grid, with the same straight-on camera at the same distance and scale: what the words do not change keeps its shape, size, place, colors and materials.",
+    "Change it the same way in every view, so the four views show one object; what shows only from the front stays only in the front view. Clean hard-surface design, crisp details, soft even light, plain white background, no ground shadow, no text, labels or borders.",
+  ].join(" ");
+}
+
+/** The object a take shows, as first described: its own words for a first drawing, carried through changes. */
+export const takeWhat = (t: PictureTake): string => t.what ?? t.words;
 
 export function readPictures(raw: string): PictureRecord | undefined {
   let record: PictureRecord;
@@ -83,21 +104,38 @@ async function openaiKey(call: PictureCall): Promise<string> {
   return key;
 }
 
-/** Draws the four views into `<raw>\picture\<take>\`, and adds the take to picture.json. */
-export async function drawViews(words: string, raw: string, call: PictureCall = {}): Promise<PictureTake> {
-  if (!words.trim()) throw new PictureError("Describe the object first.");
+/**
+ * Draws the four views into `<raw>\picture\<take>\`, and adds the take to picture.json. With `from`, a change:
+ * that take's picture goes to GPT Image with the words, and comes back changed only as they say.
+ */
+export async function drawViews(words: string, raw: string, call: PictureCall = {}, opts: { from?: number } = {}): Promise<PictureTake> {
+  if (!words.trim()) throw new PictureError(opts.from ? "Say what to change first." : "Describe the object first.");
+  const record = readPictures(raw) ?? { takes: [] };
+  const base = opts.from !== undefined ? record.takes.find((t) => t.take === opts.from) : undefined;
+  if (opts.from !== undefined && !base) throw new PictureError(`There is no picture ${opts.from} to change.`);
+  if (base && !fs.existsSync(base.sheet)) throw new PictureError(`Picture ${base.take}'s file is missing: ${base.sheet}`);
   const key = await openaiKey(call);
   const model = call.model ?? PictureModel;
-  const prompt = viewsPrompt(words);
+  const prompt = base ? changePrompt(takeWhat(base), words) : viewsPrompt(words);
   const started = Date.now();
   let body: { data?: { b64_json?: string }[]; usage?: { output_tokens?: number }; error?: { message?: string } } = {};
   for (const size of ["2048x2048", "1024x1024"]) {
-    const res = await (call.fetch ?? fetch)(OpenAI, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, prompt, size, n: 1, quality: "high", output_format: "png" }),
-      signal: call.signal,
-    });
+    let init: RequestInit;
+    if (base) {
+      // OpenAI's edit: the picture as a file beside the words (multipart; the form sets its own content type).
+      const form = new FormData();
+      for (const [k, v] of Object.entries({ model, prompt, size, n: "1", quality: "high", output_format: "png" })) form.append(k, v);
+      form.append("image[]", new Blob([new Uint8Array(fs.readFileSync(base.sheet))], { type: "image/png" }), "views.png");
+      init = { method: "POST", headers: { Authorization: `Bearer ${key}` }, body: form, signal: call.signal };
+    } else {
+      init = {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model, prompt, size, n: 1, quality: "high", output_format: "png" }),
+        signal: call.signal,
+      };
+    }
+    const res = await (call.fetch ?? fetch)(base ? OpenAIEdit : OpenAI, init);
     body = (await res.json().catch(() => ({}))) as typeof body;
     if (res.ok) break;
     const why = body.error?.message ?? `HTTP ${res.status}`;
@@ -110,8 +148,7 @@ export async function drawViews(words: string, raw: string, call: PictureCall = 
   const b64 = body.data?.[0]?.b64_json;
   if (!b64) throw new PictureError("OpenAI sent no picture.");
 
-  const record = readPictures(raw) ?? { takes: [] };
-  const take = (record.takes.at(-1)?.take ?? 0) + 1;
+  const take = Math.max(0, ...record.takes.map((t) => t.take)) + 1;
   const dir = path.join(raw, "picture", String(take));
   fs.mkdirSync(dir, { recursive: true });
   const sheet = path.join(dir, "views.png");
@@ -126,7 +163,7 @@ export async function drawViews(words: string, raw: string, call: PictureCall = 
     views[side] = path.join(dir, `${side}.png`);
     fs.writeFileSync(views[side], encodePng(crop(img, at[side][0], at[side][1], w, h)));
   }
-  const done: PictureTake = { take, words: words.trim(), model, sheet, views, seconds: Math.round((Date.now() - started) / 1000), date: new Date().toISOString(), ...(body.usage?.output_tokens ? { tokens: body.usage.output_tokens } : {}) };
+  const done: PictureTake = { take, words: words.trim(), ...(base ? { from: base.take, what: takeWhat(base) } : {}), model, sheet, views, seconds: Math.round((Date.now() - started) / 1000), date: new Date().toISOString(), ...(body.usage?.output_tokens ? { tokens: body.usage.output_tokens } : {}) };
   record.takes.push(done);
   fs.writeFileSync(path.join(raw, "picture", "picture.json"), JSON.stringify(record, null, 2));
   return done;
