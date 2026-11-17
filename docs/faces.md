@@ -139,7 +139,7 @@ Clips are additive, so they ride on top of the mood: a sad face keeps its brows 
 
 - Everything to play a line is reachable from the scene and the language: the line's times from the event, the `.wem` from the voice map, the clip from the `.lipmap`. Pick `f_`/`m_` and the female or male `.wem` by V's gender for V's lines.
 - A preview needs facial clips evaluated through the head's `.facialsetup`. Playing them as bones alone shows almost nothing (31 animated joint keys in a 2.4 s line). **REDcode #21 (`openAnimation`) should cover facial clips with the facial setup**, or the preview runs in the game through REDnode #39.
-- **New voice lines in a mod** need four things: the `.wem`, a voice map entry, a lip sync clip, and a `.lipmap` entry. The `.lipmap` is one file per language, so two mods that change it conflict, unless a framework merges it (**unverified**; check ArchiveXL). Without lip sync, the mouth would not move (**unverified**).
+- **New voice lines in a mod** need four things: the `.wem`, a voice map entry, a lip sync clip, and a lip sync map entry. A mod brings its own `.lipmap` per language and lists it in an ArchiveXL file under `localization: lipmaps:`, so mods don't change the game's map (WolvenKit's lip sync generator writes these; RED modding wiki, read 2026-11-17; see [Made lip sync](lipsync.html)). Without lip sync, the mouth would not move (**unverified**).
 
 ### EDGEdir: directing on a timeline
 
@@ -155,9 +155,9 @@ Plus look-at (`scnLookAtEvent`, 26 in the sample scene) for eyes and head. The a
 
 ### EDGEfab: one clip
 
-- A facial clip is a float-track clip on a head rig. EDGEfab's import, change and convert steps (F7b) must keep float tracks, not only bones. WolvenKit's glTF export writes track keys in its extras (testing.md, the REDbridge `.anims` check); whether facial tracks survive the round trip is **unverified**.
+- A facial clip is a float-track clip on a head rig. EDGEfab's import, change and convert steps (F7b) must keep float tracks, not only bones. WolvenKit's glTF export keeps them: a lip sync clip's 414 tracks come out as `trackKeys` in the animation's extras (checked 2026-11-17, [Made lip sync](lipsync.html)). Import through REDbridge is not checked (REDbridge #14).
 - Trim, loop and speed apply to facial clips as they are. Mirror needs the left and right pose pairs swapped (`eye_l_...` with `eye_r_...`), not bones mirrored.
-- **Made lip sync** (from a new voice line) would mean mapping audio to the facial setup's pose tracks. Nothing in the game's files does that at run time; it is research. The tracks' names and order are in the `.facialsetup` and rig, which were not decoded here.
+- **Made lip sync** (from a new voice line, or a video of someone saying it) means writing the head rig's lip sync tracks. The track names are in the head rig (`trackNames`, 414); the routes, the services and the long pole are in [Made lip sync](lipsync.html).
 - **A new head that speaks** (the UE5 faces question) needs its own `.facialsetup`. The poses are baked binary buffers in that file; whether any tool can author one is **unverified**. A borrowed game head stays the practical path ([UE5 assets](ue-assets.html), "Faces").
 
 ## Open questions
@@ -165,8 +165,7 @@ Plus look-at (`scnLookAtEvent`, 26 in the sample scene) for eyes and head. The a
 | Question | How to find out |
 |---|---|
 | Do lip sync clips play by the `.lipmap` alone, or also by the scene's own paths? | Change a line's map entry in a test mod and watch it in the game (REDnode) |
-| Can two mods add lip sync for different languages or scenes without conflict? | Check ArchiveXL for `.lipmap` merging; test two mods |
-| Which float track is which pose? | Decode the `.facialsetup` buffers or the rig's track names (REDbridge) |
-| Do facial float tracks survive WolvenKit's glTF round trip? | Export and import one lip sync clip (REDbridge #14) |
+| Can two mods add lip sync without conflict? | Mostly answered: each mod's own `.lipmap` through ArchiveXL's `lipmaps` ([Made lip sync](lipsync.html)). Test two mods in the game |
+| Do facial float tracks survive WolvenKit's glTF import? | Export keeps them (checked 2026-11-17). Import one back (REDbridge #14) |
 | Why does Judy's face use the photo mode graph? | Compare other main characters' `.app` files |
 | What sets the `FacialReaction` anim feature in gameplay? | Read the game's scripts |
