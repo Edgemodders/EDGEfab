@@ -207,7 +207,7 @@ class PictureTab {
   :root { --gap: 14px; --accent: var(--vscode-focusBorder); --muted: var(--vscode-descriptionForeground); --line: var(--vscode-panel-border, rgba(128,128,128,.35)); }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 18px 22px 28px; color: var(--vscode-foreground); background: var(--vscode-editor-background); font: var(--vscode-font-size) / 1.45 var(--vscode-font-family); }
-  .wrap { max-width: calc(60vh + 322px); }
+  .wrap { max-width: calc(60vh + 542px); }
   @media (max-width: 860px) { .wrap { max-width: none; } }
   header { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; margin-bottom: var(--gap); }
   h1 { font-size: 1.25em; font-weight: 600; margin: 0; letter-spacing: .02em; }
@@ -219,7 +219,7 @@ class PictureTab {
   button.secondary:hover:not(:disabled) { background: var(--vscode-button-secondaryHoverBackground); }
   button:disabled { opacity: .5; cursor: default; }
   button:focus-visible, textarea:focus-visible, .card:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
-  .layout { display: grid; grid-template-columns: minmax(0, 60vh) 300px; justify-content: start; gap: 22px; align-items: start; }
+  .layout { display: grid; grid-template-columns: minmax(0, 60vh) minmax(300px, 520px); justify-content: start; gap: 22px; align-items: start; }
   @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
   .viewer { min-width: 0; }
   .sheet { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; border: 1px solid var(--line); }
