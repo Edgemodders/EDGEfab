@@ -65,6 +65,20 @@ export function openPictures(folder: string, hooks: PictureTabHooks, opts: { sel
   tabs.set(keyOf(folder), new PictureTab(folder, hooks, opts));
 }
 
+/**
+ * Puts a Pictures tab back after the window reloads or VS Code restarts (VS Code keeps the tab and hands it
+ * here with what the page saved: its item's folder and the picture viewed). An item that is gone closes the tab.
+ */
+export function restorePictures(panel: vscode.WebviewPanel, saved: unknown, hooks: PictureTabHooks): void {
+  const state = (saved ?? {}) as { folder?: unknown; viewed?: unknown };
+  const folder = typeof state.folder === "string" ? state.folder : undefined;
+  if (!folder || !fs.existsSync(path.join(folder, "asset.json")) || tabs.has(keyOf(folder))) {
+    panel.dispose();
+    return;
+  }
+  tabs.set(keyOf(folder), new PictureTab(folder, hooks, { select: typeof state.viewed === "number" ? state.viewed : undefined }, panel));
+}
+
 /** Closes the Pictures tabs of items inside `folder`, before it moves or goes (their watches would hold it). Answers whether any were open. */
 export function closePicturesUnder(folder: string): boolean {
   let any = false;
@@ -87,13 +101,17 @@ class PictureTab {
   private error?: string;
   private disposed = false;
 
-  constructor(readonly folder: string, private readonly hooks: PictureTabHooks, opts: { select?: number; focusPrompt?: boolean }) {
+  /** `restored`: the tab VS Code kept over a reload, to fill again instead of opening a new one. */
+  constructor(readonly folder: string, private readonly hooks: PictureTabHooks, opts: { select?: number; focusPrompt?: boolean }, restored?: vscode.WebviewPanel) {
     this.raw = path.join(folder, "source", "raw", itemName(folder));
-    this.panel = vscode.window.createWebviewPanel("edgefab.pictures", `Pictures: ${this.title()}`, vscode.ViewColumn.Active, {
-      enableScripts: true,
-      retainContextWhenHidden: true,
-      localResourceRoots: [vscode.Uri.file(folder)],
-    });
+    const options = { enableScripts: true, localResourceRoots: [vscode.Uri.file(folder)] };
+    if (restored) {
+      this.panel = restored;
+      this.panel.webview.options = options;
+      this.panel.title = `Pictures: ${this.title()}`;
+    } else {
+      this.panel = vscode.window.createWebviewPanel("edgefab.pictures", `Pictures: ${this.title()}`, vscode.ViewColumn.Active, { ...options, retainContextWhenHidden: true });
+    }
     if (hooks.icon) this.panel.iconPath = hooks.icon;
     this.panel.webview.html = this.html();
     this.panel.webview.onDidReceiveMessage((m: FromPage) => void this.onMessage(m));
@@ -281,6 +299,8 @@ class PictureTab {
 </div>
 <script nonce="${nonce}">
   const vscode = acquireVsCodeApi();
+  // Kept by VS Code with the tab, so it comes back on this item and picture after a reload. (A less-than sign is written as its escape, so a folder's name can't end the script.)
+  const folder = ${JSON.stringify(this.folder).replace(/</g, String.fromCharCode(92) + "u003c")};
   const $ = (id) => document.getElementById(id);
   let state = { takes: [] };
   let viewed;
@@ -293,6 +313,7 @@ class PictureTab {
     $("title").append("Pictures", el("small", "", state.title || ""));
     if (!takes.find((t) => t.take === viewed)) viewed = takes.length ? takes[takes.length - 1].take : undefined;
     const t = takes.find((x) => x.take === viewed);
+    vscode.setState({ folder, viewed });
     const busy = !!state.busy;
     $("sheet").hidden = !t;
     if (t) {

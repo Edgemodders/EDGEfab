@@ -264,6 +264,7 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 8. Click picture 2, **Generate 3D Model**. Expected: the detail, height and cost are asked as before, and Tripo makes it. The Desk item becomes a model. In the tab, picture 2 says "The 3D model on the Desk is made from this", and its history card says "3D".
 9. With the tab open, rename the item on the Desk. Expected: the tab closes and opens again on the renamed item, with every picture.
 10. Make a picture-only item, open its tab, and delete the item from the Desk. Expected: the tab closes and the folder goes.
+11. With the tab open on a picture that is not the last, reload the window (**Developer: Reload Window**). Expected: the tab comes back on the same item and the same picture, and its buttons work.
 
 ### Run 1, 2026-11-17: part A passed
 

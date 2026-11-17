@@ -38,6 +38,7 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "onView:edgefab.desk",
+    "onWebviewPanel:edgefab.pictures",
     "onCommand:edgefab.importGlb",
     "onCommand:edgefab.generate",
     "onCommand:edgefab.setTripoKey",

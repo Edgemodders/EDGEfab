@@ -17,7 +17,7 @@ import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
-import { closePicturesUnder, openPictures, type PictureTabHooks } from "./pictureTab";
+import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
 
 declare const __VERSION__: string;
 
@@ -634,6 +634,12 @@ export function activate(context: vscode.ExtensionContext): void {
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
   const view = new DeskView();
+  // A Pictures tab open when the window reloads comes back.
+  context.subscriptions.push(
+    vscode.window.registerWebviewPanelSerializer("edgefab.pictures", {
+      deserializeWebviewPanel: async (panel, state) => restorePictures(panel, state, pictureHooks(view)),
+    }),
+  );
   deskView = view;
   libraryView = new LibraryView();
   libraryView.refresh();
