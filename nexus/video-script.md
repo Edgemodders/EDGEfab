@@ -1,17 +1,20 @@
 # EDGEfab 0.1.0: the video's shot script
 
-A shot list for the Nexus page's video (and the Marketplace or YouTube, if wanted). About 2 to 3 minutes once cut. The story: **words in, a solid glowing prop in Night City out**, in one sitting, then a quick look at your own model, the Library and an assistant.
+A shot list for the Nexus page's video (and the Marketplace or YouTube, if wanted). About 3 minutes once cut. The story: **one sentence in, a solid glowing vending machine standing in Night City out**, in one sitting, with no game restart. The prop goes from the Desk into the running game with REDcode's **Pack and Play** and is placed with EDGEbuilder.
+
+(The 2026-11-16 version, with a generic prop and the Library and assistant shots, is in git history.)
 
 ## Before recording
 
 | Check | Why |
 |---|---|
 | VS Code with REDcode and EDGEfab 0.1.0 (from the `.vsix` or the Marketplace), the REDnode HUD theme | The look the page promises |
-| Tripo and OpenAI keys set (**Set Tripo Key**, **Set OpenAI Key**), the Tripo plan answered **paid** | So no key box comes up on camera. Each Generate costs about 60 Tripo credits and a few cents of OpenAI |
-| A REDcode project open, with a short name (it becomes the folder in the files you show) | Add to Project writes into it |
-| The game with REDnode and EDGEbuilder, a quiet street by night, a save there | The glow shows best by night |
-| **Make the hero prop once before recording**, the same words | Tripo takes 2 to 4 minutes and can miss. If the take on camera is weaker, cut to the one made earlier |
-| A second model of your own as a `.glb` in a folder you can show (any textured GLB) | For the "your own model" shot |
+| Tripo and OpenAI keys set (**Set Tripo Key**, **Set OpenAI Key**), the Tripo plan answered **paid** | So no key box comes up on camera. One run costs about 60 Tripo credits and a few cents of OpenAI per picture |
+| A REDcode project open, with a short name such as `NeonProps` (it becomes the folder in the files you show) | Add to Project writes into it, and EDGEbuilder lists its archive under that name |
+| The game running with REDnode and EDGEbuilder, a save loaded on a quiet street **by night**, REDnode's MCP server on | Pack and Play swaps the archive in through REDnode while the game runs. The glow shows best by night |
+| **Allow REDnode's archive swap once before recording**: do one Pack and Play of any small project with the game running, and allow it when REDnode asks | So the permission prompt doesn't come up on camera |
+| The game windowed or borderless, so Alt+Tab between VS Code and the game is quick | Shots 10 and 11 move between the two |
+| **Make the vending machine once before recording**, with the same words, in a different project | Tripo takes 2 to 4 minutes and can miss. If the take on camera is weaker, cut to the one made earlier |
 
 **Privacy, before anything is published:**
 
@@ -20,36 +23,49 @@ A shot list for the Nexus page's video (and the Marketplace or YouTube, if wante
 - Tripo's balance shows in the cost message. Fine to show, or crop it.
 - Claude Code's panel shows your account in places. Check the frame.
 
+## The words
+
+- **The object:** "a battered cyberpunk vending machine with glowing product shelves and a cracked screen"
+- **The change (shot 5):** "make the cabinet red and the glow blue"
+- **Its height:** 2.0 m
+- **Its name (shot 8):** "Neon vending machine", which makes `neon_vending_machine.ent`, short to search for in EDGEbuilder
+
 ## The shots
 
 | # | Time | Show | Do | Caption (optional) |
 |---|---|---|---|---|
-| 1 | 0:00 to 0:08 | **Cold open, in the game by night** | The finished hero prop glowing on a street. V walks up and jumps onto it | "Made from one sentence." |
+| 1 | 0:00 to 0:08 | **Cold open, in the game by night** | The finished vending machine glowing on the street. V walks up and jumps onto it. Record this last, after shot 13, when it is already standing there | "Made from one sentence." |
 | 2 | 0:08 to 0:15 | VS Code, the EDGEfab icon in the activity bar, the Desk | Click the icon; the Desk opens | "EDGEfab: props for Cyberpunk 2077, in VS Code" |
-| 3 | 0:15 to 0:35 | **Generate from Words...** | Type the words (below). Give the height when asked (for example 2.2 m). The cost and your balance show before anything is paid: accept | "Describe it. EDGEfab says the cost first." |
-| 4 | 0:35 to 0:45 | The **Pictures** tab opens on the four-view picture | Front, sides, back. Cut the 30 seconds' wait | "A picture first, from four sides" |
-| 5 | 0:45 to 0:55 | **Change This Picture** | Type a change ("make the cabinet red and the glow blue"), Ctrl+Enter. The new picture appears with the first one below it in the history, each with its words and time. Click back to the first to show it's kept | "Not right? Change just that." |
-| 6 | 0:55 to 1:05 | **Make 3D from This Picture** | Click it with the picture you like in view; the progress note; cut the 2 to 4 minutes | "Then Tripo makes it 3D, in named parts" |
-| 7 | 1:05 to 1:25 | **Open in 3D** (click the prop on the Desk) | Turn it slowly. Hide a part and show it again. Step through the levels of detail | "Real size, named parts, three levels of detail" |
-| 8 | 1:25 to 1:40 | **Make the Painted Lights Glow**, then **Glow Strength** | Pick how much counts as a light; the 3D view shows the glow; pick a strength | "Painted lights that really glow" |
-| 9 | 1:40 to 1:50 | **Add to Project** | Right-click the prop. REDcode's project tree shows its folder: the mesh, materials, the `.ent` | "One click into your mod" |
-| 10 | 1:50 to 2:00 | REDcode packs, EDGEdeck or REDnode puts it in the game | Keep it short: one click, a cut | |
-| 11 | 2:00 to 2:20 | **In the game: EDGEbuilder places it** | Find it in EDGEbuilder's Browse, place it, by night. Walk into it (solid), jump on top, shoot it (sparks). Walk 25 m away and back: no change you can see | "Solid. Lit. Ready to place." |
-| 12 | 2:20 to 2:30 | Your own model | Right-click a `.glb` in the Explorer, **Make a Prop**; it lands on the Desk ready | "Or bring a model of your own" |
-| 13 | 2:30 to 2:40 | The **Library** view | **Add to Library** on the hero prop; it shows in your folder; **Add to Project** from there into another project | "Keep it in the EDGE Library, for every mod" |
-| 14 | 2:40 to 2:55 | (Optional) An assistant | In Claude Code: "make a neon street lamp, 3 metres tall, and add it to my project". Show the tool calls go by, cut the wait, the lamp on the Desk | "Or just ask." |
-| 15 | 2:55 to 3:05 | End card | Install from the VS Code Marketplace (search EDGEfab) or Nexus; needs REDcode; EDGEbuilder to place | "EDGEfab 0.1.0 preview. Free, MIT. By EDGEmodders" |
+| 3 | 0:15 to 0:30 | **Generate from Words...** | Type the object's words, choose **Draw it first** | "Describe it." |
+| 4 | 0:30 to 0:40 | The **Pictures** tab opens on the four-view picture | Front, sides, back. Cut the 30 seconds' wait | "A picture first, from four sides" |
+| 5 | 0:40 to 0:55 | **Change This Picture** | Type the change, Ctrl+Enter. The red and blue picture appears with the first one below it in the history, each with its words and time. Click back to the first to show it's kept, then click the red one again | "Not right? Change just that." |
+| 6 | 0:55 to 1:10 | **Make 3D from This Picture** | With the red picture in view, click it. Pick **Detailed texture** and give the height, 2.0. The cost and your balance show before anything is paid: accept. The progress note; cut the 2 to 4 minutes | "EDGEfab says the cost first. Then Tripo makes it 3D, in named parts" |
+| 7 | 1:10 to 1:30 | **Open in 3D** (click the prop on the Desk) | Turn it slowly. Hide a part and show it again. Step through the levels of detail | "Real size, named parts, three levels of detail" |
+| 8 | 1:30 to 1:45 | **Make the Painted Lights Glow**, **Glow Strength**, **Rename...** | Pick how much counts as a light; the 3D view shows the shelves glow; keep strength 3. Rename it "Neon vending machine" | "Painted lights that really glow" |
+| 9 | 1:45 to 1:55 | **Add to Project** | Right-click the prop on the Desk. REDcode's project tree shows its folder: the mesh, materials, the `.ent` | "One click into your mod" |
+| 10 | 1:55 to 2:05 | **Pack and Play** (the flame button in REDcode's Project view title bar) | Click it. The busy note says Packing, then Swapping through REDnode, then that the archive is swapped. No game restart | "Into the running game. No restart." |
+| 11 | 2:05 to 2:25 | **In the game: EDGEbuilder** | Alt+Tab to the game. **F10**, open **EDGEbuilder**, **Assets**, the **Mods** tab, **Entities**. Type `neon_vending`: it shows with its size (about 1.0 x 0.8 x 2.0 m) and the project's name. Face an open spot, **Drop where I look**. Press F10 to close the overlay | "Find it. Drop it." |
+| 12 | 2:25 to 2:45 | **The proof** | Walk up to it: the shelves glow, the cabinet red. Walk into it (V stops), jump on top, shoot it (sparks). Let these play in real time | "Solid. Lit." |
+| 13 | 2:45 to 2:55 | **Walk away and back** | Walk about 25 m away, turn, walk back: no change you can see as the detail drops | "Ready to place in your mod." |
+| 14 | 2:55 to 3:05 | End card | Install from the VS Code Marketplace (search EDGEfab) or Nexus; needs REDcode; REDnode and EDGEbuilder to try and place it in the game | "EDGEfab 0.1.0 preview. Free, MIT. By EDGEmodders" |
 
-**Words for the hero prop** (pick one, or your own; a lit object shows the glow best):
+**Shorter options** (keep or cut, before shot 10): **Make a Prop** on a `.glb` of your own from the Explorer ("Or bring a model of your own"), and **Add to Library** on the vending machine ("Keep it in the EDGE Library, for every mod").
 
-- "a cyberpunk street food cart with a glowing neon menu board and a striped awning"
-- "a battered cyberpunk vending machine with glowing product shelves and a cracked screen"
-- "a neon-lit noodle stand sign on a metal post, kanji and arrows glowing"
+## If something goes wrong on camera
+
+| What | What to do |
+|---|---|
+| REDnode asks to allow the archive swap | Allow it, and cut the prompt. Next time it won't ask |
+| Pack and Play says "Restart the game to see the change" | REDnode's MCP server is off, or the game isn't running with REDnode. Turn it on (REDnode's settings) and press Pack and Play again |
+| `neon_vending` isn't in EDGEbuilder's Mods tab | Wait a few seconds for EDGEbuilder to read the new archive, or close and open the Assets tab |
+| The machine lands inside something | Move it on EDGEbuilder's **Scene** tab, or step back and Drop again |
 
 ## Notes for the cut
 
-- Cut every wait (the picture, Tripo, packing, the game loading). Keep the cost message on screen for a beat: it says "nothing is paid until you agree".
-- Shot 11 is the proof: let the jump and the shots play in real time.
+- Cut every wait (the picture, Tripo, packing). Keep the cost message on screen for a beat: it says "nothing is paid until you agree".
+- Shots 10 and 11 are the new part: keep the move from VS Code to the game in one cut, so it's clear the game never restarts.
+- Shot 12 is the proof: let the jump and the shots play in real time.
 - A shot can use the prop made before recording if the take on camera came out weaker; the words are the same.
+- After recording, the swapped archive stays in the game's `archive\pc\mod` as the project's name. Take it out with the game closed if you don't want the prop in your game.
 - Music and voice are your choice. Captions keep it watchable without sound.
 - On Nexus, add the video on the page's **Videos** tab: the description stays as the repo has it. If you embed it in the description instead, say so before the release, so the description is pulled first (`npm run nexus:pull`), or the release stops.
