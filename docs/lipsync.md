@@ -4,7 +4,7 @@ title: Made lip sync
 
 # Made lip sync: from a talking video (or a voice) to the game's lip sync clips
 
-**Status: research, with a proposal** ([the Lip Sync tab](#the-lip-sync-tab-a-proposal), 2026-11-17; where it goes in the build plan is the EDGEfab build session's call). Asked for by the owner on 2026-11-17: can a generated video of a person speaking a line be turned into the game's own lip sync clip, by one service built for it or by several steps put together? It decides where the long pole is for new voiced lines. Follows [NPC faces](faces.html). The game side was read from game 2.5 through the `redcode` server on 2026-11-17; the services from their own pages and reviews the same day (sources at the end). Nothing here was tried in the game. **Inferred** and **unverified** mark what was not checked.
+**Status: research, with a proposal** ([the Lip Sync tab](#the-lip-sync-tab-a-proposal), 2026-11-17; where it goes in the build plan is the EDGEfab build session's call). Asked for by the owner on 2026-11-17: can a generated video of a person speaking a line be turned into the game's own lip sync clip, by one service built for it or by several steps put together? It decides where the long pole is for new voiced lines. Follows [NPC faces](faces.html). The game side was read from game 2.5 through the `redcode` server on 2026-11-17; the services from their own pages and reviews the same day (sources at the end). Nothing here was tried in the game. **Reviewed by the EDGEfab build session on 2026-11-17** ([Review](#review-and-what-is-built), below), which checked the reading half against game 2.5 and built it on the `lipsync` branch. **Inferred** and **unverified** mark what was not checked.
 
 ## The short answer
 
@@ -213,6 +213,35 @@ Proposed steps; the build session decides where they go. Each ends in a test, as
 | EDGEdir | Nothing of EDGEdir: it calls `EDGEfabApi.lipsync` (reading a line's clip in FL1, `speakLine` in FL2) and places the result. Worth agreeing the request and result shapes with the EDGEdir session before FL2 | FL1, FL2 |
 
 The license boundary holds: ElevenLabs is reached through EDGEwave with the modder's key; Audio2Face, MediaPipe and video services are separate tools or services; WolvenKit only through REDbridge. Whether numbers fitted on the game's lines may ship with EDGEfab, or each modder fits on their own game, is the owner's question.
+
+## Review, and what is built
+
+Reviewed on 2026-11-17 by the EDGEfab build session, with REDbridge 0.14.0 (WolvenKit 10.0.0) on game 2.5. The proposal's shape stands: the owners of each part, a character and not a head, the pipeline as a service. What the checks change:
+
+| Finding | Checked how | What it changes |
+|---|---|---|
+| **FL1 See waits on nothing.** REDbridge 0.14.0 (2026-11-16, a day before this page, which cites 0.12.1) has `anims.info` (a set's clips, without decoding) and `options.animations` on `project.export` (one clip to glTF). One clip's tracks read in 0.24 s, a second read 0.11 s; a 9-clip set in 0.9 s | Run on `angelica_whelan.anims` | FL1 no longer needs "an `.anims` clip's tracks as data" from #14. Built (below). `anims.info` returning tracks would only save the glTF step |
+| **A character is a voice tag id.** The `.lipmap` holds ids, not names; the names are in `base\sound\localization\voicetaglist.voicetags` and Phantom Liberty's under `ep1` (`locVoiceTagListResource`: `id`, `voiceTag`). 806 characters have lip sync in English, all named; `v` has 487 sets, `johnny` 301. A scene can list a character twice, each with its own set (one of V's) | Read from both files and the map | "Pick a character" is a search over voice tags. [NPC faces](faces.html) inferred V is not in the map for its sample scene: V is in most |
+| **A line's words, voice file and length come from one call**, `loc.lines` by string id (3.5 s the first time, then 1 ms) | Run on Angie's 9 lines | No reading of voice maps or subtitles in EDGEfab |
+| **`LipsyncPoseOutput` is not only the mouth.** In "There you are." (1.63 s) 99 of 414 tracks move: 44 outputs, 30 overrides, 7 controls, 18 plain poses. The outputs are jaw 1, lips 14, tongue 2, **brows 6, eyes and blinks 12, throat and neck 9** | The tab's lanes | Step 7 ("brows, eyes, head: the character's own from the game by default") is wrong for the outputs: a made clip with mouth tracks alone has no brow raise and no blink where the game's clips have them. The sound model must make them (Lipsync Animator makes blinks), or FL2 says plainly it doesn't yet |
+| **Keys are sparse**, not one per frame: 1,581 keys on 99 tracks over 50 frames (about 16 a track) | The exported clip | The writer can write sparse keys; the fit should compare sampled curves, not keys |
+| **The write step is still closed.** `project.import` turns every GLB into a `.mesh` | REDbridge's source, 0.14.0 (not run) | FL2's last step and L1 wait on #14. Everything before it (voice, timings, the sound model, scoring against the game) does not |
+| **The fit needs timings for the game's own lines, and the page gives no local way to get them.** ElevenLabs' forced alignment would mean uploading the game's voice files, against "the game's files stay on the modder's PC" | Reading steps 4 and 6 together | **The owner's call before FL2:** a local aligner (heavy for a non-coder), numbers fitted once and shipped (the open question on shipping fitted numbers), or a fit that needs no alignment (the line's words spread over the voice's loud parts; weaker) |
+| A made line has no home before a project: `speakLine` requires `project` | Against the Desk norm (2026-11-02) | Proposed: takes wait on the Desk (`<name>.lipsync.asset`), as props do; `project` optional |
+| The Recommendation (audio through Audio2Face first) and the tab's course (words through timings and a sound model first) disagree | Reading | The course is the later decision; Audio2Face and video are FL5 |
+| English only, and one `.lipmap` per language | Reading | A made line has lip sync in the languages it is made for; say so in the tab |
+
+**Proposed order:** FL1 (built), then FL0's checks that are open today (ElevenLabs timings; the baseline), then FL2's model and scoring offline while #14's import is asked for, then the write.
+
+**Built on the `lipsync` branch, 2026-11-17 (FL1 See, first slice; not on main, not released):**
+
+| Part | Where |
+|---|---|
+| The reading: characters, a character's lines by scene, one clip as curves | Core `src/core/lipsync` (`lipsyncCharacters`, `lipsyncLines`, `lipsyncClip`); exported clips are kept under `%LOCALAPPDATA%\EDGEfab\cache\lipsync` |
+| **EDGEfab: Open Lip Sync** | The command asks for a character; the tab lists its lines by scene (12 scenes a page, a scene filter), and a line shows its words, the voice as a waveform (through REDcode's `sound()`), the clip as curves in lanes (jaw, lips, tongue, brows, eyes, throat, controls, head and eye direction, overrides), a playhead, the value under the pointer, the game's track names one click away, and a mouth sketch from the jaw and lip tracks |
+| For assistants | MCP `fab_lipsync_lines`, `fab_lipsync_line` |
+| Tested | The reading against the game and the MCP tools, automated; the page in a browser with a real clip ([Tests](testing.html)). **Not yet opened in VS Code; the voice not yet heard** |
+| Not built yet from FL1 | Opening from a scene's speaker or an `.anims`; the API for EDGEdir and EDGEquest; other languages in the tab (the core takes `language`) |
 
 ## Sources
 

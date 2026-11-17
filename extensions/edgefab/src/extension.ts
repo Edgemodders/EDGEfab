@@ -17,6 +17,7 @@ import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
+import { openLipSync } from "./lipsyncTab";
 
 declare const __VERSION__: string;
 
@@ -28,6 +29,8 @@ interface REDcodeApi {
   bridge(): unknown;
   project?(): { name: string; dir: string; archive: string } | undefined;
   packAndTry?(): Promise<"hot" | "installed" | undefined>;
+  /** A sound's audio in a form a webview decodes; a .wem game path comes back as Ogg Vorbis. */
+  sound?(ref: { path: string }): Promise<{ data: Uint8Array; mime: string }>;
 }
 
 /** REDcode's API, only when REDcode is already active (activating it here could race its own start). */
@@ -738,6 +741,22 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("edgefab.clearTripoKey", () => clearKey("tripo")),
     vscode.commands.registerCommand("edgefab.tripoPlan", askTripoPlan),
+    vscode.commands.registerCommand("edgefab.openLipSync", (character?: unknown) =>
+      openLipSync(
+        {
+          log,
+          // REDcode's REDbridge when REDcode runs, else one of our own that ends with the tab.
+          bridge: async () => {
+            const shared = redcode()?.bridge();
+            if (shared) return { call: callOf(shared) };
+            const own = await startBridge(log);
+            return { call: own.call, stop: () => own.client.stop() };
+          },
+          sound: typeof redcode()?.sound === "function" ? (gamePath) => redcode()!.sound!({ path: gamePath }) : undefined,
+        },
+        typeof character === "string" ? character : undefined,
+      ),
+    ),
     vscode.commands.registerCommand("edgefab.connectAssistant", () => connectAssistant(context, log)),
     vscode.commands.registerCommand("edgefab.showLog", () => output.show()),
     vscode.commands.registerCommand("edgefab.refresh", () => view.refresh()),

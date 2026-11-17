@@ -26,3 +26,7 @@ export {
   glowOff, glowWords, lightsMap, percent, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";
 export { drawViews, readPictures, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";
+export {
+  lineOfClip, lipsyncCacheDir, lipsyncCharacter, lipsyncCharacters, lipsyncClip, lipsyncLines, sampleTrack, trackGroups, voiceTags, DefaultLanguage, LipsyncError,
+  type LipsyncCharacter, type LipsyncClip, type LipsyncLine, type LipsyncLines, type LipsyncScene, type LipsyncTrack, type TrackGroup,
+} from "./lipsync";

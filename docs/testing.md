@@ -36,6 +36,7 @@ Last updated 2026-11-16. Each row links to its test. **Every test has passed for
 | [Check: Tripo text to model](#f0-check-tripo-text-to-model) | With a Tripo key | F0 | 2026-10-31 | Pass |
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
+| [Lip sync, reading the game (without VS Code)](#fl1-lip-sync-reading-the-game-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL1 (the `lipsync` branch) | 2026-11-17 | Pass. **The tab in VS Code and the voice: not run** |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
 
 ## F1: the extension in VS Code (the owner's pass)
@@ -727,6 +728,19 @@ Both meshes keep the game barrel's material, so the drums may draw wrongly: this
 6. Later, in EDGEbuilder: place each in a scene and bake it, then walk into each again.
 
 **Expected.** Each drum stands on the ground at its size. One or both stop V; the one that does is F1's collision (EDGEfab #2 asks for B). Its detail drops as V walks away.
+
+## FL1: lip sync, reading the game (without VS Code)
+
+For the Lip Sync tab's first slice ([Made lip sync](lipsync.html), "Review, and what is built"), on the `lipsync` branch. Needs the game (2.5) and REDbridge 0.14.0 or later. Not a test of a released build.
+
+1. `npm run build`, then `npm run lipsync --workspace extensions/edgefab`. It starts REDbridge, lists the characters, reads Angie's lines in `mq306_04b_angie_meeting`, reads the clip of "There you are." and V's first three scenes. **Expected:** every line `ok`, then `ok`.
+2. The MCP server: `fab_lipsync_lines` with `find: "jud"`, then with `character: "angelica_whelan", scene: "mq306_04b"`; `fab_lipsync_line` on its first line with `tracks: ["jaw_mid_openLipsyncPoseOutput"], every: 30`. **Expected:** judy; 9 lines, the first "There you are."; 99 moving tracks, the jaw with its keys and 49 samples.
+3. The page, in a browser: the tab's HTML with the clip from step 1 (`-- <outFolder>` writes `lines.json` and `clip.json`) sent to it as the extension would. **Expected:** the lines listed, the curves in lanes, the track table with Track names, the value under the pointer.
+4. **In VS Code (not run):** **EDGEfab: Open Lip Sync**, pick a character, pick a line. **Expected:** the voice as a waveform, Play plays it with the playhead over the curves, Change Character, Show More Scenes, the scene filter.
+
+| Run | Result |
+|---|---|
+| 2026-11-17, REDbridge 0.14.0, game 2.5 | Steps 1 to 3 **pass**. Step 1: 806 characters, all named (v 487, johnny 301, panam 84); lines in 2.6 s (the game's line index loads once), a clip in 0.24 s, again in 0.11 s; 99 of 414 tracks move (lipsync 44, override 30, control 7, pose 18). Found and fixed: a scene can list a character twice (V), so the lines missed a set the count had. Step 3: Play in the browser was not timed (a background tab). Step 4 not run |
 
 ## F5a check: a game animation through REDbridge
 
