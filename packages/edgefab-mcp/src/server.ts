@@ -70,7 +70,7 @@ server.registerTool(
     description:
       "Picture first, step 1 of making a prop from words (the extension's Generate from Words): OpenAI's GPT Image draws the object from four sides (front, left, back, right) as one 2 by 2 picture, " +
       "with the modder's own OpenAI key from OPENAI_API_KEY in this server's environment. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG). " +
-      "To change a picture (the extension's Pictures tab, Change This Picture): pass prop and from (a take number) with words saying only what to change, such as 'make the cabinet red and the glow blue': " +
+      "To change a picture (the extension's Pictures tab, Edit Picture): pass prop and from (a take number) with words saying only what to change, such as 'make the cabinet red and the glow blue': " +
       "that picture goes to GPT Image with the words and comes back changed only as they say. To draw afresh into the same item, pass prop without from, with words describing the whole object. Every take is kept (fab_desk lists them). " +
       "When they like one, fab_make with from 'picture' (and take, default the last) makes the 3D model from its four views with Tripo, which follows each side closely. " +
       "Returns the Desk item, the picture files, and what Make 3D would cost.",

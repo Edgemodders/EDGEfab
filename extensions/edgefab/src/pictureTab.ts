@@ -285,8 +285,8 @@ class PictureTab {
     <label for="prompt">Change this picture</label>
     <textarea id="prompt" placeholder="What to change, such as: make the cabinet red and the glow blue"></textarea>
     <div class="actions">
-      <button id="change" title="Sends this picture to GPT Image with your words: it changes what they say and keeps the rest. (Ctrl+Enter)">Change This Picture</button>
-      <button id="draw" class="secondary" title="Draws a new picture from these words alone, as a full description of the object, not from this picture.">Draw New from Words</button>
+      <button id="change" title="Sends this picture to GPT Image with your words: it changes what they say and keeps the rest. (Ctrl+Enter)">Edit Picture</button>
+      <button id="draw" class="secondary" title="Draws a new picture from these words alone, as a full description of the object, not from this picture.">Draw Picture</button>
     </div>
     <div class="hint">Each new picture costs a few cents of your OpenAI credit and takes about 30 seconds to a minute. Every picture is kept here.</div>
     <div class="status" id="status" role="status" aria-live="polite"></div>
