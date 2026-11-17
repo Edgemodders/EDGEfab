@@ -336,7 +336,7 @@ class PictureTab {
         chip.title = "The 3D model on the Desk is made from this picture";
         name.append(chip);
       }
-      text.append(name, el("div", "d", when(x.date) + (x.from !== undefined ? " \\u00b7 from " + x.from : "")), el("div", "w", x.words));
+      text.append(name, el("div", "d", when(x.date) + (x.from !== undefined ? " \\u00b7 from Picture " + x.from : "")), el("div", "w", x.words));
       card.title = x.words;
       card.append(img, text);
       card.onclick = () => { viewed = x.take; render(); };
