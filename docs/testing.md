@@ -12,11 +12,11 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pictures tab (added 2026-11-17 at the owner's ask) has passed offline, and its VS Code steps are the owner's. Then the three release tests (the smoke test, the core package, the keys test's package check) run again on the final build.
+Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pictures tab (added 2026-11-17 at the owner's ask) has passed offline and the owner's VS Code steps 1 to 10; step 11 (the tab comes back after a reload, added during that run) is still to run. Then the three release tests (the smoke test, the core package, the keys test's package check) run again on the final build.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
-| [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B **not run** |
+| [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B steps 1 to 10 **pass**, step 11 **not run** |
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
@@ -269,6 +269,20 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 ### Run 1, 2026-11-17: part A passed
 
 By Claude on the worktree build (`picture-tab`, from main `46025be`): 23 checks, `all passed`. The tab's page was also rendered in Chrome with a stand-in for VS Code, using the Desk's vending machine pictures read without changing them. That check found and fixed three things: the history sat far from the picture on a wide window, a hovered history card turned yellow with unreadable text, and the picture pushed the box below the fold. Clicking a card shows that picture; Ctrl+Enter sends the change from the picture viewed; the busy state shows the spinner and Cancel. Part B: not run.
+
+### Run 2, 2026-11-17: part B, steps 1 to 10 passed
+
+By the owner in an Extension Development Host on main (builds `19be535` to `55f3ccf`, changed as the run went), beside a second VS Code window with the installed 0.1.0. The owner's word: all ten steps worked as written or as worked around. Part A ran again on `55f3ccf`: `all passed`.
+
+| Step | Result |
+|---|---|
+| 7 | Passed on the fourth try. The MCP server had no OpenAI key, then VS Code's old environment, then a key OpenAI refused; with a good key and VS Code restarted, picture 5 came from picture 2 with a cracked glass front and the tab showed it |
+| 8 | Passed. The "3D" on picture 2's history card was plain text and missed at first: now a chip |
+| 9 | Failed twice (EPERM), then passed. The item's 3D view was open in the other VS Code window, which holds the folder; EDGEfab closes only its own window's tabs. Passed once that tab was closed |
+
+Changed during the run, at the owner's ask: the buttons read **Generate 3D Model**, **Edit Picture** and **Draw Picture** (tooltips kept); a history card shows "from Picture N" and "3D" as yellow outlined chips at its right; the history column widens with the window; the tab comes back after the window reloads (step 11); a failed rename names another window's 3D view and puts the closed tabs back. Asked of REDcode (#29): a tab title for the 3D view, which reads `view.glb`.
+
+**Still to run:** step 11, and a look at the last changes in VS Code (the tab restored after a reload, the failed rename's new message and reopened tabs). Open with the owner: whether a rename should close the item's tabs in every window.
 
 ## F1 check: game materials on a prop's parts
 
