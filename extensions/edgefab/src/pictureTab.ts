@@ -243,7 +243,8 @@ class PictureTab {
   button.card:hover:not(:disabled) { border-color: var(--muted); background: var(--vscode-list-hoverBackground, var(--vscode-sideBar-background, transparent)); }
   .card[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
   .card img { width: 84px; height: 84px; object-fit: contain; background: #fff; }
-  .card .t { font-weight: 600; }
+  .card .t { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card .t .badge { font-weight: 600; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); border-color: transparent; }
   .card .d { color: var(--muted); font-size: .88em; }
   .card .w { font-size: .92em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
   .empty { color: var(--muted); }
@@ -329,7 +330,13 @@ class PictureTab {
       img.src = x.front;
       img.alt = "";
       const text = el("div");
-      text.append(el("div", "t", "Picture " + x.take + (state.made === x.take ? "  \\u00b7 3D" : "")), el("div", "d", when(x.date) + (x.from !== undefined ? " \\u00b7 from " + x.from : "")), el("div", "w", x.words));
+      const name = el("div", "t", "Picture " + x.take);
+      if (state.made === x.take) {
+        const chip = el("span", "badge", "3D");
+        chip.title = "The 3D model on the Desk is made from this picture";
+        name.append(chip);
+      }
+      text.append(name, el("div", "d", when(x.date) + (x.from !== undefined ? " \\u00b7 from " + x.from : "")), el("div", "w", x.words));
       card.title = x.words;
       card.append(img, text);
       card.onclick = () => { viewed = x.take; render(); };
