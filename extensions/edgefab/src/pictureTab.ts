@@ -244,7 +244,7 @@ class PictureTab {
   .card[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
   .card img { width: 84px; height: 84px; object-fit: contain; background: #fff; }
   .card .t { font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .card .t .badge { font-weight: 600; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); border-color: transparent; }
+  .card .t .badge { margin-left: auto; font-weight: 600; background: transparent; color: var(--vscode-charts-yellow, var(--vscode-terminal-ansiYellow)); border-color: currentColor; }
   .card .d { color: var(--muted); font-size: .88em; }
   .card .w { font-size: .92em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
   .empty { color: var(--muted); }
