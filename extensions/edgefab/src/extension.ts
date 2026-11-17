@@ -825,9 +825,11 @@ export function activate(context: vscode.ExtensionContext): void {
         validateInput: (v) => (v.trim() ? null : "A name, please."),
       }))?.trim();
       if (!title || title === entry.title) return;
+      let picturesOpen = false;
+      let wasOpen = false;
       try {
-        const picturesOpen = closePicturesUnder(entry.folder);
-        const wasOpen = await releaseFolder(entry.folder);
+        picturesOpen = closePicturesUnder(entry.folder);
+        wasOpen = await releaseFolder(entry.folder);
         const r = await renameItem(entry.folder, title, { version });
         log(`Renamed ${entry.title} to ${title}${r.renamed ? `: ${path.basename(r.folder)}` : ""}`);
         view.refresh();
@@ -837,6 +839,11 @@ export function activate(context: vscode.ExtensionContext): void {
       } catch (e) {
         log(`Rename failed: ${message(e)}`);
         void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+        // Put back what was closed for the move, on the item as it still is.
+        if (fs.existsSync(entry.folder)) {
+          if (picturesOpen) showPictures(entry.folder, view);
+          if (wasOpen && entry.model) void openIn3D(entry.model, entry.preview);
+        }
       }
     }),
     vscode.commands.registerCommand("edgefab.delete", async (item: unknown) => {

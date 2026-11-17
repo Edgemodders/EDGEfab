@@ -67,7 +67,7 @@ export async function renameFolder(from: string, to: string, waits = [50, 100, 2
     } catch (e) {
       const code = (e as NodeJS.ErrnoException).code;
       if (code !== "EPERM" && code !== "EACCES" && code !== "EBUSY") throw e;
-      if (i >= waits.length) throw new Error(`Could not move ${from} to ${to}: something has a file in it open, such as an antivirus or the search indexer. Try again in a moment. (${code})`);
+      if (i >= waits.length) throw new Error(`Could not move ${from} to ${to}: something has it open. If its 3D view or a file of it is open in another VS Code window, close it there and try again; an antivirus or the search indexer lets go in a moment. (${code})`);
       await new Promise((resolve) => setTimeout(resolve, waits[i]));
     }
   }
