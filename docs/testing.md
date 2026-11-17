@@ -290,7 +290,7 @@ Found on the way: the game's layered `.mi` files embed their setup. A copy point
 
 **In the game (the owner):**
 
-1. Install `Projects\EDGEfab_PartMaterials	ests\edgefab_partmaterials_test.archive` (copy it to the game's `archive\pc\mod`, or add it with EDGEdeck), then start the game.
+1. Install `Projects\EDGEfab_PartMaterials\tests\edgefab_partmaterials_test.archive` (copy it to the game's `archive\pc\mod`, or add it with EDGEdeck), then start the game.
 2. By day, place `edgefab_partmaterials\props\vending_parts\vending_parts.ent` with EDGEbuilder. Expected: the cabinet is glossy red metallic paint, evenly, with no stretched or smeared patches. Note any seams where the paint's grain jumps.
 3. Walk round it. Expected: the back glows blue all over; the drinks are see-through glass; the front, details and the rest look as before.
 4. By night. Expected: the blue back glows clearly; the red still reads as red.
