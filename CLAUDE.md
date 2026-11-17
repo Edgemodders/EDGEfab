@@ -64,6 +64,7 @@ Requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled 
 | EDGEquest | #6 | The animation index is EDGEfab's, its picker uses it; the scenes' side (which animations each scene plays, by which actor) from EDGEquest | Open, filed 2026-11-04 from EDGEfab. **The index moved to EDGEdir on 2026-11-16** (EDGEfab #7): EDGEquest's picker uses EDGEdir's; said on #6 |
 | REDcode | #21 | Play a game animation on its rig in the viewer, `openAnimation` (filed by EDGEquest, needed by F5a) | Open, filed 2026-11-03 from EDGEquest |
 | REDnode | #39 | Play an animation or a workspot on a spawned character (filed by EDGEquest, needed by F7b-1) | Open, filed 2026-11-03 from EDGEquest |
+| REDcode | #29 | The 3D view opened with a tab title (`openModel(file, { title })`), so a prop's tab says its name, not `view.glb`; a way to close it before the folder moves | Open, filed 2026-11-17 from EDGEfab at the owner's ask. Unverified: whether a custom editor can set its tab title. EDGEfab keeps `view.glb` until then |
 
 ## Conventions
 
