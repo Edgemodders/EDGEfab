@@ -12,20 +12,20 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pictures tab (added 2026-11-17 at the owner's ask) has passed offline and the owner's VS Code steps 1 to 10; step 11 (the tab comes back after a reload, added during that run) is still to run. Then the three release tests (the smoke test, the core package, the keys test's package check) run again on the final build.
+Last updated 2026-11-17. Each row links to its test. **Nothing open for 0.1.0:** the Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on the final build, main `2f04616`, on 2026-11-17. Two late changes are built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
-| [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B steps 1 to 10 **pass**, step 11 **not run** |
+| [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | **Pass**: part A (23 checks) and part B (11 steps, the owner) |
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
-| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
+| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated | F1 | 2026-11-13 | Pass, after a fix |
-| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
-| [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-16 | **Pass**; step 1 on the final build for 0.1.0. Step 1 reruns before each release |
+| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
+| [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-17 | **Pass**; step 1 on the final build for 0.1.0. Step 1 reruns before each release |
 | [Picture first and parts (without the game)](#f1-picture-first-and-parts-without-the-game) | Automated, with OpenAI and Tripo keys | F1 | 2026-11-10 | Pass, after a fix |
 | [The glow on a Desk item (without the game)](#f1-the-glow-on-a-desk-item-without-the-game) | Automated | F1 | 2026-11-05 | Pass |
 | [Check: An added prop in the game](#f1-check-an-added-prop-in-the-game) | In the game | F1 | 2026-11-09 | Pass: both collisions solid, the facing right, glow strength 3 |
@@ -270,7 +270,7 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 
 By Claude on the worktree build (`picture-tab`, from main `46025be`): 23 checks, `all passed`. The tab's page was also rendered in Chrome with a stand-in for VS Code, using the Desk's vending machine pictures read without changing them. That check found and fixed three things: the history sat far from the picture on a wide window, a hovered history card turned yellow with unreadable text, and the picture pushed the box below the fold. Clicking a card shows that picture; Ctrl+Enter sends the change from the picture viewed; the busy state shows the spinner and Cancel. Part B: not run.
 
-### Run 2, 2026-11-17: part B, steps 1 to 10 passed
+### Run 2, 2026-11-17: part B passed
 
 By the owner in an Extension Development Host on main (builds `19be535` to `55f3ccf`, changed as the run went), beside a second VS Code window with the installed 0.1.0. The owner's word: all ten steps worked as written or as worked around. Part A ran again on `55f3ccf`: `all passed`.
 
@@ -282,7 +282,7 @@ By the owner in an Extension Development Host on main (builds `19be535` to `55f3
 
 Changed during the run, at the owner's ask: the buttons read **Generate 3D Model**, **Edit Picture** and **Draw Picture** (tooltips kept); a history card shows "from Picture N" and "3D" as yellow outlined chips at its right; the history column widens with the window; the tab comes back after the window reloads (step 11); a failed rename names another window's 3D view and puts the closed tabs back. Asked of REDcode (#29): a tab title for the 3D view, which reads `view.glb`.
 
-**Still to run:** step 11, and a look at the last changes in VS Code (the tab restored after a reload, the failed rename's new message and reopened tabs). Open with the owner: whether a rename should close the item's tabs in every window.
+Step 11 (the tab comes back after the window reloads, on the same picture) passed the same day, by the owner. **Not seen in VS Code:** the failed rename's new message and its reopened tabs (they show only when the item's 3D view is open in a second window). Open with the owner: whether a rename should close the item's tabs in every window.
 
 ## F1 check: game materials on a prop's parts
 
@@ -367,6 +367,10 @@ After the levels were made to keep to the texture's charts (the owner's pass, Ru
 ### Run 8, 2026-11-16: passed (step 1), the final build for 0.1.0
 
 After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the build released as 0.1.0. Step 1 on the picture-first vending machine (in parts) and the drum in parts: `ok` both. The vending machine: 70 pieces into 6 parts (front, body, back, middle, base, details), back faces on 5, the quarter turn, the size-unknown note. The drum: 10 parts named by place, back faces on all 10. Steps 2 and 3 are covered by the core package's Run 2 the same day.
+
+### Run 9, 2026-11-17: passed (step 1), the final build for 0.1.0
+
+After the Pictures tab and its changes, on main `2f04616`. Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
 ## F1: Add to Project (without the game)
 
@@ -485,6 +489,17 @@ First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** 
 | 2 | 4 packages: edgefab-core 0.1.0, edgemat-core 0.3.2, pngjs, vscode-jsonrpc |
 | 3 | Types pass with `--strict` and no `skipLibCheck`; bundled again with esbuild and no plugins: 1.5 MB |
 | 4 | `core_test_drum` from the drum in parts: 30 submeshes (10 parts, 3 levels), 1.00 m, set to 1.75 m; added as `coretest\props\core_test_drum\core_test_drum.ent`, physical, 54 files (10 materials with their textures). Unbundled: 83 exports, all of #5's |
+
+### Run 3, 2026-11-17: passed, the final build for 0.1.0
+
+On main `2f04616`, after the Pictures tab.
+
+| Step | Result |
+|---|---|
+| 1 | 20 files, 769 kB packed (`index.cjs` 1.0 MB, its map, 14 type files, the notices, README, LICENSE). One dependency, `@edgemodders/edgemat-core` `~0.3.2` |
+| 2 | Installed in an empty folder; EDGEmat's core came from npm |
+| 3 | `tsc --noEmit --strict` without `skipLibCheck`: no errors. One esbuild bundle, no plugins |
+| 4 | A scratch Desk item from the vending machine's GLB, levels of detail 1, 2 and 4, 1.75 m after `setSize`; `addToProject` wrote the mesh, 6 materials and the `.ent` (physical collision) into a scratch project. The unbundled `require` works |
 
 ## F1 check: an added prop in the game
 
@@ -651,6 +666,10 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 ### Run 4, 2026-11-16: step 1 passed, the final build for 0.1.0
 
 `edgefab-0.1.0.vsix`, 11 files (the extension, its MCP server, icons, license, notices, readme, changelog): **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
+
+### Run 5, 2026-11-17: step 1 passed, the final build for 0.1.0
+
+On main `2f04616`, after the Pictures tab: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
