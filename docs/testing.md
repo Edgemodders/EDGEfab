@@ -238,7 +238,7 @@ The 806,489-byte build; EDGEbuilder 0.9.2, REDnode 0.63.1, REDbridge 0.12.1, gam
 
 ## F1: the Pictures tab
 
-Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, the picture opens in EDGEfab's own **Pictures** tab, not a PNG tab. It shows the picture being viewed, large, and a history of every picture of that item with the words that made it and when. Any picture can be changed by new words (GPT Image's edit: that picture is sent with the words, and the rest is kept), and **Make 3D from This Picture** uses the picture being viewed. MCP: `fab_picture` takes `from` (the picture to change), `fab_make` takes `take`.
+Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, the picture opens in EDGEfab's own **Pictures** tab, not a PNG tab. It shows the picture being viewed, large, and a history of every picture of that item with the words that made it and when. Any picture can be changed by new words (GPT Image's edit: that picture is sent with the words, and the rest is kept), and **Generate 3D Model** uses the picture being viewed. MCP: `fab_picture` takes `from` (the picture to change), `fab_make` takes `take`.
 
 **Part A, offline (Claude):** after `npm run build`, run `node scripts/pictures-check.mjs` in `extensions/edgefab`. Stand-ins answer for OpenAI and Tripo, so no key or credit is used, in a scratch Desk. Expected: `all passed`. It checks:
 
@@ -261,7 +261,7 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 5. Start a change, then **Cancel**. Expected: the spinner stops, no new picture appears, and no error shows.
 6. Close the tab, then click the item on the Desk. Expected: the tab opens again with all four pictures. Right-click the item, **Change the Picture...**: the tab opens with the cursor in the box.
 7. Needs `OPENAI_API_KEY` in the MCP server's environment (a Windows user environment variable, then VS Code restarted): the key set in EDGEfab stays in VS Code's secret storage, and the server reads its environment only (EDGEfab #4). Without it, Claude says the server has no OpenAI key and nothing is spent. With the tab open, ask Claude Code: "change picture 2 of the vending machine on EDGEfab's Desk to have a cracked screen". Expected: it calls `fab_picture` with `from: 2`, and picture 5 appears in the open tab without reopening it.
-8. Click picture 2, **Make 3D from This Picture**. Expected: the detail, height and cost are asked as before, and Tripo makes it. The Desk item becomes a model. In the tab, picture 2 says "The 3D model on the Desk is made from this", and its history card says "3D".
+8. Click picture 2, **Generate 3D Model**. Expected: the detail, height and cost are asked as before, and Tripo makes it. The Desk item becomes a model. In the tab, picture 2 says "The 3D model on the Desk is made from this", and its history card says "3D".
 9. With the tab open, rename the item on the Desk. Expected: the tab closes and opens again on the renamed item, with every picture.
 10. Make a picture-only item, open its tab, and delete the item from the Desk. Expected: the tab closes and the folder goes.
 

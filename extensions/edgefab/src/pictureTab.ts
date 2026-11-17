@@ -254,7 +254,7 @@ class PictureTab {
 <header>
   <h1 id="title">Pictures</h1>
   <span class="spacer"></span>
-  <button id="make3d" title="Tripo makes the 3D model from this picture's four views. You pick the detail and see the cost before anything is paid.">Make 3D from This Picture</button>
+  <button id="make3d" title="Tripo makes the 3D model from this picture's four views. You pick the detail and see the cost before anything is paid.">Generate 3D Model</button>
 </header>
 <div class="layout">
   <main class="viewer">

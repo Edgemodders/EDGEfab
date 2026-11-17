@@ -4,7 +4,7 @@ The EDGE asset maker for Cyberpunk 2077. **0.1.0, a preview: it makes props.** C
 
 Turn a textured 3D model into a prop the game can use: one of your own (GLB), or one made from your words with your own OpenAI and Tripo keys.
 
-- **Import a GLB...**, or **Generate from Words...** in the EDGEfab view: OpenAI's GPT Image draws it from four sides and the picture opens in its **Pictures** tab. Change it by words as often as you like ("make the cabinet red and the glow blue"), going back to any earlier picture, then **Make 3D from This Picture**: Tripo makes it 3D, in named parts. **Make a Prop** on a `.glb` in the Explorer does the same as Import.
+- **Import a GLB...**, or **Generate from Words...** in the EDGEfab view: OpenAI's GPT Image draws it from four sides and the picture opens in its **Pictures** tab. Change it by words as often as you like ("make the cabinet red and the glow blue"), going back to any earlier picture, then **Generate 3D Model**: Tripo makes it 3D, in named parts. **Make a Prop** on a `.glb` in the Explorer does the same as Import.
 - EDGEfab gets the model ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits on your **Desk** until you use it.
 - **Add to Project** puts it in your REDcode project with collision and its materials, ready to place with EDGEbuilder or spawn.
 - **Add to Library** keeps it in the EDGE Library, the folder every EDGE tool shares, ready for any project. **Refresh Project from Library** brings newer versions in.
