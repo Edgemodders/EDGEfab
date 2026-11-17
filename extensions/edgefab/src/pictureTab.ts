@@ -244,7 +244,9 @@ class PictureTab {
   .card[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
   .card img { width: 84px; height: 84px; object-fit: contain; background: #fff; }
   .card .t { font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .card .t .badge { margin-left: auto; font-weight: 600; background: transparent; color: var(--vscode-charts-yellow, var(--vscode-terminal-ansiYellow)); border-color: currentColor; }
+  .card .t { flex-wrap: wrap; }
+  .card .chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .card .t .badge { white-space: nowrap; font-weight: 600; background: transparent; color: var(--vscode-charts-yellow, var(--vscode-terminal-ansiYellow)); border-color: currentColor; }
   .card .d { color: var(--muted); font-size: .88em; }
   .card .w { font-size: .92em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }
   .empty { color: var(--muted); }
@@ -331,12 +333,19 @@ class PictureTab {
       img.alt = "";
       const text = el("div");
       const name = el("div", "t", "Picture " + x.take);
+      const chips = el("span", "chips");
+      if (x.from !== undefined) {
+        const chip = el("span", "badge", "from Picture " + x.from);
+        chip.title = "Picture " + x.from + ", changed by these words";
+        chips.append(chip);
+      }
       if (state.made === x.take) {
         const chip = el("span", "badge", "3D");
         chip.title = "The 3D model on the Desk is made from this picture";
-        name.append(chip);
+        chips.append(chip);
       }
-      text.append(name, el("div", "d", when(x.date) + (x.from !== undefined ? " \\u00b7 from Picture " + x.from : "")), el("div", "w", x.words));
+      if (chips.childNodes.length) name.append(chips);
+      text.append(name, el("div", "d", when(x.date)), el("div", "w", x.words));
       card.title = x.words;
       card.append(img, text);
       card.onclick = () => { viewed = x.take; render(); };
