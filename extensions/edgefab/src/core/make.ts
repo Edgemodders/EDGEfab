@@ -263,9 +263,57 @@ const jsonFiles = (dir: string): string[] =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? jsonFiles(path.join(dir, e.name)) : e.name.endsWith(".json") ? [path.join(dir, e.name)] : []));
 
 /**
- * Rename: a Desk item's name, and its folder's to match (`<slug>.prop.asset`, `_2` when taken). The paths its
- * records keep (prepared.json, the pictures') follow. Its id stays, so the Library still knows it; a project
- * it was added to keeps the old name until Add to Project again.
+ * The files inside an item take its name: the game's model (`<name>.glb`), its textures (`<name>_<part>_<slot>`),
+ * and its materials' names, in both models and in prepared.json. Without this a renamed prop goes into a project
+ * as `<new>.mesh` with materials still named after the old one (the owner, 2026-11-17). What the files are named
+ * now is read from the model's own file, so an item renamed before this existed is put right too.
+ */
+async function renameInside(raw: string, name: string): Promise<void> {
+  const prepared = readPrepared(raw);
+  if (!prepared) return; // Only pictures so far.
+  const was = path.basename(prepared.glb, ".glb");
+  if (was === name) return;
+  const renamed = (s: string) => (s === was ? name : s.startsWith(`${was}_`) ? name + s.slice(was.length) : s);
+  const files = new Map<string, string>();
+  for (const e of fs.readdirSync(raw, { withFileTypes: true })) {
+    if (!e.isFile()) continue;
+    const ext = path.extname(e.name);
+    const stem = e.name.slice(0, e.name.length - ext.length);
+    if (e.name === `${was}.glb` || stem.startsWith(`${was}_`)) files.set(e.name, renamed(stem) + ext);
+  }
+  for (const to of files.values()) if (fs.existsSync(path.join(raw, to))) throw new Error(`Can't rename: ${path.join(raw, to)} is already there.`);
+  // The materials' names inside both models, then the files, then the record.
+  const io = new NodeIO().setLogger(quiet).registerExtensions(ALL_EXTENSIONS);
+  for (const file of [prepared.glb, prepared.view].filter((f): f is string => !!f && fs.existsSync(f))) {
+    const doc = await io.read(file);
+    for (const m of doc.getRoot().listMaterials()) m.setName(renamed(m.getName()));
+    for (const t of doc.getRoot().listTextures()) t.setName(renamed(t.getName()));
+    await io.write(file, doc);
+  }
+  for (const [from, to] of files) fs.renameSync(path.join(raw, from), path.join(raw, to));
+  // win32: both kinds of slash, whatever made the record.
+  const base = (v: string) => path.win32.basename(v);
+  const fix = (v: unknown, key?: string): unknown => {
+    if (typeof v === "string") {
+      if (key === "material" || key === "materials") return renamed(v);
+      if (base(v) === v) return v;
+      // A file of the item: under its new name, and in the item itself (a copied item's record still says where it was made).
+      const here = path.join(raw, files.get(base(v)) ?? base(v));
+      return fs.existsSync(here) ? here : v;
+    }
+    if (Array.isArray(v)) return v.map((x) => fix(x, key));
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x, k)]));
+    return v;
+  };
+  const preparedFile = path.join(raw, "prepared.json");
+  fs.writeFileSync(preparedFile, JSON.stringify(fix(JSON.parse(fs.readFileSync(preparedFile, "utf8"))), null, 2));
+}
+
+/**
+ * Rename: a Desk item's name, its folder's to match (`<slug>.prop.asset`, `_2` when taken), and the files inside
+ * (the model, its textures, its materials' names). The paths its records keep (prepared.json, the pictures')
+ * follow. Its id stays, so the Library still knows it; a project it was added to keeps the old name until Add to
+ * Project again.
  */
 export async function renameItem(folder: string, title: string, opts: { version: string }): Promise<{ folder: string; name: string; renamed: boolean }> {
   title = title.trim();
@@ -294,6 +342,7 @@ export async function renameItem(folder: string, title: string, opts: { version:
       }
     }
   }
+  await renameInside(path.join(target, "source", "raw", name), name);
   const asset = JSON.parse(fs.readFileSync(path.join(target, "asset.json"), "utf8")) as AssetRecord;
   const was = asset.name;
   asset.name = title;

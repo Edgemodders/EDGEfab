@@ -23,7 +23,7 @@ Last updated 2026-11-17. Each row links to its test. **Nothing open for 0.1.0:**
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
-| [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated | F1 | 2026-11-13 | Pass, after a fix |
+| [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated, with REDbridge for `--add` | F1 | 2026-11-17 | **Pass**: the files inside take the name too |
 | [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-17 | **Pass**; step 1 on the final build for 0.1.0. Step 1 reruns before each release |
 | [Picture first and parts (without the game)](#f1-picture-first-and-parts-without-the-game) | Automated, with OpenAI and Tripo keys | F1 | 2026-11-10 | Pass, after a fix |
@@ -458,6 +458,14 @@ A Desk prop renamed, then changed (Set Size), as a copy of another item: a copie
 ### Run 1, 2026-11-13: passed after a fix
 
 First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** `vending_e2e.glb` and `view.glb` (1.8 to 1.9 m): `setSize` followed `prepared.json`'s absolute paths, which a copy keeps, and `fab_desk` reported them too. Scaled back the same day (both 1.8 m again, the record unchanged). **Fixed:** `readPrepared` and `readPictures` find an item's files in the item itself, as Add to Project and the glow already did; Set Size, the Desk and Library views and `fab_desk` use them. Second run: as expected, the real Desk's files unchanged (checksums). **Not run:** Rename in VS Code (the owner's pass).
+
+**Since 2026-11-17, Rename goes all the way in** (the owner, after the Pictures tab's run: a renamed prop kept its old name on the model, the textures and the materials, so Add to Project would have written `<new>.mesh` with materials named after the old one). The check is a script in the repo: after `npm run build`, in `extensions/edgefab`, `node scripts/rename-check.mjs "<a Desk item's folder>" [--add]`. It copies the item into a scratch Desk, renames the copy to "Corner Shop Machine", retitles it "Corner Shop Machine!", sets its size to 1.9 m, and renames it "Neon Box". With `--add` (needs the game, for REDbridge) the renamed prop goes into a scratch project.
+
+**Expected:** `all passed`. After each rename: the folder, `<name>.glb`, every texture file and every material (in prepared.json and inside both models) carry the new name; no file keeps the old one; every file the record names is in the item; both models keep their triangles; the pictures are all there. A new title with the same file name moves nothing. With `--add`: the mesh, the entity and every material in the project are named after the new name, and no project file keeps an old one. The item it was copied from is unchanged (checksums).
+
+### Run 2, 2026-11-17: passed
+
+On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 materials, glow, 1 picture): 29 checks, `all passed`. On Red Vending, renamed the old way in the Pictures tab's run (its files still named `a_battered_cyberpunk_vending_machine_wit_2`, 10 materials, 5 pictures), with `--add`: `all passed`, so an item renamed before this is put right by its next rename. The Pictures tab's offline check ran again: `all passed`. First try of the check found one more thing, fixed: a copied item's record still named the folder it was made in; the rename now writes the item's own paths. **Not run:** Rename in VS Code on this build.
 
 ## F1: the core package (EDGEfab #5)
 

@@ -436,7 +436,7 @@ server.registerTool(
   "fab_rename",
   {
     description:
-      "Rename: a prop on EDGEfab's Desk gets a new name, and its folder and files take it too (lowercase, no spaces; _2 when taken). It keeps its id, so the Library still knows it. " +
+      "Rename: a prop on EDGEfab's Desk gets a new name, and its folder, model, textures and materials take it too (lowercase, no spaces; _2 when taken), so Add to Project names every game file after it. It keeps its id, so the Library still knows it. " +
       "A project it was added to keeps the old name until fab_add again.",
     inputSchema: {
       prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
