@@ -299,7 +299,7 @@ Found on the way: the game's layered `.mi` files embed their setup. A copy point
 
 ### Run 1, 2026-11-17: passed (the owner, in the game)
 
-The archive copied into the game's `archivepcmod` by Claude with the game closed; the owner restarted, found `vending_parts.ent` in EDGEbuilder's Mods tab and placed it. **Steps 1 to 5 passed:** "Everything looked proper in the game for each test": the red car paint on the cabinet, the blue glow on the back, the glass drinks, by day and night, at every level of detail. No Test timer (see the top of this page). Step 6, whether 0.1.0 waits for it, is the owner's call. A game surface and game `.mi` files work on a generated prop's parts; the buttons are EDGEmat #12.
+The archive copied into the game's `archive\pc\mod` by Claude with the game closed; the owner restarted, found `vending_parts.ent` in EDGEbuilder's Mods tab and placed it. **Steps 1 to 5 passed:** "Everything looked proper in the game for each test": the red car paint on the cabinet, the blue glow on the back, the glass drinks, by day and night, at every level of detail. No Test timer (see the top of this page). Step 6, whether 0.1.0 waits for it, is the owner's call. A game surface and game `.mi` files work on a generated prop's parts; the buttons are EDGEmat #12.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
