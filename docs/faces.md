@@ -4,7 +4,7 @@ title: NPC faces
 
 # NPC faces: expressions and lip sync
 
-**Status: research.** Asked for by the owner on 2026-11-17, for EDGEfab's animation work and for the tools that use faces: EDGEquest (playing conversations) and EDGEdir (directing NPCs on a timeline). Read from the game's files (2.31 with Phantom Liberty) through the `redcode` server on 2026-11-17. The running game was not used (the `rednode` server was not connected), so nothing here was watched in the game. Facts read from files are stated plainly; what is inferred from them is marked **inferred**, and what was not checked is marked **unverified**.
+**Status: research.** Asked for by the owner on 2026-11-17, for EDGEfab's animation work and for the tools that use faces: EDGEquest (playing conversations) and EDGEdir (directing NPCs on a timeline). Read from the game's files (2.5 with Phantom Liberty; `Cyberpunk2077.exe` product version 2.5, file version 3.0.5813403; 57 archives, 592,071 files) through the `redcode` server (REDbridge 0.12.1, WolvenKit 10.0.0) on 2026-11-17. The running game was not used (the `rednode` server was not connected), so nothing here was watched in the game. Facts read from files are stated plainly; what is inferred from them is marked **inferred**, and what was not checked is marked **unverified**.
 
 ## The short answer
 
