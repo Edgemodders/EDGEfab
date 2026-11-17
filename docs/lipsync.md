@@ -145,6 +145,47 @@ A 3D face in the tab needs the head's `.facialsetup` decoded (its poses are bina
 
 So the modder types, listens and approves. Everything else can run by itself. A shortcut to keep in view: Azure's speech returns 55 face blend shapes at 60 fps with its audio, but only in Azure's own voices; it could drive the mouth while ElevenLabs drives the sound, with the two time-matched. An option, not the plan.
 
+### Lip sync as a service for other tools
+
+Asked by the owner on 2026-11-17: another tool must be able to run the whole pipeline. EDGEdir's example: on its timeline the modder asks a character to say a line; under the hood EDGEdir hands the words to EDGEfab and gets back a voiced line with its clip, which it places on its lanes. The tab is then one caller of the pipeline among others, not the only way in. Proposed shape, following [Tools working together](tools-together.html):
+
+| Caller | Calls | Rule |
+|---|---|---|
+| Another extension in VS Code (EDGEdir, EDGEquest) | `EDGEfabApi.lipsync`, from EDGEfab's `activate()` | Rule 2: an API with `apiVersion`; callers copy the interface and check each member with `typeof` |
+| Another tool's core or MCP server (EDGEdir's, or a REDnode package) | `speakLine(bridge, voice, request)` in `@edgemodders/edgefab-core` (already a package, EDGEfab #5) | Rule 1; rule 4: the caller passes its REDbridge in |
+| An assistant (Claude Code, EDGEchat, EDGEfab's agent) | MCP `fab_lipsync_speak`, `fab_lipsync_lines` | Rule 3. EDGEdir's server never calls EDGEfab's server |
+| The modder | The Lip Sync tab | Uses the same core |
+
+**The request.**
+
+| Field | Meaning |
+|---|---|
+| `character` | Who speaks: the voice tag (as in a scene's `voicetagId`), with the appearance or head for preview |
+| `words` | The line, in English |
+| `delivery` | Optional: a direction for the voice ("tired, quiet"), passed to EDGEwave |
+| `lineId` | Optional: the caller's line id, when it has already made one (EDGEdir or EDGEquest holding a screenplay line); otherwise EDGEfab makes one |
+| `gender` | Optional, for V's lines: `female`, `male` or both (two voices and two clips, `f_` and `m_`) |
+| `project` | The REDcode project the files go into |
+| `review` | `none`: return when done. `tab`: open the Lip Sync tab on the take, resolve when the modder keeps it or cancels |
+
+**The result: files, plus the facts to place them.** As rule 2 asks, the line is a file on disk that every tab watches, so a change made later in EDGEfab's tab (another take, a timing nudge) redraws EDGEdir's lane by itself.
+
+| Field | Meaning |
+|---|---|
+| `record` | The line's record, `source/raw/<mod>/lipsync/<voicetag>/<line>.edgefab.json`: everything below, the take and its history |
+| `lineId` | The decimal ruid and its 16 hex digits |
+| `clips` | Clip names (`f_<HEX>`, `m_<HEX>`) and the `.anims` set each is in (the depot path in the project) |
+| `durationMs` | The line's length, for the caller's dialogue line event and lanes |
+| `audio` | The WAV, and the `.wem` once EDGEwave's route makes one (`wem: null` and a plain reason until then) |
+| `timings` | The per-character timings from ElevenLabs, so a caller can show words on its timeline |
+| `take` | Which take this is; the caller can ask for another (`speakLine` again with the same `lineId`) and keep one |
+
+**What it doesn't do.** It doesn't put the line in a scene: the caller places it (EDGEdir on its timeline, EDGEquest in the scene graph), and the scene's owner writes the screenplay line, voice map, subtitles, the mod `.lipmap` and its ArchiveXL entry from the result. That keeps the pipeline usable by any caller, with or without a scene.
+
+**Along the way.** Progress comes back in plain steps (voicing, timing, shaping, writing), and a call can be cancelled. EDGEwave's own rules stay in force when another tool calls: its one-time consent before cloning a voice, the modder's ElevenLabs key in EDGEwave, the cost before paying. A missing piece comes back as a plain reason the caller can show: no ElevenLabs key, no voice for this character yet, Wwise not installed.
+
+**What the voice step needs.** In VS Code, EDGEfab calls `EDGEwaveApi` (v1 exists). Outside VS Code, EDGEfab's core would need EDGEwave's speaking as a package (`@edgemodders/edgewave-core`), with the key taken from the environment as MCP servers do. That is a request to EDGEwave (below).
+
 ### A course: phase FL, Lip sync
 
 Proposed steps; the build session decides where they go. Each ends in a test, as every phase does.
@@ -153,7 +194,7 @@ Proposed steps; the build session decides where they go. Each ends in a test, as
 |---|---|---|---|
 | **FL0 Checks** (no UI) | L1, the import round trip; ElevenLabs timings on the owner's key (v3, a cloned voice, a line with numbers); Lipsync Animator's baseline scores on a test machine | REDbridge #14's import | A game clip exported and imported back plays the same; timings match the audio |
 | **FL1 See** | **EDGEfab: Open Lip Sync** (command, and on a character, a scene's speaker or an `.anims`); the tab: character, lines, ▶ audio, curves under the waveform. MCP `fab_lipsync_lines`, `fab_lipsync_line`. An API for EDGEdir and EDGEquest: a line's clip and its tracks | REDbridge: an `.anims` clip's tracks as data, many at once (`anims.info`/`infoMany`, already asked in #14); `.wem` to WAV (EDGEwave or REDcode) | Angie in `mq306_04b_angie_meeting`: her lines with text, audio and moving curves |
-| **FL2 Make** | **Add a Line**: words to voice (EDGEwave), timings, sounds, the sound model v1, the `.anims` into the project. The fitting step: the model fitted on the modder's own game lines, scored by leaving characters out. MCP `fab_lipsync_make` | FL1; EDGEwave's timings; REDbridge #14 | Offline: the scores against CDPR's lines, beside Lipsync Animator's. Heard and seen as curves |
+| **FL2 Make** | **Add a Line**: words to voice (EDGEwave), timings, sounds, the sound model v1, the `.anims` into the project. The fitting step: the model fitted on the modder's own game lines, scored by leaving characters out. **The service**: `speakLine` in the core, `EDGEfabApi.lipsync.speakLine`, MCP `fab_lipsync_speak`, with the request, result and line record above | FL1; EDGEwave's timings; REDbridge #14 | Offline: the scores against CDPR's lines, beside Lipsync Animator's. Heard and seen as curves. **EDGEdir's first call**: a line asked for on its timeline comes back as a clip on its lane |
 | **FL3 Into the game** | The made line in a scene with EDGEquest (line, voice map, subtitles, `.lipmap`, ArchiveXL) and its `.wem` from EDGEwave; **Watch in the Game** | FL2; EDGEquest's API for a new line; EDGEwave's `.wem` route; REDnode playing a line on a spawned character | **A new line, typed in EDGEfab, spoken in the game with moving lips** (the phase test) |
 | FL4 Tune | Timing nudge, strength per part, curve keys; Re-Voice a game line (if a mod `.lipmap` can override a game entry, unverified) | FL3 | The owner tunes a line and sees it in the game |
 | FL5 More inputs | Audio2Face-3D and video (MediaPipe on a talking-head video or a webcam) through ARKit's 52 shapes; other languages | FL2's fitting step | A line from video beside the same line from text |
@@ -166,9 +207,10 @@ Proposed steps; the build session decides where they go. Each ends in a test, as
 | REDbridge | #14 (open): `.anims` import from glTF **keeping float tracks**, and `anims.info`/`infoMany` returning a clip's tracks | FL0 to FL2 |
 | EDGEwave | Speak Line with ElevenLabs timings (`with-timestamps`), forced alignment for Re-Voice and recorded lines; the timings beside the WAV (its `voice.json`) and through `EDGEwaveApi` | FL2 |
 | EDGEwave | The `.wem` route finished (its V2 step 5) | FL3 |
+| EDGEwave | Speaking a line as a package, `@edgemodders/edgewave-core` (ElevenLabs speech with timings and its voice clones, the key passed in or from the environment), so EDGEfab's core can voice a line outside VS Code | FL2, for callers outside VS Code |
 | EDGEquest | An API to add a voiced line to a scene with given clip names, and to write the mod `.lipmap` and its ArchiveXL entry | FL3 |
 | REDnode | Play a scene line (voice and lip sync) on a spawned character; #39 (play an animation on a spawned character) may cover part | FL3 |
-| EDGEdir | Nothing new: it reads a line's clip through EDGEfab's API for its lip sync lane | FL1 |
+| EDGEdir | Nothing of EDGEdir: it calls `EDGEfabApi.lipsync` (reading a line's clip in FL1, `speakLine` in FL2) and places the result. Worth agreeing the request and result shapes with the EDGEdir session before FL2 | FL1, FL2 |
 
 The license boundary holds: ElevenLabs is reached through EDGEwave with the modder's key; Audio2Face, MediaPipe and video services are separate tools or services; WolvenKit only through REDbridge. Whether numbers fitted on the game's lines may ship with EDGEfab, or each modder fits on their own game, is the owner's question.
 
