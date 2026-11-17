@@ -17,6 +17,7 @@ Last updated 2026-11-17. Each row links to its test. **Open for 0.1.0:** the Pic
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | Part A **pass** (23 checks); part B **not run** |
+| [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | Prepared; **in the game not run** |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-16 | **Pass** on the final build for 0.1.0 |
@@ -267,6 +268,34 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 ### Run 1, 2026-11-17: part A passed
 
 By Claude on the worktree build (`picture-tab`, from main `46025be`): 23 checks, `all passed`. The tab's page was also rendered in Chrome with a stand-in for VS Code, using the Desk's vending machine pictures read without changing them. That check found and fixed three things: the history sat far from the picture on a wide window, a hovered history card turned yellow with unreadable text, and the picture pushed the box below the fold. Clicking a card shows that picture; Ctrl+Enter sends the change from the picture viewed; the busy state shows the spinner and Cancel. Part B: not run.
+
+## F1 check: game materials on a prop's parts
+
+Asked by the owner on 2026-11-17: can a generated prop's parts wear the game's own materials instead of Tripo's textures? It's the core of the creative workflow. If it looks good in the game, the owner may hold 0.1.0 to include it. The buttons belong to EDGEmat ([EDGEmat #12](https://github.com/Edgemodders/EDGEmat/issues/12)). Today it works through EDGEmat's MCP tools.
+
+**Prepared by Claude, 2026-11-17**, in `Projects\EDGEfab_PartMaterials`:
+
+1. A test project with the Desk's vending machine (9 parts) added by the current core, as `edgefab_partmaterials\props\vending_parts\vending_parts.ent` (normal maps flipped, physical collision).
+2. Three parts changed, the other six left on Tripo's textures:
+
+| Part | What it shows | Now wears | Kind |
+|---|---|---|---|
+| `body` | The cabinet shell | Red metallic car paint, a game surface (`car_paint_metallic_01`, red), as a one-layer setup: a copy of the game's black vending machine setup with layer 0 changed and layers 1 to 9 hidden. Its `.mi` is a copy of the game's, pointing at it | Layered, made by `mat_edit` and a hand-written `.mi` |
+| `back` | The back panels | `z_emissive_blue.mi`: the game's plain blue glow | A game `.mi`, by `mat_apply` |
+| `front_2` | The drinks on the shelves | `shop_vending_machine_c_v2_glass.mi`: the game's vending machine glass | A game `.mi`, by `mat_apply` |
+
+3. The mesh checked: each part's local material is based on its new `.mi`, and the other six are unchanged. Packed to `tests\edgefab_partmaterials_test.archive` (49 files, 38 MB, no warnings).
+
+Found on the way: the game's layered `.mi` files embed their setup. A copy pointed at a new setup has to drop the embedded copy, or it keeps the old look. Told EDGEmat on #12.
+
+**In the game (the owner):**
+
+1. Install `Projects\EDGEfab_PartMaterials	ests\edgefab_partmaterials_test.archive` (copy it to the game's `archive\pc\mod`, or add it with EDGEdeck), then start the game.
+2. By day, place `edgefab_partmaterials\props\vending_parts\vending_parts.ent` with EDGEbuilder. Expected: the cabinet is glossy red metallic paint, evenly, with no stretched or smeared patches. Note any seams where the paint's grain jumps.
+3. Walk round it. Expected: the back glows blue all over; the drinks are see-through glass; the front, details and the rest look as before.
+4. By night. Expected: the blue back glows clearly; the red still reads as red.
+5. Walk 25 m away and back. Expected: the materials hold at every level of detail.
+6. Say whether it's good enough to build into 0.1.0's workflow, and what you'd want to pick for each part.
 
 ## F1: prepare a model (smoke test, without VS Code)
 
