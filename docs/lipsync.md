@@ -4,7 +4,7 @@ title: Made lip sync
 
 # Made lip sync: from a talking video (or a voice) to the game's lip sync clips
 
-**Status: research, with a proposal** ([the Lip Sync tab](#the-lip-sync-tab-a-proposal), 2026-11-17; where it goes in the build plan is the EDGEfab build session's call). Asked for by the owner on 2026-11-17: can a generated video of a person speaking a line be turned into the game's own lip sync clip, by one service built for it or by several steps put together? It decides where the long pole is for new voiced lines. Follows [NPC faces](faces.html). The game side was read from game 2.5 through the `redcode` server on 2026-11-17; the services from their own pages and reviews the same day (sources at the end). Nothing here was tried in the game. **Reviewed by the EDGEfab build session on 2026-11-17** ([Review](#review-and-what-is-built), below), which checked the reading half against game 2.5 and built it on the `lipsync` branch. **Inferred** and **unverified** mark what was not checked.
+**Status: research, with a proposal** ([the Lip Sync tab](#the-lip-sync-tab-a-proposal), 2026-11-17; where it goes in the build plan is the EDGEfab build session's call). Asked for by the owner on 2026-11-17: can a generated video of a person speaking a line be turned into the game's own lip sync clip, by one service built for it or by several steps put together? It decides where the long pole is for new voiced lines. Follows [NPC faces](faces.html). The game side was read from game 2.5 through the `redcode` server on 2026-11-17; the services from their own pages and reviews the same day (sources at the end). Nothing here was tried in the game. **Reviewed by the EDGEfab build session on 2026-11-17** ([Review](#review-and-what-is-built), below; and [Live lip sync](#live-lip-sync-a-line-made-while-the-game-runs), the owner's ask the same day, with the spikes that decide it), which checked the reading half against game 2.5 and built it on the `lipsync` branch. **Inferred** and **unverified** mark what was not checked.
 
 ## The short answer
 
@@ -242,6 +242,92 @@ Reviewed on 2026-11-17 by the EDGEfab build session, with REDbridge 0.14.0 (Wolv
 | For assistants | MCP `fab_lipsync_lines`, `fab_lipsync_line` |
 | Tested | The reading against the game and the MCP tools, automated; the page in a browser with a real clip ([Tests](testing.html)). **Not yet opened in VS Code; the voice not yet heard** |
 | Not built yet from FL1 | Opening from a scene's speaker or an `.anims`; the API for EDGEdir and EDGEquest; other languages in the tab (the core takes `language`) |
+
+## Live lip sync: a line made while the game runs
+
+Asked by the owner on 2026-11-17, for an **NPC conversation mod**: an NPC answers with a line that did not exist a moment before. The voice comes from ElevenLabs while the game runs and plays through REDnode; the NPC's mouth must move with it. This is why lip sync came up at all, so **its key spike (LS1) goes first, and the owner continues down this path only if it bears fruit**. Nothing below was tried in the game.
+
+### What differs from the tab's course
+
+The tab's course ends in files: an `.anims` clip found through a `.lipmap` by the line's id. A line made on the fly has no file, and packing one per line takes seconds and waits on REDbridge #14. So the live route drives the face while the line plays.
+
+| Part | The tab's course (FL2, FL3) | Live |
+|---|---|---|
+| The voice | EDGEwave, a take the modder approves | A voice package in the game (REDnode's `voice` role, built for EDGEwave's #20), no approval |
+| The timings | ElevenLabs, with the speech | The same |
+| Words to mouth shapes | Text to speech sounds, placed by the timings, then curves on about 44 tracks | The same first half; then a **sequence of banked mouth shapes** |
+| Into the game | An `.anims` and a `.lipmap` in a mod | **Open: LS1** |
+| The `.wem` through Wwise | Needed | Not needed: REDnode plays the file (`audio.play` from the package's data folder) |
+
+### What a spoken line needs
+
+Both the words and the voice's timings. Neither is enough alone.
+
+| Input | Gives | Without it |
+|---|---|---|
+| The words, turned into speech sounds (a pronouncing dictionary, rules for unknown words) | Which mouth shapes, in which order | No shapes |
+| ElevenLabs' timings (a start and end per character of the text) | When each shape starts and how long it lasts. A word's sounds are spread over that word's span | Shapes at a guessed pace, off the voice within a second or two |
+| The audio's loudness (optional) | How far the jaw opens, where the pauses are | Flatter, still in time |
+
+About 40 speech sounds share about 15 mouth shapes (p, b and m are all closed lips).
+
+### The numbers
+
+Fitting on the game's lines gives **one small set of numbers, not a set per line** (estimated at a few thousand numbers, a few KB; nothing is fitted yet):
+
+| Numbers | What they are | Used by |
+|---|---|---|
+| The shapes | For each mouth shape, how far each lip sync track moves | The tab's course as curves; live as the bank |
+| The timing behaviour | How early a shape starts before its sound (the game's mouth leads by 60 to 70 ms), how long shapes blend, which shapes give way to their neighbours, how loudness scales the jaw | Both |
+| Per rig | Likely one set for the man's head rig and one for the woman's | Both |
+| Per character (optional) | A small adjustment for one character's way of speaking, fitted on the modder's PC from that character's lines; never shipped | Later |
+
+**The working assumption for the timings question** (the Review's open call; proposed, not decided): fit once on our machine with a local aligner and ship the numbers. The game's lines are only the examples; their timings are used once and thrown away, and the modder never installs an aligner. The numbers come from the game's animation data as averages over thousands of lines; whether they may ship stays the owner's call. For the spikes the shapes are made by hand, so nothing waits on the fit.
+
+### Ways onto a live face
+
+Read on 2026-11-17 from REDnode's type dump of game 2.5 and, through REDbridge, the face graph `woman_average_sermo.animgraph` (it reads as JSON in 1.8 s).
+
+| Fact | Consequence |
+|---|---|
+| The game's script calls on a character's animation controller: `SetInputFloat(name, value)`, `SetInputInt`, `SetInputBool`, `ApplyFeature`, `PushEvent`. No call plays an animation by name | A script can feed numbers to a graph; it can't hand it a clip |
+| The face graph already takes inputs: 10 float inputs (`facialKeyWeight`, the eyes' `blendWeight`), 16 int inputs (`FacialReaction`'s `category` and `idle`), 8 bool inputs | Inputs do reach the face graph in the game's own use. **Unverified** that `SetInputFloat` on a spawned NPC reaches the `face_rig` component's graph |
+| The graph already changes float tracks by name: 5 `animAnimNode_FloatTrackModifier` (Override, on neck tracks) and a `animAnimNode_TrackSetter`. A modifier takes a track name, an operation (Override, Multiply, Add, ...) and a float link | A new input wired to a modifier on a lip sync track is made of node types the graph already uses |
+| `animAnimNode_SkFrameAnim` plays an animation at a time, frame or progress given by a float link | One number could pick a mouth shape out of a banked clip |
+| Scenes play facial clips through one `animAnimNode_FacialMixerSlot` | The scene route; no script call fills it |
+| REDnode plays a workspot on a spawned character and jumps to a clip in it (its A2, built) | A second way to play banked clips, if a workspot's clip can move the face (**unverified**) |
+| REDnode's `audio.play` takes a file the package writes while it runs; sound at a character's position is not built yet | The spike's voice is heard flat, not from the NPC |
+
+| Route | How | Needs | For |
+|---|---|---|---|
+| **A. Inputs into the face graph** | A mod's copy of the face graph gains float inputs wired to the lip sync tracks; a script sets them many times a second | A changed `.animgraph` in a mod archive (it replaces the game's, so other mods changing the same graph conflict); a script that ticks | True live, any line. **The key spike** |
+| B. A workspot of mouth-shape clips | Banked clips in a `.workspot`, jumped through in time | Made `.anims` (REDbridge #14); a workspot that moves the face | The fallback; coarser, and it takes the body's workspot |
+| C. A file per line | Write the `.anims`, pack, hot load | #14; seconds per line | Lines prepared ahead; this is FL3 |
+
+### The spikes
+
+Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and can run beside it.
+
+| Spike | Question | Steps | Passes when |
+|---|---|---|---|
+| **LS1 The jaw on command** (the key spike; in the game) | Can a script move a live NPC's mouth? | 1. Barks: `PlayVoiceOver` on an NPC spawned by REDnode; do the lips move outside a scene? 2. A test archive with the women's face graph changed: one float input, `edgefab_jaw`, into a `FloatTrackModifier` on `jaw_mid_openLipsyncPoseOutput`, before the `Sermo` node. 3. A REDnode test app sets the input on a spawned woman: 0, 1, then a slow wave. 4. The same at 30 changes a second: is it smooth, and what does it cost? | The jaw follows the number, smoothly. **If not:** try the override weights and `lipSyncEnvelope` beside it, the input as an anim feature, then route B's workspot. If none moves the face, the live path stops and lines are prepared ahead (route C) |
+| LS2 Whole shapes from few numbers (in the game, after LS1) | How does a mouth shape, about 44 tracks, reach the graph cheaply? | Compare: one input per track; one input per shape, the shape's weights as constants in the graph; a banked clip read by `SkFrameAnim` with two readers and a blend (three numbers a frame; the clip can be a game clip's frames for the spike, a made one needs #14) | Twelve shapes shown one after another on the NPC, blended, at a cost that holds with several NPCs talking |
+| LS3 Voice and timings in time (no game) | How long from words to sound, and are the timings right? | ElevenLabs `with-timestamps` on the owner's key, a fast model, a 2 to 3 second line, plain and streamed; the timings laid over the waveform; a line with a number in it; an instant clone of a voice the owner has rights to | The delay to the first sound and to the whole line, measured; timings within about 50 ms of the audio by eye |
+| LS4 Words to a shape schedule (no game) | Does text and timings give a believable sequence? | In core: words to speech sounds (CMUdict, BSD, with rules for unknown words), spread over each word's span, mapped to about 15 shapes made by hand from the track names, with the lead and blends; shown in the Lip Sync tab's lanes and mouth sketch under LS3's audio | The sketch reads as the line when played with the audio |
+| **LS5 An NPC says a typed line** (in the game; the phase test) | The whole path | A REDnode test app: type a line; ElevenLabs speaks it; `audio.play`; LS4's schedule drives LS2's inputs on a spawned NPC | The owner sees the mouth move in time with a line that did not exist before, and judges the delay and the look |
+
+**Order:** LS1 steps 1 to 3 first. LS3 and LS4 beside it. LS2 and LS5 only after LS1 passes.
+
+### Open, and who owns it
+
+| Point | State |
+|---|---|
+| Whose voice | Instant cloning of a game character uploads that actor's voice to ElevenLabs, and ElevenLabs asks for rights to the voice. The modder's own or a licensed voice has no such problem. EDGEwave's consent rule covers cloning; the conversation mod's owner decides |
+| Brows and blinks | The game's lip sync clips carry them (Review). Live, the face's own idle keeps blinking; brows on stressed words can come from loudness later |
+| Other heads | Men's graphs and the big and fat bodies' need the same change; V's and Judy's use other graphs. LS1 uses a crowd woman |
+| The graph as a mod | Route A replaces game files. An ArchiveXL way to add to a graph without replacing it is **unverified** |
+| Who builds what | EDGEfab: the shapes, the numbers and the scheduler, as a function in `@edgemodders/edgefab-core` that a REDnode Node mod calls (as EDGEbuilder calls the core). The conversation mod: the voice, the talk, the ticking. REDnode: setting graph inputs each frame without a call per number, and sound at a character's place (requests, after LS1) |
+| The ElevenLabs key in a spike | The product goes through EDGEwave or the game's voice package. LS3 reads `ELEVENLABS_API_KEY` from the environment and spends a few credits of the owner's |
 
 ## Sources
 
