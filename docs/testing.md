@@ -23,6 +23,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
 | [Add to Project again (without the game)](#f1-add-to-project-again-without-the-game) | Automated, with REDbridge | F1 | 2026-11-18 | **Pass**: unchanged materials and swapped parts kept. VS Code and the game not run |
+| [Add to Project again, with EDGEmat's parts (without the game)](#f1-add-to-project-again-with-edgemats-parts-without-the-game) | Automated, with REDbridge and EDGEmat's build | F1 | 2026-11-18 | **Pass**: parts swapped by EDGEmat's own tools kept, and back again |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated, with REDbridge for `--add` | F1 | 2026-11-17 | **Pass**: the files inside take the name too |
 | [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
@@ -453,6 +454,29 @@ On main, the build with `keep.ts`, on a copy of the owner's Neon vending Box (6 
 **Where the time goes** (a second run with each step timed): the three big parts, each a 4096² atlas, take 50 to 60 s each for their five textures (color 16 to 18 s, roughness and metal 5 to 7 s each, normal 12 to 16 s, the glow map 9 to 12 s); the three small parts 1 to 10 s each. So a changed material costs what its textures cost, and a glow strength change, which only needs a new `.mi`, still writes all five (62 s for one big part). Keeping the unchanged textures inside a changed material is EDGEmat's: asked as EDGEmat #13.
 
 **Not run:** in VS Code (the message's kept and swapped words, **Start Over...**), and with a part really swapped by EDGEmat's tools in a project, then seen in the game.
+
+## F1: Add to Project again, with EDGEmat's parts (without the game)
+
+A part given another material by EDGEmat's own tools keeps it over Add to Project (EDGEmat #12, built on EDGEmat's main `c2f2ae7`). The check above swaps a part by hand; this one uses EDGEmat's core, as its buttons and `mat_apply` do. Run after every change to `addToProject.ts` or `keep.ts`, and after EDGEmat changes how it swaps a part.
+
+**Steps.** After `npm run build` here and in EDGEmat's checkout, in `extensions/edgefab`: `node scripts/swap-check.mjs "<a Desk prop's folder, in parts>" "<EDGEmat's checkout>"`. Needs the game, for REDbridge, and EDGEmat's Game Materials library (open EDGEmat once). It copies the prop into a scratch Desk and a scratch project.
+
+| Step | Expected |
+|---|---|
+| 1. The first add | EDGEmat finds EDGEfab's record and sees every part on the model's texture |
+| 2. EDGEmat: **Use a Game Surface** (red metallic car paint) on one part, a game material (glass) on another | The surface's `.mi` and `.mlsetup` go in `<mesh folder>\materials\`, apart from EDGEfab's own files |
+| 3. Add again | EDGEfab names both parts as swapped; each wears what EDGEmat gave it; the surface's files are still there; the other parts wear their own; nothing is made again; both parts' own materials stay, to go back to; EDGEmat reads the new mesh the same |
+| 4. The swapped part's glow changes, add again | Its own material is made again under the swap, and the swap stays |
+| 5. EDGEmat: **Back to the Model's Texture** on the first part, add again | EDGEmat finds the part's own `.mi` in EDGEfab's record; EDGEfab sees the part as its own again and the other still swapped |
+| 6. Pack | The project packs |
+
+### Run 1, 2026-11-18: passed
+
+EDGEfab main `6c849d5` with EDGEmat main `c2f2ae7`, on a copy of the owner's Neon vending Box (6 parts): 18 checks, `all passed`. The first add 163 s; the second, with two parts swapped, 1.8 s; the third, the swapped part's own material made again, 54 s; the fourth 1.8 s. 39 files packed.
+
+**Seen, EDGEmat's to look at:** the surface asked as "car paint metallic" in "red" came back with the color `1a5c5f_null`, which is not a red. Said on EDGEmat #12. Unverified which side of EDGEmat picks it.
+
+**Not run:** the owner in the game (EDGEmat's hand test "Game materials on a prop's parts" covers the look; a prop added again after a swap is the same files).
 
 ## F1: the Library (without the game)
 
