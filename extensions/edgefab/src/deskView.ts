@@ -64,10 +64,15 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
     const { entry } = item;
     const lines: Item[] = [];
     const p = entry.prepared;
-    if (entry.picture) {
+    // A model says the picture it was made from (its record), not the newest one drawn since.
+    const madeFrom = (entry.from as { tripo?: { picture?: { take: number; words: string } } } | undefined)?.tripo?.picture;
+    if (p && madeFrom) {
+      const newer = entry.picture && entry.picture.take !== madeFrom.take ? `Its newest picture is ${entry.picture.take}: open the Pictures to make it 3D` : undefined;
+      lines.push({ kind: "line", label: `From picture ${madeFrom.take}`, detail: madeFrom.words, icon: "file-media", tooltip: [`"${madeFrom.words}"`, ...(newer ? [newer] : [])].join("\n") });
+    } else if (entry.picture && !p) {
       const t = entry.picture;
-      lines.push({ kind: "line", label: p ? `From picture ${t.take}` : `Picture ${t.take}: four views`, detail: t.words, icon: "file-media", tooltip: [`"${t.words}"`, `${t.model}, ${t.seconds} s`, t.sheet].join("\n") });
-      if (!p) lines.push({ kind: "line", label: "Next: change it or Make 3D, in its Pictures tab", detail: "click it", icon: "arrow-right" });
+      lines.push({ kind: "line", label: `Picture ${t.take}: four views`, detail: t.words, icon: "file-media", tooltip: [`"${t.words}"`, `${t.model}, ${t.seconds} s`, t.sheet].join("\n") });
+      lines.push({ kind: "line", label: "Next: change it or Make 3D, in its Pictures tab", detail: "click it", icon: "arrow-right" });
     }
     if (p) {
       // With no real size, the model's own height (1 m) isn't one: say so on the same line, so the two don't disagree.
