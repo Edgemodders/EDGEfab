@@ -72,7 +72,7 @@ export class DeskView implements vscode.TreeDataProvider<Item> {
     } else if (entry.picture && !p) {
       const t = entry.picture;
       lines.push({ kind: "line", label: `Picture ${t.take}: four views`, detail: t.words, icon: "file-media", tooltip: [`"${t.words}"`, `${t.model}, ${t.seconds} s`, t.sheet].join("\n") });
-      lines.push({ kind: "line", label: "Next: change it or Make 3D, in its Pictures tab", detail: "click it", icon: "arrow-right" });
+      lines.push({ kind: "line", label: "Next: edit it or generate the 3D model, in its Pictures tab", detail: "click it", icon: "arrow-right" });
     }
     if (p) {
       // With no real size, the model's own height (1 m) isn't one: say so on the same line, so the two don't disagree.

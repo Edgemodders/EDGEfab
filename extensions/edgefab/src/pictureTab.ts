@@ -282,7 +282,7 @@ class PictureTab {
     <img id="sheet" class="sheet" alt="">
     <div class="meta" id="meta"></div>
     <p class="words" id="words"></p>
-    <label for="prompt">Change this picture</label>
+    <label for="prompt">Edit this picture</label>
     <textarea id="prompt" placeholder="What to change, such as: make the cabinet red and the glow blue"></textarea>
     <div class="actions">
       <button id="change" title="Sends this picture to GPT Image with your words: it changes what they say and keeps the rest. (Ctrl+Enter)">Edit Picture</button>

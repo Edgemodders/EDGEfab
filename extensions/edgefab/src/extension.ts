@@ -221,8 +221,8 @@ async function askTripoSettings(title: string, fromPicture: boolean, key: string
     log(`Tripo balance: ${message(e)}`);
   }
   const how = fromPicture ? "from its four views" : "from your words";
-  const go = await vscode.window.showInformationMessage(`Make ${title} in 3D with Tripo, ${how}${parts ? ", in parts" : ""}? About ${credits(picked.d)} credits and 3 to 4 minutes.${balance}`, { modal: true }, "Make 3D");
-  if (go !== "Make 3D") return undefined;
+  const go = await vscode.window.showInformationMessage(`Make ${title} in 3D with Tripo, ${how}${parts ? ", in parts" : ""}? About ${credits(picked.d)} credits and 3 to 4 minutes.${balance}`, { modal: true }, "Generate 3D Model");
+  if (go !== "Generate 3D Model") return undefined;
   return { request: { ...DetailLevels[picked.d].settings, parts }, height };
 }
 
@@ -496,7 +496,7 @@ async function addDeskToLibrary(entry: DeskEntry): Promise<void> {
 
 async function addDeskToLibraryOnce(entry: DeskEntry): Promise<void> {
   if (!entry.prepared) {
-    void vscode.window.showWarningMessage(`EDGEfab: ${entry.title} isn't a model yet. Make 3D first.`);
+    void vscode.window.showWarningMessage(`EDGEfab: ${entry.title} isn't a model yet. Generate its 3D model first.`);
     return;
   }
   if (entry.prepared.sizeUnknown) {

@@ -73,7 +73,7 @@ server.registerTool(
       "To change a picture (the extension's Pictures tab, Edit Picture): pass prop and from (a take number) with words saying only what to change, such as 'make the cabinet red and the glow blue': " +
       "that picture goes to GPT Image with the words and comes back changed only as they say. To draw afresh into the same item, pass prop without from, with words describing the whole object. Every take is kept (fab_desk lists them). " +
       "When they like one, fab_make with from 'picture' (and take, default the last) makes the 3D model from its four views with Tripo, which follows each side closely. " +
-      "Returns the Desk item, the picture files, and what Make 3D would cost.",
+      "Returns the Desk item, the picture files, and what Generate 3D Model would cost.",
     inputSchema: {
       words: z.string().describe("One object, such as 'a cyberpunk vending machine with a glowing screen on the front'. A brief for game props (flat panels, crisp details, plain background) is added. With from: only what to change."),
       prop: z.string().optional().describe("A Desk item (its name or folder) to draw another take into. Default: a new item."),
@@ -107,7 +107,7 @@ server.registerTool(
     description:
       "Makes a prop for Cyberpunk 2077 from a textured 3D model and prepares it for the game: real size, standing on its base, three levels of detail (full, half, a fifth), MikkTSpace tangents, " +
       "parts under the game's 65,535 vertices, and its textures written out for its materials. from 'file' takes a .glb or .gltf on disk. " +
-      "from 'picture' (Make 3D) asks Tripo for the model from a Desk item's last four-view picture (fab_picture): the usual way from words. from 'tripo' asks Tripo straight from words, without a picture. " +
+      "from 'picture' (the extension's Generate 3D Model) asks Tripo for the model from a Desk item's last four-view picture (fab_picture): the usual way from words. from 'tripo' asks Tripo straight from words, without a picture. " +
       "With Tripo: the modder's own key; by default in parts (each part its own material, so EDGEmat can change one), with the detailed texture. Credits as of 2026-11-09: from a picture in parts 60 (High detail 80), " +
       "from words in parts 50 (70); about 3 to 4 minutes. Confirm the cost with the user first. Models in parts come without a real size: pass height in metres (ask the user), or set it after with fab_size. " +
       "Tripo needs to know whether the modder's plan is paid or free (on a free plan Tripo keeps the rights to the model): pass plan, or set it once with fab_tripo. " +
@@ -190,7 +190,7 @@ server.registerTool(
           const picture = takes.at(-1);
           return {
             name, folder, title: asset?.name,
-            state: prepared ? "model" : picture ? "picture: Make 3D next (fab_make from 'picture')" : "unfinished",
+            state: prepared ? "model" : picture ? "picture: Generate 3D Model next (fab_make from 'picture')" : "unfinished",
             from: asset?.from, license: asset?.license,
             picture: picture ? { take: picture.take, words: picture.words, sheet: picture.sheet } : undefined,
             pictures: takes.length > 1 ? takes.map((t) => ({ take: t.take, words: t.words, ...(t.from !== undefined ? { from: t.from } : {}), date: t.date, sheet: t.sheet })) : undefined,

@@ -102,13 +102,13 @@
       },
       {
         "command": "edgefab.make3d",
-        "title": "Make 3D...",
+        "title": "Generate 3D Model...",
         "category": "EDGEfab",
         "icon": "$(wand)"
       },
       {
         "command": "edgefab.redraw",
-        "title": "Change the Picture...",
+        "title": "Edit Picture...",
         "category": "EDGEfab",
         "icon": "$(edit)"
       },

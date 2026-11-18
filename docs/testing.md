@@ -106,7 +106,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 
 23. Desk title bar, **Generate from Words...**: "a rusty oil drum with a hazard sticker", then **Draw it first**. It asks for the OpenAI key (cleared in 22): paste it. About 30 s: the four-view picture opens; the Desk shows a picture item.
 24. Right-click it, **Change the Words...**: "... with a dented lid": picture 2.
-25. Right-click, **Make 3D...**: **Detailed texture**, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours", and a row "N parts, a material each" with their names.
+25. Right-click, **Generate 3D Model...**: **Detailed texture**, height 0.9 m, the cost and your balance, OK. About 3 to 5 minutes: a model in parts, 0.9 m tall, "Tripo, paid plan: yours", and a row "N parts, a material each" with their names.
 
 **Expected.** Every step as written, with no error boxes and nothing in the EDGEfab output channel (Show Log) that isn't a step's own line.
 
@@ -203,7 +203,7 @@ F1's goal ([plan](plan.html), F1): **a textured prop, one from a GLB and one mad
 **Steps.** In VS Code first, then in the game with the Test timer (Start, Mark after each numbered step from 5).
 
 1. **From a GLB:** Make a Prop on a textured GLB (the vending machine's `original.glb`), **Set Size...** 1.8, **Rename...** "F1 vending machine", **Make the Painted Lights Glow...** (The lights, Bright), **Add to Project**.
-2. **Made by Tripo:** Generate from Words "a rusty oil drum with a hazard sticker", Draw it first, Make 3D (Detailed texture, 0.9 m), **Rename...** "F1 drum", **Add to Project**. Spends about 60 Tripo credits and a few cents of OpenAI.
+2. **Made by Tripo:** Generate from Words "a rusty oil drum with a hazard sticker", Draw it first, Generate 3D Model (Detailed texture, 0.9 m), **Rename...** "F1 drum", **Add to Project**. Spends about 60 Tripo credits and a few cents of OpenAI.
 3. REDcode: **Pack** the project. Copy the packed `.archive` to the project's `tests` folder as `edgefab_f1_phase.archive` (WolvenKit's Pack clears `packed`), then, with the game closed, into the game's `archive\pc\mod`. Write down the file, to take it out after.
 4. Start the game, load the save. EDGEbuilder's log: `Mods: ...` counts the archive's two `.ent` and two `.mesh` files.
 5. EDGEbuilder, Assets, the **Mods** tab: find `f1_vending_machine.ent`; its size about 0.96 x 0.76 x 1.8 m. **Drop where I look**, a few metres in front of V. Then `f1_drum.ent` beside it.
@@ -259,7 +259,7 @@ Added 2026-11-17 at the owner's ask, before 0.1.0: after Generate from Words, th
 3. Click picture 1 in the history, type "add a striped awning on top", **Edit Picture**. Expected: picture 3, "changed from picture 1", in picture 1's colours.
 4. Type "a neon noodle stand sign on a metal post", **Draw Picture**. Expected: picture 4, drawn from the words alone, with no "changed from".
 5. Start a change, then **Cancel**. Expected: the spinner stops, no new picture appears, and no error shows.
-6. Close the tab, then click the item on the Desk. Expected: the tab opens again with all four pictures. Right-click the item, **Change the Picture...**: the tab opens with the cursor in the box.
+6. Close the tab, then click the item on the Desk. Expected: the tab opens again with all four pictures. Right-click the item, **Edit Picture...**: the tab opens with the cursor in the box.
 7. Needs `OPENAI_API_KEY` in the MCP server's environment (a Windows user environment variable, then VS Code restarted): the key set in EDGEfab stays in VS Code's secret storage, and the server reads its environment only (EDGEfab #4). Without it, Claude says the server has no OpenAI key and nothing is spent. With the tab open, ask Claude Code: "change picture 2 of the vending machine on EDGEfab's Desk to have a cracked screen". Expected: it calls `fab_picture` with `from: 2`, and picture 5 appears in the open tab without reopening it.
 8. Click picture 2, **Generate 3D Model**. Expected: the detail, height and cost are asked as before, and Tripo makes it. The Desk item becomes a model. In the tab, picture 2 says "The 3D model on the Desk is made from this", and its history card says "3D".
 9. With the tab open, rename the item on the Desk. Expected: the tab closes and opens again on the renamed item, with every picture. The item must not be open in another VS Code window (its 3D view there holds the folder: EDGEfab closes only its own window's tabs, and says so when the move fails).

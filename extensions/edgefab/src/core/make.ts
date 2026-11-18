@@ -75,7 +75,7 @@ function freeFolder(base: string, name: string): { folder: string; name: string 
   }
 }
 
-const PictureNote = "So far a picture, drawn by OpenAI's GPT Image from your words (OpenAI's terms give you what it makes). Make 3D next.";
+const PictureNote = "So far a picture, drawn by OpenAI's GPT Image from your words (OpenAI's terms give you what it makes). Generate the 3D model next.";
 
 const itemName = (folder: string) => path.basename(folder).replace(/\.prop\.asset$/, "");
 
