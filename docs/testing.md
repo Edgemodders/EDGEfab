@@ -12,7 +12,7 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Nothing open for 0.1.0:** the Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on the final build, main `ac488ed`, on 2026-11-18 (the owner's evening of 2026-11-17), after Rename went all the way in and two small fixes (the Add to Project message's button reads Pack and Play; the Desk names the picture a model was made from). Rename's own check and the Pictures tab's offline check passed on it too. Two late changes are built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
+Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `8910f46` on 2026-11-18, with Rename's check and the Pictures tab's offline check. They run once more on the build that is released. Built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
@@ -370,7 +370,7 @@ After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the bui
 
 ### Run 9, 2026-11-17: passed (step 1), the final build for 0.1.0
 
-After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
+After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
 ## F1: Add to Project (without the game)
 
@@ -465,7 +465,7 @@ First run: Rename passed, but `fab_size` on the copy scaled **the real Desk's** 
 
 ### Run 2, 2026-11-17: passed
 
-On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 materials, glow, 1 picture): 29 checks, `all passed`. On Red Vending, renamed the old way in the Pictures tab's run (its files still named `a_battered_cyberpunk_vending_machine_wit_2`, 10 materials, 5 pictures), with `--add`: `all passed`, so an item renamed before this is put right by its next rename. The Pictures tab's offline check ran again: `all passed`. First try of the check found one more thing, fixed: a copied item's record still named the folder it was made in; the rename now writes the item's own paths. **Not run:** Rename in VS Code on this build.
+On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 materials, glow, 1 picture): 29 checks, `all passed`. On Red Vending, renamed the old way in the Pictures tab's run (its files still named `a_battered_cyberpunk_vending_machine_wit_2`, 10 materials, 5 pictures), with `--add`: `all passed`, so an item renamed before this is put right by its next rename. The Pictures tab's offline check ran again: `all passed`. First try of the check found one more thing, fixed: a copied item's record still named the folder it was made in; the rename now writes the item's own paths. **In VS Code, 2026-11-18 (the owner's Desk):** `vending_e2e` renamed to "Neon vending machine", then "Neon vending Box": its folder, model and textures are all `neon_vending_box` (read from the Desk afterwards; the check passed on a copy of it, on `8910f46`).
 
 ## F1: the core package (EDGEfab #5)
 
@@ -500,7 +500,7 @@ On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 mat
 
 ### Run 3, 2026-11-17: passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build (the same results; 770 kB packed).
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed (the same results; 770 kB packed).
 
 | Step | Result |
 |---|---|
@@ -677,7 +677,7 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 
 ### Run 5, 2026-11-17: step 1 passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
