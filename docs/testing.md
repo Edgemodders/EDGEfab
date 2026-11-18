@@ -12,7 +12,7 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `8910f46` on 2026-11-18, with Rename's check and the Pictures tab's offline check. They run once more on the build that is released. Built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
+Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. Built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
@@ -371,7 +371,7 @@ After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the bui
 
 ### Run 9, 2026-11-17: passed (step 1), the final build for 0.1.0
 
-After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
+After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
 ## F1: Add to Project (without the game)
 
@@ -449,6 +449,8 @@ On main, the build with `keep.ts`, on a copy of the owner's Neon vending Box (6 
 | 5, two of six materials made again | 130 s |
 | 6, a part on another material | 2.4 s |
 | 8, everything made again | 170 s |
+
+**Where the time goes** (a second run with each step timed): the three big parts, each a 4096² atlas, take 50 to 60 s each for their five textures (color 16 to 18 s, roughness and metal 5 to 7 s each, normal 12 to 16 s, the glow map 9 to 12 s); the three small parts 1 to 10 s each. So a changed material costs what its textures cost, and a glow strength change, which only needs a new `.mi`, still writes all five (62 s for one big part). Keeping the unchanged textures inside a changed material is EDGEmat's: asked as EDGEmat #13.
 
 **Not run:** in VS Code (the message's kept and swapped words, **Start Over...**), and with a part really swapped by EDGEmat's tools in a project, then seen in the game.
 
@@ -536,7 +538,7 @@ On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 mat
 
 ### Run 3, 2026-11-17: passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed (the same results; 770 kB packed).
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again (the same results; 21 files with `keep.d.ts`, 781 kB packed).
 
 | Step | Result |
 |---|---|
@@ -713,7 +715,7 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 
 ### Run 5, 2026-11-17: step 1 passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, and on `8910f46` after the Desk's labels changed: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
