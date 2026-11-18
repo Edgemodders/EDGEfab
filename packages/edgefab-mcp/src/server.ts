@@ -276,13 +276,13 @@ server.registerTool(
       if (from === "library") {
         const root = needRoot();
         const r = addFromLibrary(libraryProp(root, prop), folders, root);
-        return text({ ...r, next: `Pack the project (REDcode: Pack and Try), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode.` });
+        return text({ ...r, next: `Pack the project (REDcode: Pack and Play), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode.` });
       }
       const { call } = await getBridge();
       const r = await addToProject({ item: deskItem(prop), project: folders, call, name, mod, collision, log });
       return text({
         ...r,
-        next: `Pack the project (REDcode: Pack and Try), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode. The entity is the one to place; the mesh alone has no collision.`,
+        next: `Pack the project (REDcode: Pack and Play), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode. The entity is the one to place; the mesh alone has no collision.`,
       });
     } catch (e) {
       return failure(e);

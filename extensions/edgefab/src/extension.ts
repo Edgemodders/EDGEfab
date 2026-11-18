@@ -23,12 +23,14 @@ declare const __VERSION__: string;
 
 const RedcodeId = "edgemodders.redcode-cyberpunk";
 
-/** The parts of REDcode's API (version 1, its docs/api.md) EDGEfab uses; project and packAndTry came after 0.9.0. */
+/** The parts of REDcode's API (version 1, its docs/api.md) EDGEfab uses; project and packAndTry came after 0.9.0, and
+ *  packAndTry became packAndPlay (REDcode #14), the old name kept. */
 interface REDcodeApi {
   readonly apiVersion: 1;
   bridge(): unknown;
   project?(): { name: string; dir: string; archive: string } | undefined;
-  packAndTry?(): Promise<"hot" | "installed" | undefined>;
+  packAndTry?(): Promise<"rednode" | "hot" | "installed" | undefined>;
+  packAndPlay?(): Promise<"rednode" | "hot" | "installed" | undefined>;
 }
 
 /** REDcode's API, only when REDcode is already active (activating it here could race its own start). */
@@ -36,6 +38,13 @@ function redcode(): REDcodeApi | undefined {
   const ext = vscode.extensions.getExtension<REDcodeApi>(RedcodeId);
   const api = ext?.isActive ? ext.exports : undefined;
   return api?.apiVersion === 1 ? api : undefined;
+}
+
+/** REDcode's Pack and Play (its button's name), under whichever name this REDcode has. */
+function packAndPlay(): (() => Promise<unknown>) | undefined {
+  const api = redcode();
+  const run = api?.packAndPlay ?? api?.packAndTry;
+  return run ? () => run.call(api) : undefined;
 }
 
 let output: vscode.OutputChannel;
@@ -355,12 +364,12 @@ async function addItemToProject(folder: string, title: string): Promise<void> {
     for (const f of result.files) log(`  ${f}`);
     for (const n of result.notes) log(`  Note: ${n}`);
     const how = collision === "physical" ? "solid (a physical mesh with a box)" : collision === "box" ? "solid (a box collider)" : "with no collision";
-    const actions = [...(redcode()?.packAndTry ? ["Pack and Try"] : []), "Reveal Entity", "Show Log"];
+    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity", "Show Log"];
     const pick = await vscode.window.showInformationMessage(
       `EDGEfab added ${title} to ${project.name}, ${how}. Place ${path.win32.basename(result.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
     );
-    if (pick === "Pack and Try") await redcode()?.packAndTry?.();
+    if (pick === "Pack and Play") await packAndPlay()?.();
     if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...result.entity.split("\\"))));
     if (pick === "Show Log") output.show();
   } catch (e) {
@@ -554,12 +563,12 @@ async function libraryToProject(a: LibraryAsset): Promise<void> {
     const r = addFromLibrary(a, project, root);
     log(`Added ${a.title} (version ${r.version}) from the Library to ${project.name}: ${r.entity}`);
     for (const f of r.files) log(`  ${f}`);
-    const actions = [...(redcode()?.packAndTry ? ["Pack and Try"] : []), "Reveal Entity"];
+    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity"];
     const pick = await vscode.window.showInformationMessage(
       `EDGEfab ${r.replaced ? "updated" : "added"} ${a.title} (version ${r.version}) from the Library into ${project.name}. Place ${path.win32.basename(r.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
     );
-    if (pick === "Pack and Try") await redcode()?.packAndTry?.();
+    if (pick === "Pack and Play") await packAndPlay()?.();
     if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...r.entity.split("\\"))));
   } catch (e) {
     log(`Add to Project from the Library failed: ${message(e)}`);

@@ -56,7 +56,7 @@ Every command of the extension, in VS Code, in one go. The sections below test t
 | The Library | `EDGE_LIBRARY_CONFIG` set to a scratch `library.json` (not there yet) in the editor's environment. Step 12 then asks for the Library's folder: **Choose a folder...**, a scratch folder. Never the suggested `Documents\EDGE Library`, which is the owner's |
 | A GLB | Copy `vending_e2e.prop.asset\source\raw\vending_e2e\original.glb` from the owner's real Desk (the real `%LOCALAPPDATA%\EDGEfab\desk`) (24 MB, read only) into a scratch folder, and open that folder as the editor's workspace (step 18 uses it too) |
 | A project | A new WolvenKit project in a scratch folder, open in REDcode |
-| Clicks that leave the editor | Skip **Reveal**, **Reveal Entity** (check the file on disk instead) and **Pack and Try** |
+| Clicks that leave the editor | Skip **Reveal**, **Reveal Entity** (check the file on disk instead) and **Pack and Play** |
 | The 3D view | A screenshot of the view for steps 6, 8 and 9, saved to a file, with its path in the result |
 
 **A. Keys and plan**
