@@ -111,7 +111,7 @@ jobs:
         if: inputs.release && inputs.nexus
         env:
           NEXUS_KEY: ${{ secrets.NEXUS_KEY }}
-        run: node "$RUNNER_TEMP/EDGErepo/tools/nexus/nexus.mjs" check --version "${VERSION}"
+        run: node "$RUNNER_TEMP/EDGErepo/tools/nexus/nexus.mjs" check --version "${VERSION}" --notes "${RUNNER_TEMP}/nexus-notes.txt"
 
       - run: npm ci
 
