@@ -354,21 +354,43 @@ async function withBridge<T>(title: string, run: (call: BridgeCall, step: (m: st
 
 const collisionSetting = () => vscode.workspace.getConfiguration("edgefab").get<Collision>("collision") ?? DefaultCollision;
 
-async function addItemToProject(folder: string, title: string): Promise<void> {
-  const project = await pickProject();
+/** Add to Project. `startOver`: every texture made again and every part back on the model's own textures. */
+async function addItemToProject(folder: string, title: string, startOver = false, picked?: Awaited<ReturnType<typeof pickProject>>): Promise<void> {
+  const project = picked ?? (await pickProject());
   if (!project) return;
   const collision = collisionSetting();
   try {
-    const result = await withBridge(`EDGEfab: adding ${title} to ${project.name}`, (call, step) => addToProject({ item: folder, project, call, collision, log: step }));
+    const result = await withBridge(`EDGEfab: adding ${title} to ${project.name}`, (call, step) =>
+      addToProject({ item: folder, project, call, collision, log: step, ...(startOver ? { textures: "remake" as const, parts: "model" as const } : {}) }),
+    );
     log(`Added ${title} to ${project.name}${result.replaced ? " (replacing the earlier one)" : ""}: ${result.entity}`);
     for (const f of result.files) log(`  ${f}`);
     for (const n of result.notes) log(`  Note: ${n}`);
     const how = collision === "physical" ? "solid (a physical mesh with a box)" : collision === "box" ? "solid (a box collider)" : "with no collision";
-    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity", "Show Log"];
+    // Adding it again: what was kept, in plain words, and a way to start over.
+    const propName = path.win32.basename(result.mesh, ".mesh");
+    // A part's name is its material's, without the prop's name in front.
+    const partName = (material: string) => (material.startsWith(`${propName}_`) ? material.slice(propName.length + 1) : material);
+    const keptWords = result.kept.length ? ` ${result.kept.length === result.materials.length ? "Its materials are unchanged, so they were kept" : `${result.kept.length} of its ${result.materials.length} materials are unchanged and were kept`}.` : "";
+    const swappedWords = result.swapped.length ? ` ${result.swapped.map((s) => partName(s.material)).join(", ")} ${result.swapped.length > 1 ? "keep the materials" : "keeps the material"} you gave ${result.swapped.length > 1 ? "them" : "it"}.` : "";
+    const again = result.kept.length || result.swapped.length ? ["Start Over..."] : [];
+    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity", "Show Log", ...again];
     const pick = await vscode.window.showInformationMessage(
-      `EDGEfab added ${title} to ${project.name}, ${how}. Place ${path.win32.basename(result.entity)} with EDGEbuilder, or spawn it.`,
+      `EDGEfab added ${title} to ${project.name}, ${how}.${keptWords}${swappedWords} Place ${path.win32.basename(result.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
     );
+    if (pick === "Start Over...") {
+      const go = await vscode.window.showWarningMessage(
+        `Add ${title} to ${project.name} from scratch?`,
+        {
+          modal: true,
+          detail: `Every texture is made again, which takes minutes.${result.swapped.length ? ` ${result.swapped.map((s) => partName(s.material)).join(", ")} ${result.swapped.length > 1 ? "go" : "goes"} back on the model's own texture: the material you gave ${result.swapped.length > 1 ? "them" : "it"} is taken off.` : ""}`,
+        },
+        "Start Over",
+      );
+      if (go === "Start Over") await addItemToProject(folder, title, true, project);
+      return;
+    }
     if (pick === "Pack and Play") await packAndPlay()?.();
     if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...result.entity.split("\\"))));
     if (pick === "Show Log") output.show();

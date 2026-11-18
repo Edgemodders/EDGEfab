@@ -22,6 +22,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
+| [Add to Project again (without the game)](#f1-add-to-project-again-without-the-game) | Automated, with REDbridge | F1 | 2026-11-18 | **Pass**: unchanged materials and swapped parts kept. VS Code and the game not run |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated, with REDbridge for `--add` | F1 | 2026-11-17 | **Pass**: the files inside take the name too |
 | [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
@@ -415,6 +416,41 @@ Much slower than Run 1 (15 s) because 6 parts each convert 4 or 5 textures at up
 ### Run 3, 2026-11-15: passed (the normal maps' green flipped by default)
 
 After [the normal maps' green](#f1-check-the-normal-maps-green-offline) was settled: Add to Project now turns each normal map's green over. Step 4 only: `fab_add` with `vending_e2e` (6 parts) into an empty scratch project, `physical`: 133.7 s, 6 materials applied, each with its `_n01.xbm`. The front's `_n01.xbm` decoded back to PNG against the Desk item's `vending_e2e_front_normal.png` (both 4096²): green against the source's green, mean difference 31.6; against 255 minus it, **0.1**; red, 0.1. So green is flipped and nothing else changed.
+
+## F1: Add to Project again (without the game)
+
+A second Add to Project keeps what didn't change (EDGEfab #6, asked by EDGEbuilder for its Watch; and the kept parts that go with EDGEmat #12). A material made from the same pictures, glow and values as last time keeps its `.mi` and textures; only the others are made again. A part whose material entry in the project's mesh is no longer EDGEfab's own `.mi` (EDGEmat gave it another material) keeps that entry. Run after every change to `addToProject.ts` or `keep.ts`.
+
+**Steps.** After `npm run build`, in `extensions/edgefab`: `node scripts/keep-check.mjs "<a Desk prop's folder, in parts, that glows>"`. Needs the game, for REDbridge. It copies the prop into a scratch Desk and adds the copy to a scratch project eight times:
+
+| Add | Before it | Expected |
+|---|---|---|
+| 1 | Nothing | Everything is made. The record (`<name>.edgefab.json`) says what each material was made from: each picture's bytes and pixels, the glow, the material's own values |
+| 2 | Nothing changed | Every material kept, no material file written again, each mesh entry on its own `.mi`. Seconds, not minutes |
+| 3 | Set Size | Every material kept: only the shape changed |
+| 4 | One color picture written out again, the same pixels in other bytes | Every material kept |
+| 5 | That picture's pixels changed, and one part's glow strength | Those two materials made again, the others' files untouched |
+| 6 | One part's mesh entry pointed at another `.mi`, as EDGEmat's `applyMaterial` does | That part keeps it; the others wear their own; its own `.mi` is still in the project to go back to; the record names the part |
+| 7 | Nothing | The part keeps it again |
+| 8 | `parts: "model"`, `textures: "remake"` | The part is back on its own material, and every material is made again |
+
+The prop it was copied from is unchanged (checksums).
+
+### Run 1, 2026-11-18: passed
+
+On main, the build with `keep.ts`, on a copy of the owner's Neon vending Box (6 parts, glowing): 22 checks, `all passed`.
+
+| Add | Took |
+|---|---|
+| 1, everything made | 173 s |
+| 2, nothing changed | 2.6 s |
+| 3, after Set Size | 2.8 s |
+| 4, the same pixels in other bytes | 2.6 s |
+| 5, two of six materials made again | 130 s |
+| 6, a part on another material | 2.4 s |
+| 8, everything made again | 170 s |
+
+**Not run:** in VS Code (the message's kept and swapped words, **Start Over...**), and with a part really swapped by EDGEmat's tools in a project, then seen in the game.
 
 ## F1: the Library (without the game)
 

@@ -27,7 +27,7 @@ Every function that reads the game's files takes a REDbridge `call(method, param
 | `setSize(folder, height, { version })` | A model with no real size (Tripo's in parts) or the wrong one |
 | `readItem(folder)`, `deskItem(name)`, `readPrepared(raw)` | A Desk item's record, size, parts and levels of detail |
 | `projectFolders(dir)` | A WolvenKit project's folders, from its folder, `.cpmodproj` or `source\archive` |
-| `addToProject({ item, project, call, name?, mod?, collision? })`, `DefaultCollision` | The prop in the project: mesh, materials, `.ent` |
+| `addToProject({ item, project, call, name?, mod?, collision?, textures?, parts? })`, `DefaultCollision` | The prop in the project: mesh, materials, `.ent`. Adding it again keeps the materials made from the same pictures (`kept` in the answer: their `.mi` paths) and the parts given another material since (`swapped`). `textures: "remake"` makes them all again; `parts: "model"` puts every part back on the model's own textures |
 | `addToLibrary`, `addFromLibrary`, `libraryRoot`, `libraryFolder`, `refreshList`, ... | The EDGE Library's props ([the shared rules](https://edgemodders.github.io/EDGEbuilder/library.html#shared-rules)) |
 | Types: `Collision`, `PrepareResult`, `AddResult`, `MadeModel`, `AssetRecord`, ... | Typing |
 

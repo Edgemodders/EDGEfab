@@ -10,9 +10,11 @@
 // passes REDcode's bridge and the MCP server its own.
 
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { bridgeOver, materialsFromModel, projectAt, type BridgeCall, type FromModelMaterial, type ModelGlow } from "@edgemodders/edgemat-core";
 import { deskDir, slug } from "./config";
+import { entryLooks, isSwapped, materialSources, modelWithOnly, sameSource, setEntries, withPixels, type EntryLook, type MaterialSource } from "./keep";
 import type { AssetRecord } from "./make";
 import { readPrepared, type PrepareResult } from "./prepare";
 
@@ -52,7 +54,24 @@ export interface AddRequest {
    *  (DirectX, the RedModding wiki's "normal maps in Cyberpunk"), and its meshes carry the same tangent frame as the ones
    *  EDGEfab makes (testing.md, "the normal maps' green"), so the green is turned over. false keeps it as glTF has it. */
   flipNormalGreen?: boolean;
+  /**
+   * Adding it again: "keep-unchanged" (default) keeps the materials made from the same pictures as last time
+   * (their .mi and textures stay, only the changed ones are made again); "remake" makes them all again.
+   */
+  textures?: "keep-unchanged" | "remake";
+  /**
+   * Adding it again: "keep" (default) carries over the parts given another material since the last add
+   * (EDGEmat: a game material, a layered setup); "model" puts every part back on the model's own textures.
+   */
+  parts?: "keep" | "model";
   log?: (line: string) => void;
+}
+
+/** A part that keeps a material someone gave it after the last add. */
+export interface SwappedPart {
+  material: string;
+  /** What it wears: the base material's game path. */
+  base: string;
 }
 
 export interface AddResult {
@@ -69,7 +88,22 @@ export interface AddResult {
   files: string[];
   /** Whether it replaced an earlier Add to Project of the same name. */
   replaced: boolean;
+  /** The materials kept from the last add, unchanged: their .mi game paths. Empty on a first add. */
+  kept: string[];
+  /** The parts that keep a material given to them since the last add. */
+  swapped: SwappedPart[];
   notes: string[];
+}
+
+/** One material in the record of an add. */
+interface RecordedMaterial {
+  name: string;
+  mi: string;
+  glow?: FromModelMaterial["glow"];
+  /** Its textures, game paths. */
+  textures?: string[];
+  /** What it was made from (core/keep.ts). */
+  source?: MaterialSource;
 }
 
 export class AddError extends Error {}
@@ -331,16 +365,46 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
   const replaced = fs.existsSync(onDisk(req.project.archive, mesh));
   const record = onDisk(req.project.raw, toGame(folder, `${name}.edgefab.json`));
 
-  // Adding again: what the last Add wrote goes first, and only that, so old textures aren't packed into the mod.
+  // Adding again: what stays. A material made from the same pictures keeps its files; a part given another
+  // material since keeps it (core/keep.ts). The old mesh is read before it goes.
+  const flip = req.flipNormalGreen ?? true;
+  const { sources, files: sourceFiles } = materialSources(prepared, { flipNormalGreen: flip });
+  const before = new Map<string, RecordedMaterial>();
+  const keptNames: string[] = [];
+  const carried = new Map<string, EntryLook>();
+  let beforeFiles: string[] = [];
   if (replaced && fs.existsSync(record)) {
     try {
-      const before = JSON.parse(fs.readFileSync(record, "utf8")) as { files?: string[] };
-      for (const f of before.files ?? []) {
-        const file = path.resolve(req.project.dir, f);
-        if (file.startsWith(path.resolve(req.project.dir) + path.sep)) fs.rmSync(file, { force: true });
-      }
+      const last = JSON.parse(fs.readFileSync(record, "utf8")) as { files?: string[]; materials?: RecordedMaterial[] };
+      beforeFiles = last.files ?? [];
+      for (const m of last.materials ?? []) before.set(m.name, m);
     } catch {
       notes.push("Couldn't read the last Add's record, so its old files stay in the project.");
+    }
+    const onDiskAll = (m: RecordedMaterial) => [m.mi, ...(m.textures ?? [])].every((f) => fs.existsSync(onDisk(req.project.archive, f)));
+    if ((req.textures ?? "keep-unchanged") === "keep-unchanged") {
+      for (const name of prepared.materials) {
+        const was = before.get(name);
+        if (was?.textures && onDiskAll(was) && sameSource(sources[name], was.source, sourceFiles[name])) keptNames.push(name);
+      }
+    }
+    if ((req.parts ?? "keep") === "keep" && before.size) {
+      try {
+        const old = (await req.call("cr2w.fileToJson", { file: onDisk(req.project.archive, mesh) })) as { json: string | null };
+        const looks = old?.json ? entryLooks(JSON.parse(old.json)) : new Map<string, EntryLook>();
+        for (const name of prepared.materials) {
+          const look = looks.get(name), was = before.get(name);
+          if (look && was && isSwapped(look, was.mi)) carried.set(name, look);
+        }
+      } catch {
+        notes.push("Couldn't read the mesh from the last add, so any part given another material is back on the model's textures.");
+      }
+    }
+    // What the last Add wrote goes, and only that, so old textures aren't packed into the mod. Kept materials stay.
+    const stays = new Set(keptNames.flatMap((name) => [before.get(name)!.mi, ...(before.get(name)!.textures ?? [])]).map((f) => path.resolve(onDisk(req.project.archive, f)).toLowerCase()));
+    for (const f of beforeFiles) {
+      const file = path.resolve(req.project.dir, f);
+      if (file.startsWith(path.resolve(req.project.dir) + path.sep) && !stays.has(file.toLowerCase())) fs.rmSync(file, { force: true });
     }
   }
 
@@ -374,34 +438,67 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
   await req.call("cr2w.fromJson", { outFile: meshFile, json: JSON.stringify(json) });
 
   // 4. Materials from the model's own textures (EDGEmat's core): view.glb has the textures and factors.
-  log("Making the materials");
-  const glow: ModelGlow[] = prepared.glow.map((g) => ({ material: g.material, color: g.color, strength: g.strength, texture: g.texture }));
+  //    Only the ones not kept are made; with every material kept, EDGEmat isn't asked at all.
+  const toMake = prepared.materials.filter((m) => !keptNames.includes(m));
   const made = { from: asset.from, license: asset.license, id: asset.id, by: "EDGEfab" };
-  const byMaterial = new Map<string, { baseColor?: string; orm?: string; normal?: string }>();
-  for (const t of prepared.textures) {
-    const m = byMaterial.get(t.material) ?? {};
-    if (t.slot === "baseColor") m.baseColor = t.file;
-    if (t.slot === "metallicRoughness") m.orm = t.file;
-    if (t.slot === "normal") m.normal = t.file;
-    byMaterial.set(t.material, m);
+  let result: FromModelMaterial[] = [];
+  if (toMake.length) {
+    log(keptNames.length ? `Making ${toMake.length} of ${prepared.materials.length} materials (the others are unchanged)` : "Making the materials");
+    const glow: ModelGlow[] = prepared.glow.filter((g) => toMake.includes(g.material)).map((g) => ({ material: g.material, color: g.color, strength: g.strength, texture: g.texture }));
+    const byMaterial = new Map<string, { baseColor?: string; orm?: string; normal?: string }>();
+    for (const t of prepared.textures) {
+      const m = byMaterial.get(t.material) ?? {};
+      if (t.slot === "baseColor") m.baseColor = t.file;
+      if (t.slot === "metallicRoughness") m.orm = t.file;
+      if (t.slot === "normal") m.normal = t.file;
+      byMaterial.set(t.material, m);
+    }
+    const useView = !!prepared.view && fs.existsSync(prepared.view);
+    // Some kept: EDGEmat gets the model with only the materials to make.
+    const temp = useView && keptNames.length ? fs.mkdtempSync(path.join(os.tmpdir(), "edgefab-add-")) : undefined;
+    try {
+      const model = !useView ? undefined : temp ? await modelWithOnly(prepared.view!, toMake, temp) : prepared.view;
+      const materials = await materialsFromModel(bridgeOver(req.call), {
+        project: { archive: req.project.archive, raw: req.project.raw },
+        model,
+        materials: useView ? undefined : toMake.map((m) => ({ name: m, ...byMaterial.get(m) })),
+        mesh,
+        folder,
+        glow: glow.length ? glow : undefined,
+        made,
+        flipNormalGreen: flip,
+        log,
+      });
+      for (const f of materials.files) written.add(rel(onDisk(req.project.archive, f)));
+      const missing = materials.materials.filter((m) => toMake.includes(m.name) && !m.applied).map((m) => m.name);
+      if (missing.length) throw new AddError(`The mesh didn't take the material${missing.length > 1 ? "s" : ""} ${missing.join(", ")}.`);
+      for (const m of materials.materials) for (const a of m.approximated) notes.push(`${m.name}: ${a}`);
+      notes.push(...materials.notes);
+      result = materials.materials.filter((m) => toMake.includes(m.name));
+    } finally {
+      if (temp) fs.rmSync(temp, { recursive: true, force: true });
+    }
   }
-  const useView = !!prepared.view && fs.existsSync(prepared.view);
-  const materials = await materialsFromModel(bridgeOver(req.call), {
-    project: { archive: req.project.archive, raw: req.project.raw },
-    model: useView ? prepared.view : undefined,
-    materials: useView ? undefined : prepared.materials.map((m) => ({ name: m, ...byMaterial.get(m) })),
-    mesh,
-    folder,
-    glow: glow.length ? glow : undefined,
-    made,
-    flipNormalGreen: req.flipNormalGreen ?? true,
-    log,
-  });
-  for (const f of materials.files) written.add(rel(onDisk(req.project.archive, f)));
-  const missing = materials.materials.filter((m) => !m.applied).map((m) => m.name);
-  if (missing.length) throw new AddError(`The mesh didn't take the material${missing.length > 1 ? "s" : ""} ${missing.join(", ")}.`);
-  for (const m of materials.materials) for (const a of m.approximated) notes.push(`${m.name}: ${a}`);
-  notes.push(...materials.notes);
+
+  // 4b. The kept materials go back on their entries, and the parts given another material keep it.
+  const kept = keptNames.map((name) => before.get(name)!);
+  for (const m of kept) {
+    for (const f of [m.mi, ...(m.textures ?? [])]) written.add(rel(onDisk(req.project.archive, f)));
+    result.push({ name: m.name, mi: m.mi, textures: m.textures ?? [], applied: true, glow: m.glow, approximated: [] });
+  }
+  result.sort((a, b) => prepared.materials.indexOf(a.name) - prepared.materials.indexOf(b.name));
+  const swapped: SwappedPart[] = [];
+  if (kept.length || carried.size) {
+    const now = (await req.call("cr2w.fileToJson", { file: meshFile })) as { json: string | null };
+    if (!now?.json) throw new AddError("REDbridge could not read the mesh to put its kept materials back.");
+    const meshJson = JSON.parse(now.json);
+    const missed = setEntries(meshJson, new Map(kept.filter((m) => !carried.has(m.name)).map((m) => [m.name, m.mi])), carried);
+    if (missed.length) throw new AddError(`The mesh didn't take the kept material${missed.length > 1 ? "s" : ""} ${missed.join(", ")}.`);
+    await req.call("cr2w.fromJson", { outFile: meshFile, json: JSON.stringify(meshJson) });
+    for (const [material, look] of carried) swapped.push({ material, base: look.base! });
+  }
+  if (kept.length) notes.push(kept.length === prepared.materials.length ? `All ${kept.length} materials are unchanged: kept, not made again.` : `${kept.length} of ${prepared.materials.length} materials are unchanged: kept, not made again.`);
+  if (swapped.length) notes.push(`${swapped.map((x) => x.material).join(", ")} ${swapped.length > 1 ? "keep the materials" : "keeps the material"} given since the last add.`);
 
   // 5. The entity: the prop to place.
   const entityFile = onDisk(req.project.archive, entity);
@@ -418,12 +515,14 @@ export async function addToProject(req: AddRequest): Promise<AddResult> {
     entity,
     collision,
     template: req.template ?? DefaultTemplate,
-    materials: materials.materials.map((m) => ({ name: m.name, mi: m.mi, glow: m.glow })),
+    // Each material's textures and what it was made from, so the next add keeps the unchanged ones.
+    materials: result.map((m): RecordedMaterial => ({ name: m.name, mi: m.mi, glow: m.glow, textures: m.textures, source: withPixels(sources[m.name], sourceFiles[m.name]) })),
+    swapped,
     added: new Date().toISOString(),
     files: [...written],
   };
   fs.writeFileSync(record, JSON.stringify(out, null, 2));
   if (asset.license?.source === "tripo" && asset.license.plan === "free") notes.push("Made on Tripo's free plan: the model is Tripo's, so it can't go in a released mod.");
 
-  return { mesh, entity, raw: rawGlb, record, collision, materials: materials.materials, files: [...written], replaced, notes };
+  return { mesh, entity, raw: rawGlb, record, collision, materials: result, files: [...written], replaced, kept: kept.map((m) => m.mi), swapped, notes };
 }

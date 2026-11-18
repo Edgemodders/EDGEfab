@@ -10,7 +10,7 @@ EDGEfab for AI assistants over MCP (stdio): make a Cyberpunk 2077 prop from a te
 | `fab_glow` | Makes a prop's painted lights glow, sets how strongly, or stops it |
 | `fab_desk` | What is on the Desk: the props and pictures made so far, waiting to go into a project or the Library |
 | `fab_rename` | Renames a prop on the Desk, its files too |
-| `fab_add` | Puts a prop into a WolvenKit project: mesh, materials, an entity with collision |
+| `fab_add` | Puts a prop into a WolvenKit project: mesh, materials, an entity with collision. Adding it again keeps the materials that didn't change and the parts given another material (`textures`, `parts` to start over) |
 | `fab_library`, `fab_library_add`, `fab_library_edit`, `fab_refresh` | The EDGE Library: list it, add a prop, bring one back to the Desk to change, refresh a project's props from it |
 | `fab_tripo` | Whether a Tripo key is set (never the key itself), the plan recorded (paid or free), the credit balance; `set_plan` records the plan |
 

@@ -13,8 +13,9 @@ export {
 export { drawPicture, makeModel, renameItem, setSize, type AssetRecord, type FromPictureRequest, type MadeModel, type MakeRequest } from "./make";
 export {
   addToProject, deskItem, entityJson, fitMesh, projectFolders, readItem, AddError, DefaultCollision, DefaultTemplate,
-  type AddRequest, type AddResult, type Collision, type ProjectFolders,
+  type AddRequest, type AddResult, type Collision, type ProjectFolders, type SwappedPart,
 } from "./addToProject";
+export { entryLooks, isSwapped, MaterialRecipe, type EntryLook, type MaterialSource } from "./keep";
 export { callOf, gameFolder, startBridge } from "./bridge";
 export {
   addFromLibrary, addToLibrary, assetById, editOnDesk, isInside, libraryAssets, libraryConfigFile, libraryFolder, libraryFolders, libraryProp, libraryRoot,

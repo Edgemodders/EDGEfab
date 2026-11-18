@@ -255,7 +255,7 @@ server.registerTool(
       "Add to Project: puts a prop into a WolvenKit project (the extension's Add to Project), ready to place with EDGEbuilder or spawn. " +
       "from 'desk' (default): a prop from EDGEfab's Desk is built into the project under source\\archive\\<mod>\\props\\<name>\\: the .mesh (imported over a game barrel template with its levels of detail, " +
       "the template's materials and appearances replaced), the model's own textures as game textures and a .mi on metal_base (through EDGEmat's core, glow included), and the .ent to place, with collision; " +
-      "also the prepared model as source\\raw\\...\\<name>.glb and a record of its source and license. Adding the same name again replaces it. Needs REDbridge and the game folder (from VS Code's redcode settings); " +
+      "also the prepared model as source\\raw\\...\\<name>.glb and a record of its source and license. Adding the same name again replaces it, and keeps what didn't change: a material made from the same pictures as last time keeps its .mi and textures (a second add with only a new size or shape takes seconds), and a part given another material since (EDGEmat's mat_apply or mat_edit on one of its materials) keeps it. The answer's kept lists the kept .mi files and swapped the parts on another material. textures 'remake' makes every texture again; parts 'model' puts every part back on the model's own textures (ask the user first: it undoes their material choices). Needs REDbridge and the game folder (from VS Code's redcode settings); " +
       "about 15 seconds for one material, 3 minutes for a prop in 6 parts. collision 'physical' (default): one entPhysicalMeshComponent with a box the prop's size in the mesh's physics data. " +
       "'box': an entMeshComponent and an entColliderComponent with that box. 'none': it only draws. Both solid kinds stop V in the game (tested 2026-11-09). " +
       "from 'library': a prop from the EDGE Library (fab_library lists them) is copied in as it was built there, at its own game paths (<modder>\\props\\<name>\\), with its collision; " +
@@ -267,9 +267,11 @@ server.registerTool(
       name: z.string().optional().describe("from 'desk': the file name in the project; default the prop's. Made lowercase, with no spaces."),
       mod: z.string().optional().describe("from 'desk': the mod's own folder under source\\archive; default the project's name."),
       collision: z.enum(["physical", "box", "none"]).default(DefaultCollision),
+      textures: z.enum(["keep-unchanged", "remake"]).default("keep-unchanged").describe("from 'desk', adding it again: keep the materials whose pictures didn't change (default), or make them all again."),
+      parts: z.enum(["keep", "model"]).default("keep").describe("from 'desk', adding it again: keep the parts given another material since the last add (default), or put every part back on the model's own textures."),
     },
   },
-  async ({ prop, project, from, name, mod, collision }) => {
+  async ({ prop, project, from, name, mod, collision, textures, parts }) => {
     try {
       const folders = projectFolders(project);
       if (!folders) throw new Error(`${project} is not a WolvenKit project: it has no .cpmodproj and no source\\archive folder.`);
@@ -279,7 +281,7 @@ server.registerTool(
         return text({ ...r, next: `Pack the project (REDcode: Pack and Play), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode.` });
       }
       const { call } = await getBridge();
-      const r = await addToProject({ item: deskItem(prop), project: folders, call, name, mod, collision, log });
+      const r = await addToProject({ item: deskItem(prop), project: folders, call, name, mod, collision, textures, parts, log });
       return text({
         ...r,
         next: `Pack the project (REDcode: Pack and Play), then place ${r.entity} with EDGEbuilder, or spawn it with REDnode. The entity is the one to place; the mesh alone has no collision.`,
