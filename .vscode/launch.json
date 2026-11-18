@@ -8,6 +8,18 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}/extensions/edgefab"],
       "outFiles": ["${workspaceFolder}/extensions/edgefab/dist/**/*.js"]
+    },
+    {
+      // With EDGEmat's own build from the sibling checkout (built there: npm run build), in place of the
+      // installed EDGEmat: for tests that need both tools' unreleased builds.
+      "name": "Run EDGEfab with EDGEmat's build",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/extensions/edgefab",
+        "--extensionDevelopmentPath=${workspaceFolder}/../EDGEmat/extensions/edgemat"
+      ],
+      "outFiles": ["${workspaceFolder}/extensions/edgefab/dist/**/*.js"]
     }
   ]
 }
