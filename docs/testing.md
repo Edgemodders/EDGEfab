@@ -12,7 +12,7 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Nothing open for 0.1.0:** the Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on the final build, main `8d0c9ed` (after Rename went all the way in), on 2026-11-17. Rename's own check passed on it too. Two late changes are built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
+Last updated 2026-11-17. Each row links to its test. **Nothing open for 0.1.0:** the Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on the final build, main `ac488ed`, on 2026-11-18 (the owner's evening of 2026-11-17), after Rename went all the way in and two small fixes (the Add to Project message's button reads Pack and Play; the Desk names the picture a model was made from). Rename's own check and the Pictures tab's offline check passed on it too. Two late changes are built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
@@ -282,7 +282,7 @@ By the owner in an Extension Development Host on main (builds `19be535` to `55f3
 
 Changed during the run, at the owner's ask: the buttons read **Generate 3D Model**, **Edit Picture** and **Draw Picture** (tooltips kept); a history card shows "from Picture N" and "3D" as yellow outlined chips at its right; the history column widens with the window; the tab comes back after the window reloads (step 11); a failed rename names another window's 3D view and puts the closed tabs back. Asked of REDcode (#29): a tab title for the 3D view, which reads `view.glb`.
 
-Step 11 (the tab comes back after the window reloads, on the same picture) passed the same day, by the owner. **Not seen in VS Code:** the failed rename's new message and its reopened tabs (they show only when the item's 3D view is open in a second window). Open with the owner: whether a rename should close the item's tabs in every window.
+Step 11 (the tab comes back after the window reloads, on the same picture) passed the same day, by the owner. **Not seen in VS Code:** the failed rename's new message and its reopened tabs (they show only when the item's 3D view is open in a second window). **Seen by Claude in a scratch VS Code window** (its own profile, Desk and Library, for the wiki's screenshots, on `ac488ed`): the tab restored after a reload on the same picture, the chips, the Desk's "From picture 2" for a model made from picture 2 of 5 (it read "From picture 5" before the fix), the 3D view, the Library view and Connect an Assistant's list. Open with the owner: whether a rename should close the item's tabs in every window.
 
 ## F1 check: game materials on a prop's parts
 
@@ -370,7 +370,7 @@ After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the bui
 
 ### Run 9, 2026-11-17: passed (step 1), the final build for 0.1.0
 
-After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in (`ok` both). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
+After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
 ## F1: Add to Project (without the game)
 
@@ -500,7 +500,7 @@ On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 mat
 
 ### Run 3, 2026-11-17: passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in (the same results; 770 kB packed).
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build (the same results; 770 kB packed).
 
 | Step | Result |
 |---|---|
@@ -677,7 +677,7 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 
 ### Run 5, 2026-11-17: step 1 passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, and on `ac488ed`, the final build: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
