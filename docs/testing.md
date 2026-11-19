@@ -22,8 +22,9 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
 | [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
-| [Add to Project again (without the game)](#f1-add-to-project-again-without-the-game) | Automated, with REDbridge | F1 | 2026-11-18 | **Pass**: unchanged materials and swapped parts kept. VS Code and the game not run |
+| [Add to Project again (without the game)](#f1-add-to-project-again-without-the-game) | Automated, with REDbridge | F1 | 2026-11-18 | **Pass**: unchanged materials and swapped parts kept |
 | [Add to Project again, with EDGEmat's parts (without the game)](#f1-add-to-project-again-with-edgemats-parts-without-the-game) | Automated, with REDbridge and EDGEmat's build | F1 | 2026-11-18 | **Pass**: parts swapped by EDGEmat's own tools kept, and back again |
+| [Add to Project again and Open in EDGEmat, in VS Code](#f1-add-to-project-again-and-open-in-edgemat-in-vs-code-the-owner) | By hand in VS Code, both tools' builds: the owner | F1 | 2026-11-18 | **Pass** (owner), after Open in EDGEmat and Reveal in REDcode were added |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated, with REDbridge for `--add` | F1 | 2026-11-17 | **Pass**: the files inside take the name too |
 | [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
@@ -372,7 +373,7 @@ After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the bui
 
 ### Run 9, 2026-11-17: passed (step 1), the final build for 0.1.0
 
-After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
+After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, on `af59fb8` after Add to Project again, and on `c579bf4` after Open in EDGEmat (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
 ## F1: Add to Project (without the game)
 
@@ -478,6 +479,24 @@ EDGEfab main `6c849d5` with EDGEmat main `c2f2ae7`, on a copy of the owner's Neo
 
 **Not run:** the owner in the game (EDGEmat's hand test "Game materials on a prop's parts" covers the look; a prop added again after a swap is the same files).
 
+## F1: Add to Project again and Open in EDGEmat, in VS Code (the owner)
+
+What the two offline checks above can't see: the message's words and buttons, and the way from EDGEfab's Desk to a prop's parts in EDGEmat. By hand in an Extension Development Host with both tools' builds (F5, **Run EDGEfab with EDGEmat's build**; EDGEmat 0.3.3 or later), a REDcode project open, a prop in parts on the Desk.
+
+| Step | Expected |
+|---|---|
+| 1. **Add to Project** on the prop | The usual message, no "kept" words, no **Start Over...** |
+| 2. **Add to Project** again | Seconds; "Its materials are unchanged, so they were kept"; **Start Over...** among the buttons |
+| 3. **Open in EDGEmat** (the prop's menu, the palette icon on its line, or the message's button) | EDGEmat's Desk with the prop's mesh, its look, and one row per part |
+| 4. Right-click a part, **Use a Game Surface...**; then EDGEfab's **Add to Project** again | The message names the part as keeping the material you gave it; the part still wears it in 3D |
+| 5. **Reveal in REDcode** on the message | The prop's mesh shown in REDcode's Project view |
+| 6. **Start Over...**, confirm | The confirmation names the part going back; minutes later the part wears the model's own texture |
+| 7. The prop's `view.glb` open in a second VS Code window, **Rename** in the first | The rename fails with a message naming another VS Code window, and the first window's tabs open again. Closed there, the rename works |
+
+### Run 1, 2026-11-18: passed (the owner)
+
+Steps 1, 2 and 7 first, on main `76d3a14`. Steps 3 to 6 on `4bc3c0f`, after two changes the run asked for: the owner found no way from EDGEfab's Desk to the prop's parts (the mesh had to be found in REDcode's Project view, then Open in EDGEmat), and pressed EDGEmat's own Add to Project for EDGEfab's ("nothing new to write"). Built the same day: **Open in EDGEmat** on the Desk and on the message, **Reveal in REDcode** in place of Reveal Entity; EDGEmat #15 asks the same of EDGEmat's messages. The owner: "everything works and flows a little better".
+
 ## F1: the Library (without the game)
 
 A Desk prop goes into the EDGE Library with its game files built in, from there into a project as a copy noted in the project's `source/library.json`, is updated one version up, refreshed in the project, and copied back to the Desk; through the MCP server, in scratch folders. Run after every change to `core/library.ts`.
@@ -562,7 +581,7 @@ On main, the build with `renameInside` (core `make.ts`). On `vending_e2e` (6 mat
 
 ### Run 3, 2026-11-17: passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again (the same results; 21 files with `keep.d.ts`, 781 kB packed).
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, on `af59fb8` after Add to Project again (the same results; 21 files with `keep.d.ts`, 781 kB packed), and on `c579bf4` after Open in EDGEmat (the same).
 
 | Step | Result |
 |---|---|
@@ -739,7 +758,7 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 
 ### Run 5, 2026-11-17: step 1 passed, the final build for 0.1.0
 
-On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, and on `af59fb8` after Add to Project again: `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
+On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, on `af59fb8` after Add to Project again, and on `c579bf4` after Open in EDGEmat (803 kB): `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
 ## F1: picture first and parts (without the game)
 
