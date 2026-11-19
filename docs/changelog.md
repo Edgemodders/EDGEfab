@@ -10,7 +10,7 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 ## Unreleased
 
-## 0.1.0 (2026-11-16)
+## 0.1.0 (2026-11-18)
 
 <!-- nexus
 New: The first EDGEfab, a preview: props for your mod, from your own 3D model or from your words
