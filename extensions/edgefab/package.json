@@ -183,6 +183,12 @@
         "icon": "$(new-file)"
       },
       {
+        "command": "edgefab.openInEdgemat",
+        "title": "Open in EDGEmat",
+        "category": "EDGEfab",
+        "icon": "$(symbol-color)"
+      },
+      {
         "command": "edgefab.paintGlow",
         "title": "Make the Painted Lights Glow...",
         "category": "EDGEfab",
@@ -331,6 +337,16 @@
           "group": "1@0"
         },
         {
+          "command": "edgefab.openInEdgemat",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "inline"
+        },
+        {
+          "command": "edgefab.openInEdgemat",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@1"
+        },
+        {
           "command": "edgefab.view",
           "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "1@0"
@@ -469,6 +485,10 @@
         },
         {
           "command": "edgefab.addToProject",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.openInEdgemat",
           "when": "false"
         },
         {

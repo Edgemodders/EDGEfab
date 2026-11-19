@@ -31,6 +31,8 @@ interface REDcodeApi {
   project?(): { name: string; dir: string; archive: string } | undefined;
   packAndTry?(): Promise<"rednode" | "hot" | "installed" | undefined>;
   packAndPlay?(): Promise<"rednode" | "hot" | "installed" | undefined>;
+  /** Shows a project file in REDcode's Project view. */
+  revealInProject?(file: string): Promise<boolean>;
 }
 
 /** REDcode's API, only when REDcode is already active (activating it here could race its own start). */
@@ -45,6 +47,66 @@ function packAndPlay(): (() => Promise<unknown>) | undefined {
   const api = redcode();
   const run = api?.packAndPlay ?? api?.packAndTry;
   return run ? () => run.call(api) : undefined;
+}
+
+const EdgematId = "edgemodders.edgemat";
+const hasEdgemat = () => !!vscode.extensions.getExtension(EdgematId);
+
+/** The message button that shows a project file: in REDcode's Project view when REDcode can, else in the file explorer. */
+const revealLabel = () => (typeof redcode()?.revealInProject === "function" ? "Reveal in REDcode" : "Reveal Entity");
+async function revealInProject(file: string): Promise<void> {
+  const api = redcode();
+  const shown = typeof api?.revealInProject === "function" ? await api.revealInProject(file).catch(() => false) : false;
+  if (!shown) void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(file));
+}
+
+/** A project mesh on EDGEmat's Desk, one row per part, where a part takes a game surface or material. */
+async function openInEdgemat(meshFile: string): Promise<void> {
+  if (!hasEdgemat()) {
+    const pick = await vscode.window.showInformationMessage("EDGEfab: a part's material is changed in EDGEmat, which isn't installed.", "Find EDGEmat");
+    if (pick) void vscode.commands.executeCommand("workbench.extensions.search", EdgematId);
+    return;
+  }
+  try {
+    await vscode.commands.executeCommand("edgemat.openMesh", vscode.Uri.file(meshFile));
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: EDGEmat couldn't open ${path.basename(meshFile)}: ${message(e)}`);
+  }
+}
+
+/** A Desk prop's mesh in a project: found by the record Add to Project left there (`<name>.edgefab.json`, the Desk item's id). */
+function meshInProject(project: ProjectFolders, folder: string): string | undefined {
+  let id: unknown;
+  try {
+    id = JSON.parse(fs.readFileSync(path.join(folder, "asset.json"), "utf8")).id;
+  } catch {
+    return undefined;
+  }
+  if (typeof id !== "string" || !id) return undefined;
+  const walk = (dir: string, depth: number): string | undefined => {
+    let names: fs.Dirent[];
+    try {
+      names = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return undefined;
+    }
+    for (const d of names) {
+      if (!d.isFile() || !d.name.toLowerCase().endsWith(".edgefab.json")) continue;
+      try {
+        const r = JSON.parse(fs.readFileSync(path.join(dir, d.name), "utf8"));
+        const file = r?.asset?.id === id && typeof r.mesh === "string" ? path.join(project.archive, ...r.mesh.split("\\")) : undefined;
+        if (file && fs.existsSync(file)) return file;
+      } catch {
+        // not a record
+      }
+    }
+    if (depth > 0) for (const d of names) if (d.isDirectory()) {
+      const hit = walk(path.join(dir, d.name), depth - 1);
+      if (hit) return hit;
+    }
+    return undefined;
+  };
+  return walk(project.raw, 6);
 }
 
 let output: vscode.OutputChannel;
@@ -354,8 +416,11 @@ async function withBridge<T>(title: string, run: (call: BridgeCall, step: (m: st
 
 const collisionSetting = () => vscode.workspace.getConfiguration("edgefab").get<Collision>("collision") ?? DefaultCollision;
 
-/** Add to Project. `startOver`: every texture made again and every part back on the model's own textures. */
-async function addItemToProject(folder: string, title: string, startOver = false, picked?: Awaited<ReturnType<typeof pickProject>>): Promise<void> {
+/**
+ * Add to Project. `startOver`: every texture made again and every part back on the model's own textures.
+ * `thenEdgemat`: the mesh opens in EDGEmat as soon as it is in the project.
+ */
+async function addItemToProject(folder: string, title: string, startOver = false, picked?: Awaited<ReturnType<typeof pickProject>>, thenEdgemat = false): Promise<void> {
   const project = picked ?? (await pickProject());
   if (!project) return;
   const collision = collisionSetting();
@@ -374,7 +439,10 @@ async function addItemToProject(folder: string, title: string, startOver = false
     const keptWords = result.kept.length ? ` ${result.kept.length === result.materials.length ? "Its materials are unchanged, so they were kept" : `${result.kept.length} of its ${result.materials.length} materials are unchanged and were kept`}.` : "";
     const swappedWords = result.swapped.length ? ` ${result.swapped.map((s) => partName(s.material)).join(", ")} ${result.swapped.length > 1 ? "keep the materials" : "keeps the material"} you gave ${result.swapped.length > 1 ? "them" : "it"}.` : "";
     const again = result.kept.length || result.swapped.length ? ["Start Over..."] : [];
-    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity", "Show Log", ...again];
+    const meshFile = path.join(project.archive, ...result.mesh.split("\\"));
+    if (thenEdgemat) await openInEdgemat(meshFile);
+    const reveal = revealLabel();
+    const actions = [...(hasEdgemat() && !thenEdgemat ? ["Open in EDGEmat"] : []), ...(packAndPlay() ? ["Pack and Play"] : []), reveal, ...again];
     const pick = await vscode.window.showInformationMessage(
       `EDGEfab added ${title} to ${project.name}, ${how}.${keptWords}${swappedWords} Place ${path.win32.basename(result.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
@@ -391,9 +459,9 @@ async function addItemToProject(folder: string, title: string, startOver = false
       if (go === "Start Over") await addItemToProject(folder, title, true, project);
       return;
     }
+    if (pick === "Open in EDGEmat") await openInEdgemat(meshFile);
     if (pick === "Pack and Play") await packAndPlay()?.();
-    if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...result.entity.split("\\"))));
-    if (pick === "Show Log") output.show();
+    if (pick === reveal) await revealInProject(meshFile);
   } catch (e) {
     log(`Add to Project failed: ${message(e)}`);
     const pick = await vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`, "Show Log");
@@ -585,13 +653,14 @@ async function libraryToProject(a: LibraryAsset): Promise<void> {
     const r = addFromLibrary(a, project, root);
     log(`Added ${a.title} (version ${r.version}) from the Library to ${project.name}: ${r.entity}`);
     for (const f of r.files) log(`  ${f}`);
-    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), "Reveal Entity"];
+    const reveal = revealLabel();
+    const actions = [...(packAndPlay() ? ["Pack and Play"] : []), reveal];
     const pick = await vscode.window.showInformationMessage(
       `EDGEfab ${r.replaced ? "updated" : "added"} ${a.title} (version ${r.version}) from the Library into ${project.name}. Place ${path.win32.basename(r.entity)} with EDGEbuilder, or spawn it.`,
       ...actions,
     );
     if (pick === "Pack and Play") await packAndPlay()?.();
-    if (pick === "Reveal Entity") void vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(path.join(project.archive, ...r.entity.split("\\"))));
+    if (pick === reveal) await revealInProject(path.join(project.archive, ...r.entity.split("\\")));
   } catch (e) {
     log(`Add to Project from the Library failed: ${message(e)}`);
     void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
@@ -800,6 +869,21 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.addToProject", async (item: unknown) => {
       const entry = entryOf(item);
       if (entry) await addItemToProject(entry.folder, entry.title);
+    }),
+    // A prop's parts take game materials in EDGEmat, on its mesh in a project: straight there from the Desk.
+    vscode.commands.registerCommand("edgefab.openInEdgemat", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (!entry) return;
+      const project = await pickProject();
+      if (!project) return;
+      const mesh = meshInProject(project, entry.folder);
+      if (mesh) return openInEdgemat(mesh);
+      const go = await vscode.window.showInformationMessage(
+        `${entry.title} isn't in ${project.name} yet.`,
+        { modal: true, detail: "EDGEmat changes a prop's materials in a project. Add it to the project, then it opens in EDGEmat." },
+        "Add to Project",
+      );
+      if (go === "Add to Project") await addItemToProject(entry.folder, entry.title, false, project, true);
     }),
     vscode.commands.registerCommand("edgefab.paintGlow", async (item: unknown) => {
       const entry = entryOf(item);
