@@ -20,7 +20,7 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-15. The first build (F1) is built and has passed its tests; its first release (0.1.0, a preview) is next; the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
+As of 2026-11-18. The first build (F1) is released as **0.1.0, a preview** (2026-11-18); the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
 
 | Phase | Status |
 |---|---|
