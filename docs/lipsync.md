@@ -125,7 +125,7 @@ The tab calls the other tools through their extension APIs and never does their 
 | Tune (later) | Nudge the timing, the strength per mouth part, edit keys on a curve | EDGEfab |
 | **Watch in the Game** | The character spawned beside V says the line | REDnode |
 
-A 3D face in the tab needs the head's `.facialsetup` decoded (its poses are binary data no tool reads yet). Until then the tab shows curves and the game shows the face. Decoding it is research of its own (R-face below).
+A 3D face in the tab needs the head's `.facialsetup` and a solver for it. **Corrected 2026-11-20:** the file is already decoded by WolvenKit and comes through REDbridge as tables; what is missing is the solver, the head as glTF and playback ([R-face](#r-face-the-head-in-the-tab-sized-2026-11-20), about 1 to 2 weeks to a first talking head). Until then the tab shows curves and the game shows the face.
 
 ### From a typed line to a clip
 
@@ -346,6 +346,43 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 | The graph as a mod | Route A replaces game files. An ArchiveXL way to add to a graph without replacing it is **unverified** |
 | Who builds what | EDGEfab: the shapes, the numbers and the scheduler, as a function in `@edgemodders/edgefab-core` that a REDnode Node mod calls (as EDGEbuilder calls the core). The conversation mod: the voice, the talk, the ticking. REDnode: setting graph inputs each frame without a call per number, and sound at a character's place (requests, after LS1) |
 | The ElevenLabs key in a spike | The product goes through EDGEwave or the game's voice package. LS3 reads `ELEVENLABS_API_KEY` from the environment and spends a few credits of the owner's |
+
+## R-face: the head in the tab (sized 2026-11-20)
+
+The owner asked on 2026-11-20 whether the tab will show the character's head speaking, and to bring the research forward. A side agent sized it the same day (read-only; game 2.5, REDbridge 0.16.0). **Confirmed** means run or seen in the data; **read** means from WolvenKit's source or its Blender add-on (both GPL: facts only, no code taken); the rest is marked.
+
+**The decode is already done.** WolvenKit parses a `.facialsetup`'s three buffers, so `cr2w.toJson` returns them today as tables: "pose N moves bone B by this rotation and translation" (confirmed on 7 files, 0.2 to 1.3 s each). This page's and [NPC faces](faces.html)' "binary data no tool reads yet" was wrong. What is left is building, not reverse engineering.
+
+| Fact | Value | Mark |
+|---|---|---|
+| Facial setups in the game | 406: 400 full (about 400 KB each, 14.7 MB as JSON), 6 light crowd ones | Confirmed |
+| A head's rig | 344 bones, 414 tracks | Confirmed |
+| The 414 tracks | 13 envelopes, 141 main pose weights, 86 override weights, 141 lip sync outputs (the main poses' order), 33 wrinkles | Confirmed |
+| Every full head | The same counts: face 121 poses and 255 correctives, tongue 18 and 4, eyes 12; only the transforms differ | Confirmed on 6 |
+| A pose | A list of bone changes: a rotation, a translation, the bone; small steps from the rest pose | Confirmed (sizes exact, every rotation a unit quaternion, bones inside the rig) |
+| The rules table | Which track is which pose, limits under lip sync, poses that reduce others, upper or lower face, left or right, in-betweens (the jaw has a half-open one), correctives and their parents, wrinkles | Layout read; most meanings confirmed by the names |
+| `jaw_mid_open` applied to the rig | The jaw turns 20 degrees, the lower lip's middle drops 2.5 cm, the upper lip stays: an open mouth | Confirmed, as numbers (no picture yet) |
+
+**How tracks become a face** (read from the Blender add-on's solver, new on 2026-11-07, which says it follows the game's `Sermo` node; **not checked against the game**), in short: each main pose's weight is its track, clamped; under lip sync some are capped by limits that `jaliJaw` and `jaliLips` move; poses reduce other poses; `upperFace` and `lowerFace` scale their halves; **an override weight scales the acting on its pose while `lipSyncEnvelope` is up, then the pose's lip sync output is added and clamped**; in-betweens and correctives follow from the weights; the bones get every active pose's change on top of the rest pose. Not covered by anyone: the left and right lip sync envelopes, `faceEnvelope`, `antiStretch`, pose scales (pupils, tongue thickness).
+
+| Step to a head in the tab | Work | Effort (the agent's estimate) |
+|---|---|---|
+| Read a head's setup | `cr2w.toJson`, kept compact | Hours |
+| EDGEfab's own solver in core | The rules above, with tests on numbers | 2 to 4 days |
+| The head as glTF | `project.export` of the head's meshes on the head rig (several meshes: head, eyes, teeth, lashes). **Not tried: the least known step** | 1 to 3 days |
+| Playback | Solve each frame, write the bones as a plain glTF animation, play it in REDcode's viewer with the sound | 2 to 4 days |
+| **A first talking head** | | **1 to 2 weeks** |
+| As in the game | The mood under the line, wrinkles, pupils, every body type | Open-ended; by need |
+
+| Hard part | State |
+|---|---|
+| **License: the owner's call.** The only solver in public is GPL (the Blender add-on). EDGEfab is MIT | Write EDGEfab's own from the rules as described here (no code read into it), or run the solve in a GPL process, as REDbridge is. Proposed: its own |
+| Nothing gives the game's bones for a set of tracks | "Right" is judged by eye beside the same line in the game |
+| The head's export | Not checked that every head mesh comes out on the 344-bone rig with weights a web viewer plays |
+
+**The smallest proof** (half a day, no solver): export the sample head with its rig, apply `jaw_mid_open` at 1 by the plain rule, and open it in REDcode's viewer: an open mouth. Then one frame of a real line beside the game.
+
+**For live lip sync, from the same rules:** the lip sync output is added to the acted face and clamped at 1, which fits LS1 (the jaw's output alone opened the mouth). A pose's limit applies only while `lipSyncEnvelope` is above 0, so leaving the envelope at 0 keeps the shapes uncapped. Half-open in-betweens and correctives come for free from the game's solver. A made shape can also be previewed on the head offline once the solver exists, without starting the game.
 
 ## Sources
 
