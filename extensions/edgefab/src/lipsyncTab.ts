@@ -4,7 +4,8 @@
 // still show and play silently.
 
 import * as vscode from "vscode";
-import { lipsyncCharacters, lipsyncClip, lipsyncLines, DefaultLanguage, type LipsyncCharacter } from "./core";
+import * as path from "node:path";
+import { headModel, lipsyncCacheDir, lipsyncCharacters, lipsyncClip, lipsyncLines, DefaultLanguage, type LipsyncCharacter } from "./core";
 import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { lipsyncHtml } from "./lipsyncPage";
 
@@ -14,6 +15,8 @@ export interface LipSyncHost {
   bridge(): Promise<{ call: BridgeCall; stop?: () => void }>;
   /** A game sound file as audio a webview decodes (REDcode's sound()); undefined when REDcode isn't there. */
   sound?: (gamePath: string) => Promise<{ data: Uint8Array; mime: string }>;
+  /** The extension's folder, for the head viewer's script (dist/webview); without it the tab shows the sketch. */
+  extensionPath?: string;
 }
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -64,8 +67,40 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
     return;
   }
 
-  const p = (panel = vscode.window.createWebviewPanel("edgefab.lipsync", "Lip Sync", vscode.ViewColumn.Active, { enableScripts: true, retainContextWhenHidden: true }));
+  // The page may load two kinds of file: the head viewer's script from the extension, and heads from the cache.
+  const webviewDir = host.extensionPath ? path.join(host.extensionPath, "dist", "webview") : undefined;
+  const headsDir = path.join(lipsyncCacheDir(), "heads");
+  const p = (panel = vscode.window.createWebviewPanel("edgefab.lipsync", "Lip Sync", vscode.ViewColumn.Active, {
+    enableScripts: true,
+    retainContextWhenHidden: true,
+    localResourceRoots: [...(webviewDir ? [vscode.Uri.file(webviewDir)] : []), vscode.Uri.file(headsDir)],
+  }));
   const post = (tell = (m: unknown) => void p.webview.postMessage(m));
+
+  // The head for a clip: the one its lip sync set's rig belongs to, else the plain head of that gender. Read and
+  // exported once a rig, then sent to the page when the rig changes.
+  let shownRig: string | undefined;
+  const showHead = async (rig: string | undefined) => {
+    if (!webviewDir || !rig || rig === shownRig) return;
+    shownRig = rig;
+    const started = Date.now();
+    try {
+      const head = await headModel(call, { rig });
+      if (rig !== shownRig) return;
+      const own = head.rig === rig;
+      post({
+        type: "head",
+        models: head.models.map((m) => ({ kind: m.kind, uri: p.webview.asWebviewUri(vscode.Uri.file(m.file)).toString() })),
+        face: head.face,
+        note: own ? "The head this line was made on, moved by the clip's tracks. Drag to turn it." : "A plain head (this line's own was not found), moved by the clip's tracks. Drag to turn it.",
+      });
+      host.log(`Lip Sync: the head of ${path.basename(head.rig)}, ${head.models.length} meshes, ${Date.now() - started} ms`);
+    } catch (e) {
+      shownRig = undefined;
+      host.log(`Lip Sync: no head: ${message(e)}`);
+      post({ type: "head", error: "The head didn't load; this is a sketch from the jaw and lip tracks" });
+    }
+  };
   p.onDidDispose(() => {
     panel = undefined;
     tell = undefined;
@@ -118,6 +153,7 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
             : Promise.resolve(post({ type: "audio", clip: m.clip, error: m.audio ? "Install REDcode to hear the line: it decodes the game's voice files." : "This line has no voice file in this language." }));
         const clip = await lipsyncClip(call, { set: String(m.set), clip: String(m.clip) });
         if (mine === asked) post({ type: "clip", data: clip });
+        if (mine === asked) void showHead(clip.rig);
         host.log(`Lip Sync: ${m.clip}, ${clip.tracks.length} of ${clip.trackCount} tracks move, ${Date.now() - started} ms`);
         await audio;
       }
@@ -126,5 +162,5 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
       post({ type: "error", text: message(e) });
     }
   });
-  p.webview.html = lipsyncHtml(p.webview.cspSource);
+  p.webview.html = lipsyncHtml(p.webview.cspSource, webviewDir ? p.webview.asWebviewUri(vscode.Uri.file(path.join(webviewDir, "lipsyncHead.js"))).toString() : undefined);
 }

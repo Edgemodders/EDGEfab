@@ -382,6 +382,18 @@ The owner asked on 2026-11-20 whether the tab will show the character's head spe
 
 **The smallest proof** (half a day, no solver): export the sample head with its rig, apply `jaw_mid_open` at 1 by the plain rule, and open it in REDcode's viewer: an open mouth. Then one frame of a real line beside the game.
 
+**Decided by the owner, 2026-11-20:** EDGEfab writes its own solver, and **the talking head in the tab comes first**, since it is how a modder judges lip sync; then the rest of the editor. **The editor's main use, the owner's goal:** type a new line's words, EDGEwave makes the voice with ElevenLabs behind the scenes, and the new audio and its lip sync play on the head.
+
+**Built 2026-11-20 (first slice; not yet opened in VS Code):**
+
+| Part | Where |
+|---|---|
+| The solver: 414 track values in, the bones out | Core `src/core/lipsync/faceSolve.ts`, EDGEfab's own, written from the rules above in plain words; no GPL code was read into it. Pure, so the tab's page runs the same file. Left out for now: the left and right lip sync envelopes, `faceEnvelope`, `antiStretch`, pose scales, levels of detail. Limits and the kinds of influence are as described, not checked against the game |
+| A head from the game | Core `src/core/lipsync/face.ts`: `headModel` by the face rig a lip sync set names (the head's folder holds its meshes and setup) or by appearance; the setup in the solver's shape; each mesh as a GLB on the face rig, without materials; kept under `%LOCALAPPDATA%\EDGEfab\cache\lipsync\heads` |
+| The head in the tab | `src/webview/lipsyncHead.ts` (three.js, bundled to `dist/webview/lipsyncHead.js`, 585 KB): the head in place of the mouth sketch, posed at the playhead every frame, turned by dragging. A line shows the head it was made on |
+| Tested | The reading and the solver against the game; the page in a browser with a real line ([Tests](testing.html#the-head-in-the-lip-sync-tab-without-vs-code)) |
+| Not yet | Textures and eyes that look like eyes, hair, the mood under a line, the clip's own bone keys (head and neck), wrinkles; a head by character when no line is open |
+
 **For live lip sync, from the same rules:** the lip sync output is added to the acted face and clamped at 1, which fits LS1 (the jaw's output alone opened the mouth). A pose's limit applies only while `lipSyncEnvelope` is above 0, so leaving the envelope at 0 keeps the shapes uncapped. Half-open in-betweens and correctives come for free from the game's solver. A made shape can also be previewed on the head offline once the solver exists, without starting the game.
 
 ## Sources

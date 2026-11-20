@@ -32,5 +32,5 @@ export {
   type LipsyncCharacter, type LipsyncClip, type LipsyncLine, type LipsyncLines, type LipsyncScene, type LipsyncTrack, type TrackGroup,
 } from "./lipsync";
 export { mouthFeatureFields, MouthFeature, MouthShapes, type MouthShape } from "./lipsync/shapes";
-export { faceSetupCached, headModel, headParts, readFaceSetup, DefaultHeads, type HeadModel, type HeadParts } from "./lipsync/face";
+export { faceSetupCached, headModel, headOfRig, headParts, readFaceSetup, rigGender, DefaultHeads, type HeadModel, type HeadParts } from "./lipsync/face";
 export { boneToGltf, clipValues, faceSolver, type ClipTracks, type FaceChanges, type FacePart, type FaceSetup } from "./lipsync/faceSolve";

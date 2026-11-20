@@ -5,3 +5,4 @@ tsconfig.json
 esbuild.mjs
 dist/core.js
 dist/**/*.map
+tsconfig.webview.json

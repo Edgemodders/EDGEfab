@@ -81,3 +81,5 @@ The site at https://edgemodders.github.io/EDGEfab/ is built by `.github/workflow
 | `docs/assets/brand/icon.png` | Site icon, and the extension's Marketplace icon later |
 | `docs/assets/brand/badges/*.svg` | README badges. Edit the list in `tools/brand/badges.py` |
 | `tools/brand/activity.svg` | The activity bar icon. Drawn by hand, not rendered: 24 × 24, stroke 2, `currentColor`, the family's HUD brackets around a cube. F1 copies it to `extensions/edgefab/images/activity.svg` |
+
+**three.js for the Lip Sync tab's head** (2026-11-20): `npm install --save-dev --save-exact three@0.170.0 @types/three@0.170.0` in `extensions/edgefab` (MIT; the version REDcode's viewer uses). `node esbuild.mjs` bundles it with the face solver into `dist/webview/lipsyncHead.js`, the one script a webview loads from a file; `tsconfig.webview.json` typechecks `src/webview` (browser code, bundler resolution), and `tools/release/notices.mjs` reads its source map for the notices.

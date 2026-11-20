@@ -870,6 +870,7 @@ export function activate(context: vscode.ExtensionContext): void {
             return { call: own.call, stop: () => own.client.stop() };
           },
           sound: typeof redcode()?.sound === "function" ? (gamePath) => redcode()!.sound!({ path: gamePath }) : undefined,
+          extensionPath: context.extensionPath,
         },
         typeof character === "string" ? character : undefined,
       ),

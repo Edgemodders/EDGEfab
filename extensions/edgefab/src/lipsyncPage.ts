@@ -2,13 +2,15 @@
 // It only draws what the extension sends (src/lipsyncTab.ts) and asks for more; it reads nothing itself.
 // The script uses no template literals, so it can sit in one here.
 
-export function lipsyncHtml(cspSource: string): string {
+/** `headScript` is the head viewer's script (dist/webview/lipsyncHead.js) as a webview address; without it the
+ *  tab shows the mouth sketch only. */
+export function lipsyncHtml(cspSource: string, headScript?: string): string {
   const nonce = Array.from({ length: 24 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; media-src blob: data:; img-src ${cspSource} data:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; media-src blob: data:; img-src ${cspSource} data: blob:; connect-src ${cspSource};">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lip Sync</title>
 <style>
@@ -49,7 +51,9 @@ export function lipsyncHtml(cspSource: string): string {
   .bar label { display: inline-flex; gap: 5px; align-items: center; color: var(--dim); cursor: pointer; }
   #stage { display: flex; gap: 12px; align-items: flex-start; }
   #mouthBox { width: 132px; flex: none; text-align: center; color: var(--dim); font-size: 11px; position: sticky; top: 0; }
+  #mouthBox.head { width: 300px; }
   #mouth { width: 132px; height: 100px; border: 1px solid var(--line); display: block; margin-bottom: 4px; }
+  #head { width: 300px; height: 340px; border: 1px solid var(--line); display: block; margin-bottom: 4px; cursor: grab; }
   #curvesBox { flex: 1; min-width: 0; }
   #curves { width: 100%; display: block; cursor: crosshair; }
   #readout { min-height: 20px; color: var(--dim); font-size: 12px; margin-top: 6px; font-variant-numeric: tabular-nums; }
@@ -88,13 +92,14 @@ export function lipsyncHtml(cspSource: string): string {
         <span class="dim" id="audioNote"></span>
       </div>
       <div id="stage">
-        <div id="mouthBox"><canvas id="mouth" width="264" height="200"></canvas>A sketch from the jaw and lip tracks, not the game's face</div>
+        <div id="mouthBox"><canvas id="head" hidden></canvas><canvas id="mouth" width="264" height="200"></canvas><span id="faceNote">A sketch from the jaw and lip tracks, not the game's face</span></div>
         <div id="curvesBox"><canvas id="curves"></canvas><div id="readout"></div></div>
       </div>
       <table id="tracks" hidden></table>
     </div>
   </section>
 </main>
+${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
 <script nonce="${nonce}">
 (function () {
   var host = typeof acquireVsCodeApi === "function" ? acquireVsCodeApi() : (window.lipsyncHost || { postMessage: function () {} });
@@ -217,6 +222,8 @@ export function lipsyncHtml(cspSource: string): string {
   // A mouth from four numbers: how far the jaw opens, how wide the lips stretch, how far they purse, and whether
   // they close. A sketch to read the curves by, until a real head shows in the tab (docs/lipsync.md, R-face).
   function drawMouth() {
+    // The real head, when one is loaded: posed by the face solver at the playhead.
+    if (window.lipsyncHead && window.lipsyncHead.ready) { window.lipsyncHead.show(state.clip, state.at); return; }
     var c = $("mouth"), g = c.getContext("2d");
     g.setTransform(2, 0, 0, 2, 0, 0);
     g.clearRect(0, 0, 132, 100);
@@ -347,6 +354,17 @@ export function lipsyncHtml(cspSource: string): string {
       $("readout").innerHTML = "<b>" + m.data.tracks.length + "</b> of " + m.data.trackCount + " tracks move in this line. Point at a curve to read it.";
       draw(); showTracks();
     } else if (m.type === "audio") gotAudio(m);
+    else if (m.type === "head") {
+      // The head for this clip's rig: its meshes and its facial setup. Until it shows, the sketch stays.
+      if (m.error || !window.lipsyncHead) { $("faceNote").textContent = m.error || "A sketch from the jaw and lip tracks, not the game's face"; return; }
+      $("faceNote").textContent = "Loading the head";
+      window.lipsyncHead.load($("head"), m).then(function () {
+        if (!window.lipsyncHead.ready) { $("faceNote").textContent = "The head didn't load; this is a sketch from the jaw and lip tracks"; return; }
+        $("head").hidden = false; $("mouth").hidden = true; $("mouthBox").className = "head";
+        $("faceNote").textContent = m.note || "The head, moved by the clip's tracks. Drag to turn it.";
+        draw();
+      }, function (err) { $("faceNote").textContent = "The head didn't load (" + (err && err.message ? err.message : err) + ")"; });
+    }
     else if (m.type === "busy") setStatus(m.text + " ...");
     else if (m.type === "error") setStatus(m.text, true);
     else if (m.type === "pick") host.postMessage({ type: "pick", character: m.character });

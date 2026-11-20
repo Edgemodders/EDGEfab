@@ -186,12 +186,44 @@ export async function faceSetupCached(call: BridgeCall, rig: string, setup: stri
 /** Raised when the cached shape changes, so old files are read again. */
 const FaceCacheVersion = 1;
 
-/** The head of an appearance, ready to show: parts, setup, and the meshes exported on the face rig (without
- *  their materials: the tab colours them by kind). Hair is left out unless asked: without its textures it is
- *  a block. Kept in the cache; a second call is quick. */
-export async function headModel(call: BridgeCall, request: { app: string; appearance?: string; hair?: boolean; cacheDir?: string }): Promise<HeadModel> {
+/** The head a face rig belongs to, found by the game's naming: a head's folder holds its skeleton
+ *  (`<head>_skeleton.rig`), its facial setup and its meshes. A lip sync set names such a rig, so this gives
+ *  the head a clip was made on. Undefined when the folder has no skin mesh or no setup. */
+export async function headOfRig(call: BridgeCall, rig: string): Promise<HeadParts | undefined> {
+  const folder = rig.slice(0, rig.lastIndexOf("\\") + 1);
+  if (!/\\head\\/i.test(folder)) return undefined;
+  const found = (await call("archive.search", { query: folder, limit: 200 })) as { items?: { name: string }[] };
+  const names = (found?.items ?? []).map((i) => i.name).filter((n) => n.toLowerCase().startsWith(folder.toLowerCase()) && !n.slice(folder.length).includes("\\"));
+  const setup = names.find((n) => /\.facialsetup$/i.test(n));
+  const seen = new Set<string>();
+  const meshes: HeadParts["meshes"] = [];
+  for (const mesh of names.filter((n) => /\.mesh$/i.test(n)).sort()) {
+    const base = mesh.slice(folder.length);
+    const kind = Kinds.find(([re]) => re.test(base))?.[1];
+    // One mesh a kind: a folder can hold variants of a part.
+    if (!kind || kind === "hair" || /shadow|_lod|morph/i.test(base) || seen.has(kind)) continue;
+    seen.add(kind);
+    meshes.push({ name: base.replace(/\.mesh$/i, ""), mesh, kind });
+  }
+  if (!setup || !meshes.some((m) => m.kind === "skin")) return undefined;
+  return { app: "", appearance: "", rig, setup, meshes };
+}
+
+/** Whether a face rig is a woman's or a man's, from its folder (`\head\wa\`, `\head\ma\`, and the other builds). */
+export function rigGender(rig: string): "woman" | "man" | undefined {
+  const m = /\\head\\([a-z]+)\\/i.exec(rig);
+  return m ? (m[1].toLowerCase().startsWith("w") ? "woman" : "man") : undefined;
+}
+
+/** A head ready to show, by the face rig it belongs to (`rig`) or by appearance (`app`): parts, setup, and the
+ *  meshes exported on the face rig (without their materials: the tab colours them by kind). Hair is left out
+ *  unless asked: without its textures it is a block. Kept in the cache; a second call is quick. */
+export async function headModel(call: BridgeCall, request: { app?: string; appearance?: string; rig?: string; hair?: boolean; cacheDir?: string }): Promise<HeadModel> {
   const cacheDir = request.cacheDir ?? lipsyncCacheDir();
-  const parts = await headParts(call, request.app, request.appearance);
+  // The head a rig belongs to when asked by rig, else an appearance's; a rig with no head of its own falls
+  // back to the plain head of its gender.
+  const own = request.rig ? await headOfRig(call, request.rig) : undefined;
+  const parts = own ?? (await headParts(call, request.app ?? DefaultHeads[(request.rig && rigGender(request.rig)) || "woman"], request.appearance));
   const face = await faceSetupCached(call, parts.rig, parts.setup, cacheDir);
   const archiveDir = path.join(cacheDir, "heads", "archive");
   const rawDir = path.join(cacheDir, "heads", "raw");

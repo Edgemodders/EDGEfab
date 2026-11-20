@@ -44,6 +44,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Lip sync, reading the game (without VS Code)](#fl1-lip-sync-reading-the-game-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL1 | 2026-11-17 | Pass. **The tab in VS Code and the voice: not run** |
 | [Spike LS1: the jaw on command](#spike-ls1-the-jaw-on-command) | Automated build of the test archive; in the game by the owner | LS | 2026-11-20 | **Pass**: the jaw follows a number set through an anim feature. `SetInputFloat` does nothing |
 | [Spike LS2: mouth shapes](#spike-ls2-mouth-shapes) | Automated build of the test archive; in the game by the owner | LS | 2026-11-20 | The archive builds. **In the game: not run** |
+| [The head in the Lip Sync tab (without VS Code)](#the-head-in-the-lip-sync-tab-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL (R-face) | 2026-11-20 | Pass. **The tab in VS Code: not run** |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
 
 ## F1: the extension in VS Code (the owner's pass)
@@ -984,6 +985,18 @@ After LS1 ([Made lip sync](lipsync.html#live-lip-sync-a-line-made-while-the-game
 | Run | Result |
 |---|---|
 | 2026-11-20, REDbridge 0.16.0, game 2.5 | Step 1 **passes**: 13 shapes, 56 pose weights, 298 new nodes (475 to 773), the graph 79,225 bytes, the archive 24,576. Found: a new node's `$type` must be its first key or WolvenKit's reader refuses the file; a value used in several places is written once and pointed at (13 damp nodes, not 56). The damp and math nodes are new to this graph (none to copy), so their fields are from the type dump: **untried in the game**. The app has not run. Steps 2 to 9 not run |
+
+## The head in the Lip Sync tab (without VS Code)
+
+For the talking head ([Made lip sync](lipsync.html#r-face-the-head-in-the-tab-sized-2026-11-20)): a head read and exported from the game, EDGEfab's own face solver, and the head in the tab's page. Needs the game (2.5) and REDbridge 0.16.0 or later.
+
+1. `npm run build`, then `npm run lipsync:face --workspace extensions/edgefab`. It reads a crowd woman's head (parts, facial setup, meshes as glTF on the face rig), runs the solver on numbers, solves every frame of "There you are." and reads a man's head. **Expected:** every line `ok`, then `ok`.
+2. The page, in a browser: the tab's own HTML with the head viewer's script, the clip of "There you are." and the head its lip sync set's rig belongs to, sent as the extension would. **Expected:** the head shows in place of the mouth sketch; with the playhead in the middle of the line the mouth is open.
+3. **In VS Code (not run):** **EDGEfab: Open Lip Sync**, pick a character and a line. **Expected:** the head shows beside the curves within a few seconds, moves with the voice on Play, turns when dragged; another character's line brings that character's head.
+
+| Run | Result |
+|---|---|
+| 2026-11-20, REDbridge 0.16.0, game 2.5 | Steps 1 and 2 **pass**. Step 1, 24 checks: 344 bones and 414 tracks; face 121 poses and 255 correctives, tongue 18, eyes 12; the jaw's lip sync output at 1 turns the jaw bone 20.0 degrees, 9.4 at 0.5 (the half-open in-between), 4.7 at 0.25; the upper and lower face, the override weights and the correctives act as the rules say; 0.04 ms a solve; the jaw opens up to 9.4 degrees in "There you are."; a head 1 s the first time, 0.6 s from the cache; the man's head has the same tracks. Before it, by eye: `jaw_mid_open` on the exported head is an open mouth, front and side. Step 2: the clip names the rig of the head it was made on (`h0_019_wa_c__young`), and that head's meshes and setup are found from the rig's folder; at 0.93 s the mouth is open with the teeth showing and the brows raised. The head's message to the page is 2 MB. Meshes are plain colours (no textures), the eyes are white shells, no hair. Step 3 not run |
 
 ## F5a check: a game animation through REDbridge
 
