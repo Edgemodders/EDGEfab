@@ -330,6 +330,8 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 
 **For LS2, from this:** send few numbers, seldom, and let the graph do the rest. The graph has nodes that smooth a number over time (`animAnimNode_DampFloat`, `animAnimNode_FloatInterpolation`), so shape weights sent about 10 times a second could be eased inside the graph; and a shape's many tracks can be constants in the graph scaled by one number. A feature class with more floats, or several features, carries more shapes per call (to look up). Asked of REDnode after LS2 if still needed: a feature applied in one call, or numbers set each frame on the game's side.
 
+**The bar is above the game's barks (owner, 2026-11-20).** Watching the bark again, the owner found some of the game's own lip sync a poor match for what an English speaker's lips do, and hopes made lines can do better. A fit copies its examples, so numbers fitted on every line would land at the game's average. Proposed: the shapes come from how each sound is formed (closed lips for p, b, m; teeth on lip for f, v; rounded for oo, w), checked against the game's best lines (main characters in main quests) and not its crowd barks; the fit gives the timing behaviour only. LS4's test is then judged against the sound, not against the game's clip. **Unverified:** that main characters' lines are better than barks; the tab can show both side by side.
+
 **Order:** LS1 steps 1 to 3 first. LS3 and LS4 beside it. LS2 and LS5 only after LS1 passes.
 
 ### Open, and who owns it
