@@ -197,11 +197,11 @@ ui.window({
     ui.row(...numbers(0, 'feature')),
     ui.row(...numbers(1, 'feature')),
     ui.row(...numbers(2, 'feature')),
-    ui.heading('5. Wave the jaw'),
+    ui.heading('5. Wave the jaw (through the anim feature)'),
     ui.row(
-      ui.button('10 a second, input', () => startWave(10, 'input')),
-      ui.button('30 a second, input', () => startWave(30, 'input')),
-      ui.button('30 a second, feature', () => startWave(30, 'feature'), { variant: 'ghost' }),
+      ui.button('10 a second', () => startWave(10, 'feature')),
+      ui.button('20 a second', () => startWave(20, 'feature')),
+      ui.button('30 a second', () => startWave(30, 'feature')),
     ),
     ui.row(ui.button('Stop the wave', () => step('Stop the wave', async () => stopWave()), { variant: 'ghost' }), ui.button('All to 0', zero, { variant: 'ghost' })),
     log,
@@ -221,4 +221,4 @@ async function checkWorld() {
 }
 await checkWorld();
 setInterval(checkWorld, 5000);
-say('LS1 0.1.0 ready. Without edgefab_ls1_jaw.archive in the game, nothing here moves the face.');
+say('LS1 0.2.0 ready. Without edgefab_ls1_jaw.archive in the game, nothing here moves the face.');

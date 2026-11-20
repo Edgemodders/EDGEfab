@@ -42,7 +42,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
 | [Lip sync, reading the game (without VS Code)](#fl1-lip-sync-reading-the-game-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL1 | 2026-11-17 | Pass. **The tab in VS Code and the voice: not run** |
-| [Spike LS1: the jaw on command](#spike-ls1-the-jaw-on-command) | Automated build of the test archive; in the game by the owner | LS | 2026-11-17 | The archive builds. **In the game: not run** |
+| [Spike LS1: the jaw on command](#spike-ls1-the-jaw-on-command) | Automated build of the test archive; in the game by the owner | LS | 2026-11-20 | **Pass**: the jaw follows a number set through an anim feature. `SetInputFloat` does nothing |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
 
 ## F1: the extension in VS Code (the owner's pass)
@@ -960,6 +960,7 @@ The key spike of live lip sync ([Made lip sync](lipsync.html#live-lip-sync-a-lin
 | Run | Result |
 |---|---|
 | 2026-11-17, REDbridge 0.14.0, game 2.5 | Step 1 **passes**: the graph reads as JSON, takes 12 new nodes (475 to 487) and a declared feature, writes back (56,552 bytes), reads back with the new nodes wired as written, and packs (20,480 bytes). The test app is written from REDnode's Animation test and the game's type dump and **has not run in the game**. Steps 2 to 9 not run |
+| 2026-11-20, in the game (the owner; REDbridge 0.16.0's archive from the run above, the app from REDnode's apps folder; the app's log read by Claude) | **Pass.** The app ran first time. **Say it:** she spoke a line and her lips read it, so the game's lip sync runs on a spawned NPC outside a scene. **`SetInputFloat` moved nothing**, with the envelope and the override at 1 too. **The anim feature moved the jaw:** 1 an open mouth (not a yawn), 0.5 about half, 0 closed; the envelope made no difference seen (the override not tried this way). **The wave** (through the feature, after the app's wave buttons were changed to use it: 0.2.0) opened and closed at 10, 20 and 30 asked changes a second; 10 a little choppy, 30 better, fine for the most part. **The cost: 46 to 51 ms a change** (making the feature and applying it are two calls, each answered a frame or two later), so 20 asked gave about 13 a second and 30 asked about 13 too (187 of 467 skipped). The control (street faces as always) was not reported either way |
 
 ## F5a check: a game animation through REDbridge
 

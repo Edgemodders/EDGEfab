@@ -318,6 +318,18 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 
 **Built for LS1, 2026-11-17 (not run in the game):** the test archive's builder (`npm run lipsync:jaw --workspace extensions/edgefab -- <outFolder>`: the women's face graph with three numbers added to the jaw's lip sync track, the lip sync envelope and the jaw's override weight, each settable by `SetInputFloat` and through an anim feature) and a REDnode test app (`tools/spikes/ls1-jaw`: spawn, bark, the numbers, a wave at 10 and 30 changes a second). Found while building: the graph round trips through REDbridge's JSON with new nodes; a graph's inputs with a group read an **anim feature** declared in the graph (name and class), so the second way in uses a game class with three floats under a new feature name. The steps are on the [Tests](testing.html#spike-ls1-the-jaw-on-command) page.
 
+**LS1 passed in the game on 2026-11-20** ([Tests](testing.html#spike-ls1-the-jaw-on-command)). What it settles:
+
+| Finding | Meaning |
+|---|---|
+| A number set through an **anim feature** the graph declares moves the jaw of a spawned NPC; `SetInputFloat` does nothing | Route A works. The way in is `ApplyFeature` with a feature class's fields, not loose inputs. A feature class limits how many numbers one call carries (the spike's has three floats) |
+| 0.5 opens the mouth about half as far as 1 | The tracks can be driven in proportion, which mouth shapes need |
+| The jaw's lip sync track works alone; the envelope changed nothing seen | No switch to hold open while speaking |
+| The game's own bark moved her lips | The game's lip sync runs on a spawned NPC outside a scene; the numbers add to a working face |
+| A change costs about 50 ms from a REDnode Node mod, so about 13 changes a second at most; the wave still looked fine | One track at speech pace is within reach. A whole mouth shape, many tracks, is not, a call per number: LS2's question, now the main one |
+
+**For LS2, from this:** send few numbers, seldom, and let the graph do the rest. The graph has nodes that smooth a number over time (`animAnimNode_DampFloat`, `animAnimNode_FloatInterpolation`), so shape weights sent about 10 times a second could be eased inside the graph; and a shape's many tracks can be constants in the graph scaled by one number. A feature class with more floats, or several features, carries more shapes per call (to look up). Asked of REDnode after LS2 if still needed: a feature applied in one call, or numbers set each frame on the game's side.
+
 **Order:** LS1 steps 1 to 3 first. LS3 and LS4 beside it. LS2 and LS5 only after LS1 passes.
 
 ### Open, and who owns it
