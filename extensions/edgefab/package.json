@@ -610,7 +610,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "smoke": "node scripts/smoke.mjs",
     "lipsync": "node scripts/lipsync.mjs",
-    "lipsync:jaw": "node scripts/lipsync-live-jaw.mjs"
+    "lipsync:jaw": "node scripts/lipsync-live-jaw.mjs",
+    "lipsync:shapes": "node scripts/lipsync-live-shapes.mjs"
   },
   "devDependencies": {
     "@edgemodders/edgemat-core": "~0.3.2",

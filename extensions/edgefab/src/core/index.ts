@@ -31,3 +31,4 @@ export {
   lineOfClip, lipsyncCacheDir, lipsyncCharacter, lipsyncCharacters, lipsyncClip, lipsyncLines, sampleTrack, trackGroups, voiceTags, DefaultLanguage, LipsyncError,
   type LipsyncCharacter, type LipsyncClip, type LipsyncLine, type LipsyncLines, type LipsyncScene, type LipsyncTrack, type TrackGroup,
 } from "./lipsync";
+export { mouthFeatureFields, MouthFeature, MouthShapes, type MouthShape } from "./lipsync/shapes";

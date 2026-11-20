@@ -332,6 +332,8 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 
 **The bar is above the game's barks (owner, 2026-11-20).** Watching the bark again, the owner found some of the game's own lip sync a poor match for what an English speaker's lips do, and hopes made lines can do better. A fit copies its examples, so numbers fitted on every line would land at the game's average. Proposed: the shapes come from how each sound is formed (closed lips for p, b, m; teeth on lip for f, v; rounded for oo, w), checked against the game's best lines (main characters in main quests) and not its crowd barks; the fit gives the timing behaviour only. LS4's test is then judged against the sound, not against the game's clip. **Unverified:** that main characters' lines are better than barks; the tab can show both side by side.
 
+**Built for LS2, 2026-11-20 (not run in the game):** 13 mouth shapes made by hand in core (`src/core/lipsync/shapes.ts`, with the feature's slots), the archive's builder (`npm run lipsync:shapes --workspace extensions/edgefab -- <outFolder> [speed]`) and the test app `tools/spikes/ls2-shapes` (each shape, every shape in turn, and "Hello there, how are you" as a hand-timed sequence without sound). One feature carries all 13 numbers, eased in the graph. Steps on the [Tests](testing.html#spike-ls2-mouth-shapes) page.
+
 **Order:** LS1 steps 1 to 3 first. LS3 and LS4 beside it. LS2 and LS5 only after LS1 passes.
 
 ### Open, and who owns it
