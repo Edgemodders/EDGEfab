@@ -611,7 +611,8 @@
     "smoke": "node scripts/smoke.mjs",
     "lipsync": "node scripts/lipsync.mjs",
     "lipsync:jaw": "node scripts/lipsync-live-jaw.mjs",
-    "lipsync:shapes": "node scripts/lipsync-live-shapes.mjs"
+    "lipsync:shapes": "node scripts/lipsync-live-shapes.mjs",
+    "lipsync:face": "node scripts/lipsync-face.mjs"
   },
   "devDependencies": {
     "@edgemodders/edgemat-core": "~0.3.2",
