@@ -10,6 +10,10 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 ## Unreleased
 
+**New**
+
+- **Lip Sync, a first look**: **EDGEfab: Open Lip Sync** asks for a character and opens a tab with every lip synced line the game has for them, scene by scene. Pick a line to hear it and see what the game's clip moves for it, as curves under the voice: jaw, lips, tongue, brows, blinks, throat. Point at a curve to read it; the game's own track names are one click away. Needs REDbridge 0.14.0; REDcode plays the voice. For assistants, `fab_lipsync_lines` and `fab_lipsync_line`. Making new lip sync comes later ([Made lip sync](https://edgemodders.github.io/EDGEfab/lipsync.html)).
+
 ## 0.1.0 (2026-11-18)
 
 <!-- nexus

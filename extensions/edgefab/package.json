@@ -52,7 +52,8 @@
     "onCommand:edgefab.library.setRoot",
     "onCommand:edgefab.library.setModder",
     "onCommand:edgefab.refreshFromLibrary",
-    "onCommand:edgefab.makeProp"
+    "onCommand:edgefab.makeProp",
+    "onCommand:edgefab.openLipSync"
   ],
   "contributes": {
     "viewsContainers": {
@@ -203,6 +204,12 @@
         "command": "edgefab.glowOff",
         "title": "Stop the Glow",
         "category": "EDGEfab"
+      },
+      {
+        "command": "edgefab.openLipSync",
+        "title": "Open Lip Sync",
+        "category": "EDGEfab",
+        "icon": "$(comment-discussion)"
       },
       {
         "command": "edgefab.openPreview",
@@ -601,7 +608,9 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "lipsync": "node scripts/lipsync.mjs",
+    "lipsync:jaw": "node scripts/lipsync-live-jaw.mjs"
   },
   "devDependencies": {
     "@edgemodders/edgemat-core": "~0.3.2",

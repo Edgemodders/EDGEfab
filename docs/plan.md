@@ -177,6 +177,17 @@ Two things leave this plan: the animation index (it was EDGEfab's, above) and "b
 
 **When.** Not urgent: EDGEdir lists made animations in its phase D2. The item comes with the first EDGEfab phase that stores an animation (F7b-1 at the latest); the order is the owner's.
 
+### Lip sync (owner, 2026-11-17)
+
+Proposed in [Made lip sync](lipsync.html) and started on the branch `lipsync`, merged into main on 2026-11-19. Two courses share one core (`src/core/lipsync`):
+
+| Course | What | State |
+|---|---|---|
+| **FL, the Lip Sync tab** | See a character's lip synced lines (FL1), then make a line from typed words as an `.anims` clip in a mod (FL2, FL3) | FL1's first slice built and tested without VS Code. FL2's write step waits on REDbridge #14 |
+| **LS, live lip sync** | An NPC speaks a line made while the game runs (ElevenLabs' voice through REDnode), its mouth driven from the words and the voice's timings by a sequence of banked mouth shapes. For an NPC conversation mod | Spikes LS1 to LS5 ([Live lip sync](lipsync.html#live-lip-sync-a-line-made-while-the-game-runs)). **LS1, a script moving a live NPC's jaw through the face graph, decides whether the owner continues** |
+
+**Where FL goes in the order is not set.** The spikes come first; they are checks, not a phase. If LS1 passes, the live course likely leads and FL2's sound model takes its shapes and timing numbers from it.
+
 ## The first build, agreed 2026-10-30
 
 The owner's round trip: **import or generate a fully textured mesh, convert it to something the game can use, Add to Project (the open REDcode project), then place it in the game with EDGEbuilder.** Small, but it touches every tool once, and every later asset reuses its path.
