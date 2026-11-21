@@ -126,6 +126,12 @@ try {
   }
   check(widest.angle > 2 && widest.angle < 25, `the jaw opens during "There you are." (widest ${widest.angle.toFixed(1)} degrees at ${widest.at.toFixed(2)} s)`);
 
+  // A main character's own head, from the rig her lip sync sets name (it lives under main_npc, not head).
+  const panamRig = "base\\characters\\main_npc\\panam\\h0_001_wa_c__panam\\h0_001_wa_c__panam_skeleton.rig";
+  const panam = await timed("Panam's head, by its rig", () => core.headModel(call, { rig: panamRig }));
+  check(panam.rig === panamRig && panam.models.find((m) => m.kind === "skin")?.file.endsWith("h0_001_wa_c__panam.glb"), `a main character's rig gives her own head (${panam.models.map((m) => m.kind).join(", ")})`);
+  check(core.rigGender(panamRig) === "woman" && core.rigGender("base\\characters\\main_npc\\jackie\\h0_001_mb_c__jackie_welles\\h0_001_mb_c__jackie_welles_skeleton.rig") === "man", "a rig's name says a woman's head from a man's");
+
   const man = await timed("the man's head", () => core.headModel(call, { app: core.DefaultHeads.man }));
   check(man.face.tracks.length === 414 && man.face.tracks.every((n, i) => n === face.tracks[i]), "the man's head has the same 414 tracks in the same order");
   check(man.models.some((m) => m.kind === "skin"), `his head exports too (${man.models.map((m) => m.kind).join(", ")})`);

@@ -190,14 +190,17 @@ const FaceCacheVersion = 1;
  *  (`<head>_skeleton.rig`), its facial setup and its meshes. A lip sync set names such a rig, so this gives
  *  the head a clip was made on. Undefined when the folder has no skin mesh or no setup. */
 export async function headOfRig(call: BridgeCall, rig: string): Promise<HeadParts | undefined> {
+  // Crowd heads live under `base\characters\head\`, main characters' under `base\characters\main_npc\<name>\`:
+  // any folder with a skeleton, a setup and a skin mesh is a head.
   const folder = rig.slice(0, rig.lastIndexOf("\\") + 1);
-  if (!/\\head\\/i.test(folder)) return undefined;
+  if (!folder) return undefined;
   const found = (await call("archive.search", { query: folder, limit: 200 })) as { items?: { name: string }[] };
   const names = (found?.items ?? []).map((i) => i.name).filter((n) => n.toLowerCase().startsWith(folder.toLowerCase()) && !n.slice(folder.length).includes("\\"));
   const setup = names.find((n) => /\.facialsetup$/i.test(n));
   const seen = new Set<string>();
   const meshes: HeadParts["meshes"] = [];
-  for (const mesh of names.filter((n) => /\.mesh$/i.test(n)).sort()) {
+  // The shortest name of a kind is the plain part (`h0_001_wa_c__judy.mesh` before its `_cry` and `_cyberware`).
+  for (const mesh of names.filter((n) => /\.mesh$/i.test(n)).sort((a, b) => a.length - b.length || a.localeCompare(b))) {
     const base = mesh.slice(folder.length);
     const kind = Kinds.find(([re]) => re.test(base))?.[1];
     // One mesh a kind: a folder can hold variants of a part.
@@ -209,10 +212,11 @@ export async function headOfRig(call: BridgeCall, rig: string): Promise<HeadPart
   return { app: "", appearance: "", rig, setup, meshes };
 }
 
-/** Whether a face rig is a woman's or a man's, from its folder (`\head\wa\`, `\head\ma\`, and the other builds). */
+/** Whether a face rig is a woman's or a man's, from the build in its name (`h0_001_wa_c__judy`: `wa` a woman
+ *  of average build, `ma`, `mb` and `mf` men) or its folder (`\head\wa\`). */
 export function rigGender(rig: string): "woman" | "man" | undefined {
-  const m = /\\head\\([a-z]+)\\/i.exec(rig);
-  return m ? (m[1].toLowerCase().startsWith("w") ? "woman" : "man") : undefined;
+  const m = /\\h0_\d+_([a-z])[a-z]_/i.exec(rig) ?? /\\head\\([a-z])[a-z]*\\/i.exec(rig);
+  return m ? (m[1].toLowerCase() === "w" ? "woman" : "man") : undefined;
 }
 
 /** A head ready to show, by the face rig it belongs to (`rig`) or by appearance (`app`): parts, setup, and the
