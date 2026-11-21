@@ -44,19 +44,28 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   .foot { padding: 8px 10px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center; }
   #status { color: var(--dim); font-size: 12px; }
   #status.bad { color: var(--vscode-errorForeground, #f48771); }
-  section { flex: 1; min-width: 0; overflow: auto; padding: 14px 18px; }
+  section { flex: 1; min-width: 0; min-height: 0; overflow: hidden; padding: 14px 18px; display: flex; flex-direction: column; }
+  #detail { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   #words { font-size: 18px; line-height: 1.35; }
   #meta { color: var(--dim); font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
   .bar label { display: inline-flex; gap: 5px; align-items: center; color: var(--dim); cursor: pointer; }
-  #stage { display: flex; gap: 12px; align-items: flex-start; }
-  #mouthBox { width: 132px; flex: none; text-align: center; color: var(--dim); font-size: 11px; position: sticky; top: 0; }
+  /* Checkboxes in the theme's colours, as REDcode's editors draw them, not the browser's blue. */
+  input[type="checkbox"] { appearance: none; -webkit-appearance: none; margin: 0; flex: none; position: relative; cursor: pointer; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; background: var(--vscode-checkbox-background, var(--vscode-input-background)); border: 1px solid var(--vscode-checkbox-border, var(--line)); }
+  input[type="checkbox"]:checked { border-color: var(--accent); }
+  input[type="checkbox"]:checked::after { content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid var(--vscode-checkbox-foreground, var(--accent)); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  input[type="checkbox"]:focus-visible { outline: 1px solid var(--vscode-focusBorder, var(--accent)); outline-offset: 1px; }
+  input[type="checkbox"]:disabled { opacity: .5; cursor: default; }
+  /* The head stays put; only the curves scroll, in their own box. */
+  #stage { flex: 1; min-height: 0; display: flex; gap: 12px; align-items: stretch; }
+  #mouthBox { width: 132px; flex: none; text-align: center; color: var(--dim); font-size: 11px; }
   #mouthBox.head { width: 300px; }
   #mouth { width: 132px; height: 100px; border: 1px solid var(--line); display: block; margin-bottom: 4px; }
   #head { width: 300px; height: 340px; border: 1px solid var(--line); display: block; margin-bottom: 4px; cursor: grab; }
-  #curvesBox { flex: 1; min-width: 0; }
+  #curvesBox { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+  #curvesScroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
   #curves { width: 100%; display: block; cursor: crosshair; }
-  #readout { min-height: 20px; color: var(--dim); font-size: 12px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  #readout { min-height: 20px; flex: none; color: var(--dim); font-size: 12px; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
   #readout b { color: var(--vscode-foreground); font-weight: 600; }
   table { border-collapse: collapse; margin-top: 12px; font-size: 12px; width: 100%; }
   th, td { text-align: left; padding: 2px 10px 2px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
@@ -93,9 +102,8 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
       </div>
       <div id="stage">
         <div id="mouthBox"><canvas id="head" hidden></canvas><canvas id="mouth" width="264" height="200"></canvas><span id="faceNote">A sketch from the jaw and lip tracks, not the game's face</span></div>
-        <div id="curvesBox"><canvas id="curves"></canvas><div id="readout"></div></div>
+        <div id="curvesBox"><div id="readout"></div><div id="curvesScroll"><canvas id="curves"></canvas><table id="tracks" hidden></table></div></div>
       </div>
-      <table id="tracks" hidden></table>
     </div>
   </section>
 </main>
@@ -155,7 +163,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   }
 
   function draw() {
-    var c = $("curves"), box = $("curvesBox");
+    var c = $("curves"), box = $("curvesScroll");
     if (!state.clip) return;
     var rows = lanes();
     var w = Math.max(240, box.clientWidth), h = WAVE + rows.length * LANE + 4;
