@@ -59,12 +59,6 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   button.icon span { display: inline-flex; }
   #time { font-variant-numeric: tabular-nums; min-width: 12em; color: var(--dim); }
   #curves.drag { cursor: ew-resize; }
-  /* Checkboxes in the theme's colours, as REDcode's editors draw them, not the browser's blue. */
-  input[type="checkbox"] { appearance: none; -webkit-appearance: none; margin: 0; flex: none; position: relative; cursor: pointer; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; background: var(--vscode-checkbox-background, var(--vscode-input-background)); border: 1px solid var(--vscode-checkbox-border, var(--line)); }
-  input[type="checkbox"]:checked { border-color: var(--accent); }
-  input[type="checkbox"]:checked::after { content: ""; position: absolute; left: 4px; top: 1px; width: 4px; height: 8px; border: solid var(--vscode-checkbox-foreground, var(--accent)); border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  input[type="checkbox"]:focus-visible { outline: 1px solid var(--vscode-focusBorder, var(--accent)); outline-offset: 1px; }
-  input[type="checkbox"]:disabled { opacity: .5; cursor: default; }
   /* The head stays put; only the curves scroll, in their own box. */
   #stage { flex: 1; min-height: 0; display: flex; gap: 12px; align-items: stretch; }
   #mouthBox { width: 132px; flex: none; text-align: center; color: var(--dim); font-size: 11px; }
