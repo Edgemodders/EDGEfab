@@ -754,7 +754,11 @@ function lipSyncHost(): LipSyncHost {
       const wave = vscode.extensions.getExtension<{ apiVersion?: number; speakLine?: (o: Record<string, unknown>) => Promise<SpokenLine | { reason: string }> }>("edgemodders.edgewave");
       if (!wave) return { reason: "EDGEwave makes the voice: install EDGEwave to add a line." };
       const api = wave.isActive ? wave.exports : await wave.activate();
-      if (typeof api?.speakLine !== "function") return { reason: "This EDGEwave is too old to speak a line with its timings: update EDGEwave." };
+      if (typeof api?.speakLine !== "function") {
+        // Which EDGEwave answered, since an installed one and a development build can both be on the machine.
+        log(`Lip Sync: EDGEwave ${wave.packageJSON?.version} at ${wave.extensionPath} has no speakLine (its API has: ${Object.keys(api ?? {}).join(", ") || "nothing"})`);
+        return { reason: `The EDGEwave that is running (${wave.packageJSON?.version}, from ${wave.extensionPath}) can't speak a line with its timings yet: it needs a newer EDGEwave.` };
+      }
       return api.speakLine({ ...request, by: "EDGEfab" });
     },
   };
