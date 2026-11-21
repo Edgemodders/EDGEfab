@@ -55,17 +55,31 @@ const quiet = core.mouthEvents(even(tagged, 0.07, spoken));
 check(quiet.length === 2 && quiet[0].start >= 8 * 0.07 - 1e-9, `letters marked not spoken move nothing (${quiet.map((e) => e.shape).join(" ")}, from ${quiet[0]?.start.toFixed(2)} s)`);
 
 // The clip: the game's track names, keys in time, the lips closed on an m.
-const timings = even("mama");
+// An unhurried pace (8 letters a second), so the vowel has time to open.
+const timings = even("mama", 0.12);
 const clip = core.speechClip(timings, { name: "test" });
 const track = (pose) => clip.tracks.find((t) => t.name === `${pose}LipsyncPoseOutput`);
-check(clip.tracks.length >= 4 && clip.tracks.every((t) => t.name.endsWith("LipsyncPoseOutput") && t.group === "lipsync"), `the clip's tracks are lip sync outputs (${clip.tracks.length})`);
+check(clip.tracks.length >= 3 && clip.tracks.every((t) => t.name.endsWith("LipsyncPoseOutput") && t.group === "lipsync"), `the clip's tracks are lip sync outputs (${clip.tracks.length})`);
 check(clip.tracks.every((t) => t.keys.length >= 4 && t.keys.length % 2 === 0 && t.max <= 1 && t.min >= 0), "each has keys, between 0 and 1");
 check(clip.tracks.every((t) => t.keys.every((v, i) => i % 2 || i === 0 || v > t.keys[i - 2])), "keys go forward in time");
 const lead = core.DefaultSpeechTiming.lead;
 const mid = (i) => (timings.starts[i] + timings.ends[i]) / 2 - lead;
 check(sample(track("lips_together_up"), mid(0)) > 0.9 && sample(track("jaw_mid_open"), mid(0)) < 0.05, `on the first m the lips are together and the jaw shut (${sample(track("lips_together_up"), mid(0)).toFixed(2)}, ${sample(track("jaw_mid_open"), mid(0)).toFixed(2)})`);
-// At this pace (14 letters a second) a vowel between two closed lips has 70 ms: it opens well, not fully.
-check(sample(track("jaw_mid_open"), mid(1)) > 0.4 && sample(track("lips_together_up"), mid(1)) < 0.4, `on the a the jaw is open and the lips apart (${sample(track("jaw_mid_open"), mid(1)).toFixed(2)}, ${sample(track("lips_together_up"), mid(1)).toFixed(2)})`);
+check(sample(track("jaw_mid_open"), mid(1)) > 0.25 && sample(track("jaw_mid_open"), mid(1)) <= 0.6 && sample(track("lips_together_up"), mid(1)) < 0.2, `on the a the jaw is open, within the game's range, and the lips apart (${sample(track("jaw_mid_open"), mid(1)).toFixed(2)}, ${sample(track("lips_together_up"), mid(1)).toFixed(2)})`);
+// The game's own range (95 lines measured): the jaw to about 0.45, 0.63 at most; lip poses under 0.6 but for lips together.
+const busy = core.speechClip(even("Hello there, how are you my friend? The quick brown fox jumps over the lazy dog.", 0.075));
+check(busy.tracks.every((t) => /lips_together/.test(t.name) || t.max <= 0.65), `no pose goes past the game's range (highest ${Math.max(...busy.tracks.filter((t) => !/lips_together/.test(t.name)).map((t) => t.max)).toFixed(2)})`);
+const jawOf = busy.tracks.find((t) => t.name === "jaw_mid_openLipsyncPoseOutput");
+let turns = 0;
+let going = 0;
+for (let f = 1; f < busy.seconds * 30; f++) {
+  const d = sample(jawOf, f / 30) - sample(jawOf, (f - 1) / 30);
+  if (Math.abs(d) > 0.004) {
+    if (going && Math.sign(d) !== going) turns++;
+    going = Math.sign(d);
+  }
+}
+check(turns / busy.seconds < 7, `the jaw turns at the pace of syllables, not letters (${(turns / busy.seconds).toFixed(1)} a second; the game's is about 4.4)`);
 check(sample(track("lips_together_up"), timings.starts[0] - lead - 0.02) > 0.2, "the mouth starts forming before the sound");
 check(Math.abs(clip.seconds - (timings.ends[3] + 0.2)) < 1e-6 && core.speechClip(timings, { seconds: 3 }).seconds === 3, "the clip is as long as the audio, or a little past the last letter");
 check(clip.events.length === 4 && clip.trackCount === 414, "the clip carries its shapes, for the tab to show");

@@ -55,6 +55,8 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   #meta { color: var(--dim); font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
   .bar label { display: inline-flex; gap: 5px; align-items: center; color: var(--dim); cursor: pointer; }
+  .bar label.vol { gap: 6px; cursor: default; }
+  #volume { width: 90px; accent-color: var(--accent); cursor: pointer; }
   .transport { display: inline-flex; gap: 2px; }
   button.icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 26px; padding: 0; color: var(--vscode-foreground); background: transparent; border: 1px solid var(--line); }
   button.icon:hover { background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,.2)); }
@@ -119,6 +121,7 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
         <label><input type="checkbox" id="loop"> Loop</label>
         <label title="The tracks that mute other face animation while the line plays"><input type="checkbox" id="overrides"> Overrides</label>
         <label title="The game's own track names and values"><input type="checkbox" id="raw"> Track names</label>
+        <label class="vol" title="How loud the voice plays here"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 6h3l4-3v10l-4-3H2zM11 5.2a4 4 0 0 1 0 5.6l-.9-.9a2.7 2.7 0 0 0 0-3.8zM12.9 3.3a6.6 6.6 0 0 1 0 9.4l-.9-.9a5.3 5.3 0 0 0 0-7.6z"/></svg><input type="range" id="volume" min="0" max="100" value="100" aria-label="Volume"></label>
         <span class="dim" id="audioNote"></span>
       </div>
       <div id="stage">
@@ -134,7 +137,9 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   var host = typeof acquireVsCodeApi === "function" ? acquireVsCodeApi() : (window.lipsyncHost || { postMessage: function () {} });
   var $ = function (id) { return document.getElementById(id); };
   var state = { lines: null, clip: null, line: null, audio: null, peaks: null, playing: false, startedAt: 0, at: 0, hover: null, source: null };
-  var audioCtx = null;
+  var audioCtx = null, gain = null;
+  // The slider's place as loudness: squared, so the middle of the slider sounds about half as loud.
+  function volume() { var v = Number($("volume").value) / 100; return v * v; }
 
   // Lanes, top to bottom: plain words first; the game's names are under Track names.
   var LANES = [
@@ -290,7 +295,10 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
     if (state.audio && state.at < state.audio.duration) {
       audioCtx = audioCtx || new AudioContext();
       var src = audioCtx.createBufferSource();
-      src.buffer = state.audio; src.connect(audioCtx.destination); src.start(0, state.at);
+      // Through a gain node, so the volume slider works while the line plays.
+      if (!gain || gain.context !== audioCtx) { gain = audioCtx.createGain(); gain.connect(audioCtx.destination); }
+      gain.gain.value = volume();
+      src.buffer = state.audio; src.connect(gain); src.start(0, state.at);
       state.source = src; state.startedAt = audioCtx.currentTime - state.at;
     } else { state.source = null; state.startedAt = performance.now() - state.at * 1000; }
     requestAnimationFrame(tick);
@@ -377,7 +385,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   }
 
   // What VS Code keeps for this tab over a window reload: the character, and the line that is open.
-  function remember() { if (host.setState) host.setState({ character: state.character, clip: state.line ? state.line.clip : undefined }); }
+  function remember() { if (host.setState) host.setState({ character: state.character, clip: state.line ? state.line.clip : undefined, volume: Number($("volume").value) }); }
 
   function setStatus(s, bad) { var e = $("status"); e.textContent = s; e.className = bad ? "bad" : ""; }
 
@@ -457,6 +465,10 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   $("speak").onclick = function () { speak(); };
   $("again").onclick = function () { speak("new"); };
   $("say").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); speak(); } });
+  // The volume is kept with the tab, so it is the same after a reload.
+  var kept = host.getState ? host.getState() : null;
+  if (kept && typeof kept.volume === "number") $("volume").value = String(kept.volume);
+  $("volume").oninput = function () { if (gain) gain.gain.value = volume(); remember(); };
   $("toStart").onclick = function () { seek(0); };
   $("toEnd").onclick = function () { seek(seconds()); };
   $("stepBack").onclick = function () { step(-1); };

@@ -242,7 +242,7 @@ export interface SpeechTiming {
   quick: { shapes: string[]; attack: number; release: number };
 }
 
-export const DefaultSpeechTiming: SpeechTiming = { lead: 0.06, attack: 0.07, release: 0.09, strength: { tdn: 0.7, kg: 0.7, th: 0.85, r: 0.8, sz: 0.8 }, quick: { shapes: ["mbp", "fv"], attack: 0.045, release: 0.045 } };
+export const DefaultSpeechTiming: SpeechTiming = { lead: 0.06, attack: 0.09, release: 0.12, strength: {}, quick: { shapes: ["mbp", "fv"], attack: 0.045, release: 0.045 } };
 
 const Rate = 60;
 
@@ -267,9 +267,6 @@ export function shapeWeights(events: MouthEvent[], seconds: number, timing: Spee
       if (smooth * peak > w[f]) w[f] = smooth * peak;
     }
   }
-  // Closed lips win: while m, b or p is on, the other shapes give way, or the open jaw would keep the lips apart.
-  const closed = weights.mbp;
-  if (closed) for (const [shape, w] of Object.entries(weights)) if (shape !== "mbp") for (let f = 0; f < frames; f++) w[f] *= 1 - closed[f];
   return weights;
 }
 
@@ -308,13 +305,42 @@ export function speechClip(timings: LineTimings, options?: { name?: string; seco
   const weights = shapeWeights(events, seconds, options?.timing);
   const frames = Math.max(2, Math.ceil(seconds * Rate) + 1);
   const poses = new Map<string, Float32Array>();
+  // How open each consonant leaves the jaw, and how far closed lips push every other shape aside.
+  const jawLeft = new Float32Array(frames).fill(1);
+  for (const shape of MouthShapes) {
+    const w = weights[shape.id];
+    if (w && shape.closes) for (let f = 0; f < frames; f++) jawLeft[f] *= 1 - shape.closes * w[f];
+  }
+  const lipsShut = weights.mbp;
   for (const shape of MouthShapes) {
     const w = weights[shape.id];
     if (!w) continue;
     for (const [pose, amount] of Object.entries(shape.poses)) {
       let samples = poses.get(pose);
       if (!samples) poses.set(pose, (samples = new Float32Array(frames)));
-      for (let f = 0; f < frames; f++) samples[f] = Math.min(1, samples[f] + w[f] * amount);
+      for (let f = 0; f < frames; f++) {
+        // The jaw opens for vowels only, and a consonant shuts it by its own amount. While the lips are
+        // together the other lip shapes give way.
+        const scale = pose === "jaw_mid_open" ? jawLeft[f] : lipsShut && shape.id !== "mbp" ? 1 - lipsShut[f] : 1;
+        samples[f] = Math.min(1, samples[f] + w[f] * amount * scale);
+      }
+    }
+  }
+  // The jaw is heavy: it follows syllables, not letters (the game's turns about 4 times a second). A short
+  // running average takes the letter-rate flutter out; the lips keep their snap.
+  const jaw = poses.get("jaw_mid_open");
+  if (jaw) {
+    const copy = jaw.slice();
+    const reach = 3; // 7 samples at 60 a second, about 0.12 s
+    for (let f = 0; f < frames; f++) {
+      let sum = 0;
+      let n = 0;
+      for (let k = Math.max(0, f - reach); k <= Math.min(frames - 1, f + reach); k++) {
+        sum += copy[k];
+        n++;
+      }
+      // Never more open than the consonants allow at this moment (lips that close must still meet).
+      jaw[f] = Math.min(sum / n, copy[f] + 0.12) * (lipsShut ? 1 - lipsShut[f] * 0.9 : 1);
     }
   }
   const tracks: LipsyncTrack[] = [...poses].map(([pose, samples]) => {
