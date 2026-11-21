@@ -340,7 +340,7 @@ Smallest first within each; LS1 decides the path. LS3 and LS4 need no game and c
 
 | Point | State |
 |---|---|
-| Whose voice | Instant cloning of a game character uploads that actor's voice to ElevenLabs, and ElevenLabs asks for rights to the voice. The modder's own or a licensed voice has no such problem. EDGEwave's consent rule covers cloning; the conversation mod's owner decides |
+| Whose voice | Instant cloning of a game character uploads that actor's voice to ElevenLabs, and ElevenLabs asks for rights to the voice. The modder's own or a licensed voice has no such problem. EDGEwave's consent rule covers cloning; the conversation mod's owner decides. **Decided by the owner, 2026-11-21:** no more game audio sent to ElevenLabs. A character's voice is one of ElevenLabs' own, or one designed from a description of the character (EDGEwave's suggestion); a clone of the character's lines was tried once and is not the route |
 | Brows and blinks | The game's lip sync clips carry them (Review). Live, the face's own idle keeps blinking; brows on stressed words can come from loudness later |
 | Other heads | Men's graphs and the big and fat bodies' need the same change; V's and Judy's use other graphs. LS1 uses a crowd woman |
 | The graph as a mod | Route A replaces game files. An ArchiveXL way to add to a graph without replacing it is **unverified** |
