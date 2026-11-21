@@ -400,6 +400,43 @@ The owner asked on 2026-11-20 whether the tab will show the character's head spe
 
 **For live lip sync, from the same rules:** the lip sync output is added to the acted face and clamped at 1, which fits LS1 (the jaw's output alone opened the mouth). A pose's limit applies only while `lipSyncEnvelope` is above 0, so leaving the envelope at 0 keeps the shapes uncapped. Half-open in-betweens and correctives come for free from the game's solver. A made shape can also be previewed on the head offline once the solver exists, without starting the game.
 
+## A2F: finer mouth movement from audio (sized 2026-11-21)
+
+The owner's question (2026-11-20): can a service give more detailed lip movement from an audio clip than the game's own, which is stiff on some words? Moved up to right after Add a Line, as a spike. A side agent sized it on 2026-11-21 (read-only: nothing installed, signed up for or called). **Read** means from NVIDIA's pages; **confirmed** means run on the owner's PC; the pairings are proposals.
+
+**How Audio2Face-3D is run**
+
+| Way | What it takes | Fit |
+|---|---|---|
+| **The container (NIM 2.0), on the PC** | Docker in WSL2 with the GPU, a free NVIDIA NGC account and key to pull the image, NVIDIA's Python sample client. `python3 a2f_3d.py run_inference <line.wav> config/config_james.yml -u 127.0.0.1:52000` writes `animation_frames.csv` (read) | **The spike's route.** Local, so a game voice line stays on the PC. The owner's RTX 4090 has a ready profile (read); Docker 29.9.3, WSL2 with Ubuntu and the driver are there (confirmed). NVIDIA's 2.0 pages name only Ubuntu 24.04; WSL2 was last documented for 1.2 |
+| NVIDIA's hosted service | An NVIDIA account and key, a Python client; no GPU | Uploads the audio: only for audio the modder made (a line from Add a Line), not a game line. Price and allowance not found |
+| The open-source kit (SDK, MIT) | Built from source on Windows: Visual Studio, CUDA 12.9, TensorRT 10.13, and our own C++ to get shape values out (its samples only count frames) | 2 to 3 days before the first number. The route a modder could use later, as a helper beside the models (the model licence allows commercial use and redistribution, read) |
+
+| Fact | Value | Mark |
+|---|---|---|
+| Audio in | WAV, mono, 16-bit, 16 kHz advised | Read |
+| Out | ARKit's 52 face shapes, plus 16 tongue shapes when enabled, **30 frames a second (the game's rate)** | Read |
+| Not in it | Eye direction and head movement (always 0) | Read |
+| A trap | Its `MouthClose` includes jaw opening, so closed lips (p, b, m) need tuning | Read |
+| Values | Not bounded unless clamping is on; per-shape multipliers | Read |
+
+**The mapping, by hand** (proposals, none tried on the head). The big speech shapes all have a partner among the game's 141 lip sync poses: `JawOpen` to `jaw_mid_open`, `MouthFunnel` to `lips_*_funnel`, `MouthPucker` to `lips_*_purse`, `MouthClose` to `lips_together_*`, the upper and lower lip, the corners, the tongue tip. The game's finest lip poses have none (sticky corners, sharp corners, lip puff). So the spike can show whether Audio2Face's **timing and choice of shape** read better on words; it cannot add lip detail the game's rig only reaches in its own clips. The full table is in the agent's report, kept in this session's notes; it goes in core with the spike.
+
+**The spike (about a day, half of it setup):**
+
+| Step | Work |
+|---|---|
+| 1 | The owner makes a free NGC account and key (kept in WSL's environment, never printed) |
+| 2 | Docker sees the GPU in WSL; pull and start the container. **Most of the risk** (1 to 3 hours) |
+| 3 | Two or three game lines the owner finds stiff, and one that reads well, as WAV (mono, 16 kHz) |
+| 4 | Run the sample client, clamping on; read the CSV |
+| 5 | CSV to the tab's clip through the hand table (2 to 4 hours) |
+| 6 | On the head beside the game's own clip for the same line; the owner judges the words agreed beforehand |
+
+**A quicker first look, if the owner accepts a sign-up:** the hosted service on a line voiced through Add a Line (the modder's own audio), beside today's letter-based version of the same line. About two hours, no Docker. It answers "better than letters", not "better than the game".
+
+**What could make it fail:** the container under WSL2 (undocumented for 2.0); the driver reports CUDA 13.5 where the pages ask for below 13.0; closed lips wrong until `MouthClose` is tuned; amplitudes solved for NVIDIA's own faces; it hears sound only, so it may smear consonants the game's clips hit. **Not verified:** the hosted service's terms on uploaded audio, its price, the CSV's columns, whether the container runs with no network after its first start.
+
 ## Sources
 
 - JALI and Cyberpunk: [80.lv, a new look at JALI](https://80.lv/articles/cyberpunk-2077-a-new-look-at-jali-tech-for-facial-animation); [TechSpot](https://www.techspot.com/news/87205-cd-projekt-red-used-ai-lip-sync-cyberpunk.html); [JALI research page](https://www.dgp.toronto.edu/~karan/jali/index.html); [JALI at Annecy 2025](https://www.gamedeveloper.com/press-release/jali-inc-returns-to-annecy-2025-to-showcase-next-gen-automated-facial-animation-tools-and-workflows)
