@@ -50,6 +50,15 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   #meta { color: var(--dim); font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
   .bar label { display: inline-flex; gap: 5px; align-items: center; color: var(--dim); cursor: pointer; }
+  .transport { display: inline-flex; gap: 2px; }
+  button.icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 26px; padding: 0; color: var(--vscode-foreground); background: transparent; border: 1px solid var(--line); }
+  button.icon:hover { background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,.2)); }
+  button.icon.main { width: 38px; color: var(--vscode-button-foreground, #fff); background: var(--vscode-button-background, #0e639c); border-color: transparent; }
+  button.icon.main:hover { background: var(--vscode-button-hoverBackground, #1177bb); }
+  button.icon svg { display: block; }
+  button.icon span { display: inline-flex; }
+  #time { font-variant-numeric: tabular-nums; min-width: 12em; color: var(--dim); }
+  #curves.drag { cursor: ew-resize; }
   /* Checkboxes in the theme's colours, as REDcode's editors draw them, not the browser's blue. */
   input[type="checkbox"] { appearance: none; -webkit-appearance: none; margin: 0; flex: none; position: relative; cursor: pointer; width: 14px; height: 14px; border-radius: 3px; vertical-align: middle; background: var(--vscode-checkbox-background, var(--vscode-input-background)); border: 1px solid var(--vscode-checkbox-border, var(--line)); }
   input[type="checkbox"]:checked { border-color: var(--accent); }
@@ -94,7 +103,14 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
       <div id="words"></div>
       <div id="meta"></div>
       <div class="bar">
-        <button id="play">&#9654; Play</button>
+        <span class="transport">
+          <button class="icon" id="toStart" title="Jump to the start (Home)"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 2h2v12H2zM14 2v12L5 8z"/></svg></button>
+          <button class="icon" id="stepBack" title="Back one frame (Left arrow)"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M11 2v12L3 8zM12 2h2v12h-2z"/></svg></button>
+          <button class="icon main" id="play" title="Play or pause (Space)"><span id="playIcon"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M4 2l10 6-10 6z"/></svg></span><span id="pauseIcon" hidden><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M3 2h4v12H3zM9 2h4v12H9z"/></svg></span></button>
+          <button class="icon" id="stepForward" title="Forward one frame (Right arrow)"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M5 2v12l8-6zM2 2h2v12H2z"/></svg></button>
+          <button class="icon" id="toEnd" title="Jump to the end (End)"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M12 2h2v12h-2zM2 2v12l9-6z"/></svg></button>
+        </span>
+        <span id="time" title="Where the marker is: seconds, and the frame of the game's clip">0.00 s</span>
         <label><input type="checkbox" id="loop"> Loop</label>
         <label title="The tracks that mute other face animation while the line plays"><input type="checkbox" id="overrides"> Overrides</label>
         <label title="The game's own track names and values"><input type="checkbox" id="raw"> Track names</label>
@@ -163,6 +179,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   }
 
   function draw() {
+    showTime();
     var c = $("curves"), box = $("curvesScroll");
     if (!state.clip) return;
     var rows = lanes();
@@ -252,27 +269,51 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
     var total = seconds();
     state.at = audioCtx && state.source ? audioCtx.currentTime - state.startedAt : (performance.now() - state.startedAt) / 1000;
     if (state.at >= total) {
-      if ($("loop").checked) { stop(); play(); return; }
-      stop(); state.at = 0; draw(); return;
+      if ($("loop").checked) { stop(); state.at = 0; play(); return; }
+      stop(); state.at = total; draw(); return;
     }
     draw();
     requestAnimationFrame(tick);
   }
+  // Play starts at the marker (from the start when the marker is at the end); pressed again, it pauses there.
   function play() {
     if (!state.clip) return;
-    if (state.playing) { stop(); return; }
-    state.playing = true; $("play").innerHTML = "&#9632; Stop";
-    if (state.audio) {
+    if (state.playing) { stop(); draw(); return; }
+    var total = seconds();
+    if (state.at >= total - 0.001) state.at = 0;
+    state.playing = true; $("playIcon").hidden = true; $("pauseIcon").hidden = false;
+    if (state.audio && state.at < state.audio.duration) {
       audioCtx = audioCtx || new AudioContext();
       var src = audioCtx.createBufferSource();
-      src.buffer = state.audio; src.connect(audioCtx.destination); src.start();
-      state.source = src; state.startedAt = audioCtx.currentTime;
-    } else { state.source = null; state.startedAt = performance.now(); }
+      src.buffer = state.audio; src.connect(audioCtx.destination); src.start(0, state.at);
+      state.source = src; state.startedAt = audioCtx.currentTime - state.at;
+    } else { state.source = null; state.startedAt = performance.now() - state.at * 1000; }
     requestAnimationFrame(tick);
   }
+  // Pauses: the marker stays where it is.
   function stop() {
-    state.playing = false; $("play").innerHTML = "&#9654; Play";
+    state.playing = false; $("playIcon").hidden = false; $("pauseIcon").hidden = true;
     if (state.source) { try { state.source.stop(); } catch (e) {} state.source = null; }
+  }
+  function fps() { return state.clip && state.clip.fps > 0 ? state.clip.fps : 30; }
+  // Moves the marker to a time, pausing first.
+  function seek(s) {
+    if (!state.clip) return;
+    if (state.playing) stop();
+    state.at = Math.max(0, Math.min(seconds(), s));
+    draw();
+  }
+  // One frame of the game's clip back or forward, landing on whole frames.
+  function step(by) {
+    if (!state.clip) return;
+    var f = state.at * fps(), whole = Math.round(f);
+    var next = Math.abs(f - whole) < 0.01 ? whole + by : (by > 0 ? Math.ceil(f) : Math.floor(f));
+    seek(next / fps());
+  }
+  function showTime() {
+    if (!state.clip) { $("time").textContent = ""; return; }
+    var last = Math.round(seconds() * fps());
+    $("time").textContent = state.at.toFixed(2) + " s · frame " + Math.min(last, Math.round(state.at * fps())) + " of " + last;
   }
 
   function showTracks() {
@@ -379,6 +420,10 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   });
 
   $("play").onclick = play;
+  $("toStart").onclick = function () { seek(0); };
+  $("toEnd").onclick = function () { seek(seconds()); };
+  $("stepBack").onclick = function () { step(-1); };
+  $("stepForward").onclick = function () { step(1); };
   $("change").onclick = function () { host.postMessage({ type: "pick" }); };
   $("more").onclick = function () { host.postMessage({ type: "more", offset: Number($("more").dataset.offset) || 0 }); };
   $("overrides").onchange = function () { draw(); };
@@ -386,7 +431,11 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   var filterTimer = 0;
   $("filter").oninput = function () { clearTimeout(filterTimer); filterTimer = setTimeout(function () { host.postMessage({ type: "filter", scene: $("filter").value }); }, 350); };
   window.addEventListener("resize", draw);
-  window.addEventListener("keydown", function (e) { if (e.code === "Space" && e.target.tagName !== "INPUT" && state.clip) { e.preventDefault(); play(); } });
+  window.addEventListener("keydown", function (e) {
+    if (!state.clip || (e.target.tagName === "INPUT" && e.target.type !== "checkbox") || e.ctrlKey || e.altKey || e.metaKey) return;
+    var keys = { Space: play, ArrowLeft: function () { step(-1); }, ArrowRight: function () { step(1); }, Home: function () { seek(0); }, End: function () { seek(seconds()); } };
+    if (keys[e.code]) { e.preventDefault(); keys[e.code](); }
+  });
 
   var curves = $("curves");
   curves.addEventListener("mousemove", function (e) {
@@ -408,12 +457,20 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
     if (!state.playing) draw();
   });
   curves.addEventListener("mouseleave", function () { state.hover = null; if (!state.playing) draw(); });
-  curves.addEventListener("click", function (e) {
-    var geo = state.geometry; if (!geo || state.playing) return;
+  var dragging = false;
+  function scrub(e) {
+    var geo = state.geometry; if (!geo) return;
     var r = curves.getBoundingClientRect();
-    state.at = Math.max(0, Math.min(geo.total, ((e.clientX - r.left - LEFT) / geo.plotW) * geo.total));
-    draw();
+    seek(((e.clientX - r.left - LEFT) / geo.plotW) * geo.total);
+  }
+  curves.addEventListener("mousedown", function (e) {
+    if (e.button !== 0 || !state.geometry || !state.clip) return;
+    e.preventDefault();
+    dragging = true; curves.classList.add("drag");
+    scrub(e);
   });
+  window.addEventListener("mousemove", function (e) { if (dragging) scrub(e); });
+  window.addEventListener("mouseup", function () { if (dragging) { dragging = false; curves.classList.remove("drag"); } });
 
   host.postMessage({ type: "ready" });
 })();
