@@ -69,7 +69,6 @@ Requests that affect EDGEfab, filed from EDGEmat on 2026-10-15 and 16 (labelled 
 | REDcode | #29 | The 3D view opened with a tab title (`openModel(file, { title })`), so a prop's tab says its name, not `view.glb`; a way to close it before the folder moves | Open, filed 2026-11-17 from EDGEfab at the owner's ask. Unverified: whether a custom editor can set its tab title. EDGEfab keeps `view.glb` until then |
 | EDGEmat | #13 | `materialsFromModel` keeps the textures whose source didn't change (`keep` per material and slot), so a glow strength change is one `.mi` write and a new color map one texture | Open, filed 2026-11-18 from EDGEfab. Not blocking 0.1.0. EDGEfab's side (naming the unchanged slots from its record) waits for it |
 | EDGEchat | #5 | Connect EDGEfab in the plugin: its MCP server from npm, with a `tripo_api_key` setting (and the `openai_api_key` it has), so one install covers words to a prop in the game | Open, filed 2026-11-18 from EDGEfab. Waits for EDGEfab 0.1.0 on npm. Unconfirmed: the variables that tell the server where the game and REDbridge are |
-
 | EDGEwave | #13 | `speakLine`: one line spoken with ElevenLabs' character timings (API and MCP), without a project, the timings kept beside the WAV; for the Lip Sync tab's Add a Line | Open, filed 2026-11-20 from EDGEfab at the owner's ask; the EDGEwave session was told. **Add a Line waits on it** |
 
 ## Conventions
