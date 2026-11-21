@@ -1009,7 +1009,7 @@ The editor's main use ([Made lip sync](lipsync.html)): type a new line, EDGEwave
 
 | Run | Result |
 |---|---|
-| 2026-11-20 | Steps 1 and 2 **pass**. Step 1, 22 checks: "mama" is closed, open, closed, open; "the", "you" from the word list; "time" leaves its e silent; "city" starts with an s; letters marked not spoken (a direction in brackets) move nothing; on an m the lips are together and the jaw shut; the mouth starts before the sound. Found and fixed: lips that close must snap (45 ms), or a short vowel beside them never opens; at 14 letters a second a vowel between two closed lips opens to about two thirds. Step 2: "Hello there, how are you my friend?" gave 19 shapes and 16 tracks, and the head moved. Step 3 not run: **the real voice and real timings have not been through it** |
+| 2026-11-20 | Steps 1 and 2 **pass**. Step 1, 23 checks: "mama" is closed, open, closed, open; "the", "you" from the word list; "time" leaves its e silent; "city" starts with an s; letters marked not spoken (a direction in brackets) move nothing; on an m the lips are together and the jaw shut; the mouth starts before the sound. Found and fixed: lips that close must snap (45 ms), or a short vowel beside them never opens; at 14 letters a second a vowel between two closed lips opens to about two thirds. Step 2: "Hello there, how are you my friend?" gave 19 shapes and 16 tracks, and the head moved. Step 3 not run: **the real voice and real timings have not been through it** |
 
 ## F5a check: a game animation through REDbridge
 
