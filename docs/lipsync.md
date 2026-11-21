@@ -205,7 +205,7 @@ Proposed steps; the build session decides where they go. Each ends in a test, as
 | Tool | Request | For |
 |---|---|---|
 | REDbridge | #14 (open): `.anims` import from glTF **keeping float tracks**, and `anims.info`/`infoMany` returning a clip's tracks | FL0 to FL2 |
-| EDGEwave | Speak Line with ElevenLabs timings (`with-timestamps`), forced alignment for Re-Voice and recorded lines; the timings beside the WAV (its `voice.json`) and through `EDGEwaveApi` | FL2 |
+| EDGEwave | **Filed 2026-11-20 as [EDGEwave #13](https://github.com/Edgemodders/EDGEwave/issues/13)** (`speakLine`, one line with timings, no project needed). Speak Line with ElevenLabs timings (`with-timestamps`), forced alignment for Re-Voice and recorded lines; the timings beside the WAV (its `voice.json`) and through `EDGEwaveApi` | FL2 |
 | EDGEwave | The `.wem` route finished (its V2 step 5) | FL3 |
 | EDGEwave | Speaking a line as a package, `@edgemodders/edgewave-core` (ElevenLabs speech with timings and its voice clones, the key passed in or from the environment), so EDGEfab's core can voice a line outside VS Code | FL2, for callers outside VS Code |
 | EDGEquest | An API to add a voiced line to a scene with given clip names, and to write the mod `.lipmap` and its ArchiveXL entry | FL3 |
