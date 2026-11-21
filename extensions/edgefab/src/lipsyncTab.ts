@@ -216,6 +216,21 @@ export async function openLipSync(host: LipSyncHost, character?: string, restore
         const clip = await lipsyncClip(call, { set: String(m.set), clip: String(m.clip) });
         if (mine === asked) post({ type: "clip", data: clip });
         if (mine === asked) void showHead(clip.rig);
+        // Other versions of this line's lip sync, to switch to on the same voice and head: clips kept as
+        // JSON under the cache's `versions\<clip name>\` (the A2F spike writes Audio2Face's there).
+        if (mine === asked) {
+          const dir = path.join(lipsyncCacheDir(), "versions", String(m.clip));
+          const versions = fs.existsSync(dir)
+            ? fs.readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".json")).sort().flatMap((f) => {
+                try {
+                  return [{ name: f.slice(0, -5), clip: JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) }];
+                } catch {
+                  return [];
+                }
+              })
+            : [];
+          if (versions.length) post({ type: "versions", clip: m.clip, versions });
+        }
         host.log(`Lip Sync: ${m.clip}, ${clip.tracks.length} of ${clip.trackCount} tracks move, ${Date.now() - started} ms`);
         await audio;
       }

@@ -435,6 +435,8 @@ The owner's question (2026-11-20): can a service give more detailed lip movement
 
 **A quicker first look, if the owner accepts a sign-up:** the hosted service on a line voiced through Add a Line (the modder's own audio), beside today's letter-based version of the same line. About two hours, no Docker. It answers "better than letters", not "better than the game".
 
+**Run 2026-11-21: it works on the owner's PC** ([Tests](testing.html#spike-a2f-audio2face-against-the-games-clip)). The container starts in about a minute; a line takes seconds; the output is a CSV, 30 frames a second from 0, columns `blendShapes.<name>`. Core `src/core/lipsync/arkit.ts` maps it by hand to the game's tracks, and the tab now offers **other versions of a line's lip sync** beside the game's (clips under the cache's `versions\<clip name>\`), on the same voice and head. Four of Panam's lines are there as "Audio2Face" (scaled to the game's range) and "Audio2Face, full strength". In numbers it is in time with the game's clip and a different performance (jaw r 0.25 to 0.64), stronger than the game, and weak on closed lips. **Whether it reads better is the owner's look, not yet had.**
+
 **What could make it fail:** the container under WSL2 (undocumented for 2.0); the driver reports CUDA 13.5 where the pages ask for below 13.0; closed lips wrong until `MouthClose` is tuned; amplitudes solved for NVIDIA's own faces; it hears sound only, so it may smear consonants the game's clips hit. **Not verified:** the hosted service's terms on uploaded audio, its price, the CSV's columns, whether the container runs with no network after its first start.
 
 ## Sources

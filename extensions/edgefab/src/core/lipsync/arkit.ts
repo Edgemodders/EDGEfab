@@ -76,7 +76,7 @@ export interface ArkitOptions {
   gains?: Record<string, number>;
   /** Leave the upper face (eyes, brows) out: the mouth alone. Default true. */
   mouthOnly?: boolean;
-  /** MouthClose into "lips together", by how far it exceeds what the open jaw accounts for. 0 leaves it out. */
+  /** MouthClose into "lips together", as its share of the jaw's opening, times this. 0 leaves it out. */
   closeLips?: number;
 }
 
@@ -105,8 +105,12 @@ export function arkitClip(frames: ShapeFrame[], options: ArkitOptions = {}): Lip
       }
     }
     if (closeLips) {
-      // Audio2Face's MouthClose rises with the jaw; what it has over the jaw's opening is the lips meeting.
-      const together = Math.max(0, (f.shapes.MouthClose ?? 0) - (f.shapes.JawOpen ?? 0) * 0.5) * closeLips;
+      // Audio2Face's MouthClose is sized by the jaw's opening: as large as JawOpen when the lips meet over an
+      // open jaw. So the share of the opening it covers is how closed the lips are. (Seen on four game lines:
+      // it often leaves MouthClose at 0 on an m, b or p and just lowers the jaw, so closures stay weaker
+      // than the game's own.)
+      const close = f.shapes.MouthClose ?? 0;
+      const together = Math.min(1, close / Math.max(f.shapes.JawOpen ?? 0, 0.08)) * Math.min(1, Math.max(0, (close - 0.02) / 0.06)) * closeLips;
       if (together) {
         set("lips_together_up", n, together);
         set("lips_together_dn", n, together);

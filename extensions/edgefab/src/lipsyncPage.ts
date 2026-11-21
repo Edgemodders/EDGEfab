@@ -51,6 +51,9 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   #sayNote { flex-basis: 100%; font-size: 12px; min-height: 0; }
   #sayNote:empty { display: none; }
   #sayNote.bad { color: var(--vscode-errorForeground, #f48771); }
+  #versions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0 0 10px; color: var(--dim); font-size: 12px; }
+  #versions button { padding: 2px 10px; }
+  #versions button.on { color: var(--vscode-button-foreground, #fff); background: var(--vscode-button-background, #0e639c); border-color: transparent; }
   #words { font-size: 18px; line-height: 1.35; }
   #meta { color: var(--dim); font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
@@ -109,6 +112,7 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
     <div id="detail" hidden>
       <div id="words"></div>
       <div id="meta"></div>
+      <div id="versions" hidden></div>
       <div class="bar">
         <span class="transport">
           <button class="icon" id="toStart" title="Jump to the start (Home)"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M2 2h2v12H2zM14 2v12L5 8z"/></svg></button>
@@ -374,7 +378,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
     stop();
     Array.prototype.forEach.call(document.querySelectorAll(".row.on"), function (r) { r.classList.remove("on"); });
     row.classList.add("on");
-    state.line = l; state.clip = null; state.audio = null; state.peaks = null; state.at = 0; state.hover = null; state.audioNote = "Reading the voice";
+    $("versions").hidden = true; state.line = l; state.clip = null; state.audio = null; state.peaks = null; state.at = 0; state.hover = null; state.audioNote = "Reading the voice";
     $("empty").hidden = true; $("detail").hidden = false;
     $("words").textContent = l.text || "(no words in this language)";
     $("meta").textContent = l.clip + " · " + l.seconds.toFixed(2) + " s, " + l.frames + " frames · line " + l.lineId + " · " + sc.set;
@@ -424,7 +428,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
       if (m.error) { sayNote(m.error, true); return; }
       stop();
       Array.prototype.forEach.call(document.querySelectorAll(".row.on"), function (r) { r.classList.remove("on"); });
-      state.line = { clip: m.clip.clip, made: true }; state.clip = m.clip; state.audio = null; state.peaks = null; state.at = 0; state.hover = null; state.audioNote = "Reading the voice";
+      $("versions").hidden = true; state.line = { clip: m.clip.clip, made: true }; state.clip = m.clip; state.audio = null; state.peaks = null; state.at = 0; state.hover = null; state.audioNote = "Reading the voice";
       $("empty").hidden = true; $("detail").hidden = false; $("again").hidden = false;
       $("words").textContent = m.words;
       $("meta").textContent = "A new line · " + m.clip.seconds.toFixed(2) + " s · " + (m.voice ? "voice " + m.voice + " · " : "") + (m.take ? "take " + m.take + (m.cached ? " (kept from before)" : "") + " · " : "") + "mouth shapes: " + m.said;
@@ -438,6 +442,19 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
       state.clip = m.data;
       $("readout").innerHTML = "<b>" + m.data.tracks.length + "</b> of " + m.data.trackCount + " tracks move in this line. Point at a curve to read it.";
       draw(); showTracks();
+    } else if (m.type === "versions") {
+      // Other lip sync for the same line: switch between them on the same voice, head and marker.
+      if (!state.line || m.clip !== state.line.clip || !state.clip) return;
+      var all = [{ name: "The game's", clip: state.clip }].concat(m.versions);
+      var box = $("versions"); box.innerHTML = "Lip sync: "; box.hidden = false;
+      all.forEach(function (v, i) {
+        var b = document.createElement("button"); b.className = i ? "quiet" : "quiet on"; b.textContent = v.name;
+        b.onclick = function () {
+          Array.prototype.forEach.call(box.querySelectorAll("button"), function (x) { x.classList.remove("on"); });
+          b.classList.add("on"); state.clip = v.clip; draw(); showTracks();
+        };
+        box.appendChild(b);
+      });
     } else if (m.type === "audio") gotAudio(m);
     else if (m.type === "head") {
       // The head for this clip's rig: its meshes and its facial setup. Until it shows, the sketch stays.
