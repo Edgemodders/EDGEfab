@@ -18,7 +18,7 @@ import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
-import { openLipSync, restoreLipSync, type LipSyncHost } from "./lipsyncTab";
+import { openLipSync, restoreLipSync, type LipSyncHost, type SpokenLine } from "./lipsyncTab";
 
 declare const __VERSION__: string;
 
@@ -748,6 +748,15 @@ function lipSyncHost(): LipSyncHost {
       return api.sound({ path: gamePath });
     },
     extensionPath: extensionUri?.fsPath,
+    // EDGEwave speaks a new line (its speakLine, EDGEwave #13). It is started here if it is installed and not
+    // yet running: asking for a line is the modder asking for it.
+    speak: async (request) => {
+      const wave = vscode.extensions.getExtension<{ apiVersion?: number; speakLine?: (o: Record<string, unknown>) => Promise<SpokenLine | { reason: string }> }>("edgemodders.edgewave");
+      if (!wave) return { reason: "EDGEwave makes the voice: install EDGEwave to add a line." };
+      const api = wave.isActive ? wave.exports : await wave.activate();
+      if (typeof api?.speakLine !== "function") return { reason: "This EDGEwave is too old to speak a line with its timings: update EDGEwave." };
+      return api.speakLine({ ...request, by: "EDGEfab" });
+    },
   };
 }
 

@@ -46,6 +46,11 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
   #status.bad { color: var(--vscode-errorForeground, #f48771); }
   section { flex: 1; min-width: 0; min-height: 0; overflow: hidden; padding: 14px 18px; display: flex; flex-direction: column; }
   #detail { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #newLine { flex: none; display: flex; gap: 8px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  #newLine input { flex: 1; min-width: 14em; }
+  #sayNote { flex-basis: 100%; font-size: 12px; min-height: 0; }
+  #sayNote:empty { display: none; }
+  #sayNote.bad { color: var(--vscode-errorForeground, #f48771); }
   #words { font-size: 18px; line-height: 1.35; }
   #meta { color: var(--dim); font-size: 12px; margin: 4px 0 10px; word-break: break-all; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
@@ -92,6 +97,12 @@ export function lipsyncHtml(cspSource: string, headScript?: string): string {
     <div class="foot"><button class="quiet" id="more" hidden>Show More Scenes</button><span id="status"></span></div>
   </aside>
   <section>
+    <div id="newLine">
+      <input type="text" id="say" placeholder="Type a new line for this character, then press Enter" spellcheck="true">
+      <button id="speak" title="EDGEwave speaks the line in this character's voice (ElevenLabs, your key), and the lip sync is made from it">Speak</button>
+      <button class="quiet" id="again" hidden title="The same words, spoken again">New Take</button>
+      <span class="dim" id="sayNote"></span>
+    </div>
     <div id="empty">Pick a line on the left to hear it and see its lip sync: every part of the face the game's clip moves for that line, as curves under the voice. Lip sync is kept per line and per character, not per head, so one clip plays on any head.</div>
     <div id="detail" hidden>
       <div id="words"></div>
@@ -397,6 +408,22 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
       state.character = m.character.voiceTag; state.reopen = m.reopen || null;
       state.clip = null; state.line = null; $("detail").hidden = true; $("empty").hidden = false; $("filter").value = "";
       remember();
+      $("say").placeholder = "Type a new line for " + m.character.name + ", then press Enter"; $("again").hidden = true; sayNote("");
+    } else if (m.type === "made") {
+      // A line made from typed words: EDGEwave's voice, and lip sync from when each letter is spoken.
+      $("speak").disabled = !!m.busy; $("again").disabled = !!m.busy;
+      if (m.busy) { sayNote(m.busy + " ..."); return; }
+      if (m.error) { sayNote(m.error, true); return; }
+      stop();
+      Array.prototype.forEach.call(document.querySelectorAll(".row.on"), function (r) { r.classList.remove("on"); });
+      state.line = { clip: m.clip.clip, made: true }; state.clip = m.clip; state.audio = null; state.peaks = null; state.at = 0; state.hover = null; state.audioNote = "Reading the voice";
+      $("empty").hidden = true; $("detail").hidden = false; $("again").hidden = false;
+      $("words").textContent = m.words;
+      $("meta").textContent = "A new line · " + m.clip.seconds.toFixed(2) + " s · " + (m.voice ? "voice " + m.voice + " · " : "") + (m.take ? "take " + m.take + (m.cached ? " (kept from before)" : "") + " · " : "") + "mouth shapes: " + m.said;
+      $("audioNote").textContent = ""; $("tracks").hidden = true;
+      $("readout").innerHTML = "<b>" + m.clip.tracks.length + "</b> lip sync tracks made from the words and the voice's timing. Not in a project yet.";
+      sayNote((m.notes || []).join(" "));
+      draw(); showTracks();
     } else if (m.type === "lines") showLines(m.data, m.append);
     else if (m.type === "clip") {
       if (!state.line || m.data.clip !== state.line.clip) return;
@@ -421,6 +448,15 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
   });
 
   $("play").onclick = play;
+  function sayNote(s, bad) { var e = $("sayNote"); e.textContent = s || ""; e.className = bad ? "dim bad" : "dim"; }
+  function speak(take) {
+    var words = $("say").value.trim();
+    if (!words || $("speak").disabled) return;
+    host.postMessage({ type: "speak", text: words, take: take });
+  }
+  $("speak").onclick = function () { speak(); };
+  $("again").onclick = function () { speak("new"); };
+  $("say").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); speak(); } });
   $("toStart").onclick = function () { seek(0); };
   $("toEnd").onclick = function () { seek(seconds()); };
   $("stepBack").onclick = function () { step(-1); };

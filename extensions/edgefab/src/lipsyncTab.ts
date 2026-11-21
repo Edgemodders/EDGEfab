@@ -4,8 +4,9 @@
 // still show and play silently.
 
 import * as vscode from "vscode";
+import * as fs from "node:fs";
 import * as path from "node:path";
-import { headModel, lipsyncCacheDir, lipsyncCharacters, lipsyncClip, lipsyncLines, DefaultLanguage, type LipsyncCharacter } from "./core";
+import { headModel, lipsyncCacheDir, lipsyncCharacters, lipsyncClip, lipsyncLines, speechClip, DefaultLanguage, type LineTimings, type LipsyncCharacter } from "./core";
 import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { lipsyncHtml } from "./lipsyncPage";
 
@@ -17,6 +18,23 @@ export interface LipSyncHost {
   sound?: (gamePath: string) => Promise<{ data: Uint8Array; mime: string }>;
   /** The extension's folder, for the head viewer's script (dist/webview); without it the tab shows the sketch. */
   extensionPath?: string;
+  /** Speaks a new line in a character's voice, with when each letter is spoken: EDGEwave's speakLine (its #13).
+   *  The voice, the key, the consent and the cost are EDGEwave's; a refusal comes back as a reason in plain words. */
+  speak?: (request: { text: string; character: string; take?: "new" }) => Promise<SpokenLine | { reason: string }>;
+}
+
+/** What EDGEwave's speakLine answers, as far as the tab uses it. */
+export interface SpokenLine {
+  /** The WAV, a full path. */
+  wav: string;
+  seconds: number;
+  /** Seconds from the WAV's first sample. */
+  timings: LineTimings;
+  voice?: { id: string; name?: string };
+  model?: string;
+  take?: number;
+  cached?: boolean;
+  notes?: string[];
 }
 
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -154,6 +172,36 @@ export async function openLipSync(host: LipSyncHost, character?: string, restore
           sceneFilter = undefined;
           await showCharacter();
         }
+      } else if (m?.type === "speak") {
+        // Add a Line: the words, spoken by EDGEwave in this character's voice, then turned into mouth shapes
+        // from when each letter is spoken, and played on the head. Nothing is written into a project.
+        const words = String(m.text ?? "").trim();
+        if (!words || !current) return;
+        if (!host.speak) return void post({ type: "made", error: "EDGEwave makes the voice: install it to add a line." });
+        const mine = ++asked;
+        const started = Date.now();
+        post({ type: "made", busy: "Voicing the line" });
+        const spoken = await host.speak({ text: words, character: current.voiceTag, take: m.take === "new" ? "new" : undefined });
+        if (mine !== asked) return;
+        if ("reason" in spoken) return void post({ type: "made", error: spoken.reason });
+        const name = `made_${mine}`;
+        const clip = speechClip(spoken.timings, { name, seconds: spoken.seconds });
+        // The head: this character's own, from the rig its first lip synced scene names; else a plain one.
+        const first = (await lipsyncLines(call, { character: current.id, language, limit: 1 }).catch(() => undefined))?.scenes[0]?.rig;
+        post({
+          type: "made",
+          words,
+          clip,
+          said: clip.events.map((e) => e.shape).join(" "),
+          voice: spoken.voice?.name ?? spoken.voice?.id,
+          take: spoken.take,
+          cached: !!spoken.cached,
+          notes: spoken.notes ?? [],
+        });
+        post({ type: "audio", clip: name, mime: "audio/wav", base64: fs.readFileSync(spoken.wav).toString("base64") });
+        // ("plain" is no rig: the head falls back to the plain one.)
+        void showHead(first ?? shownRig ?? "plain");
+        host.log(`Lip Sync: made "${words}", ${clip.events.length} shapes, ${clip.tracks.length} tracks, ${Date.now() - started} ms${spoken.cached ? " (a kept take)" : ""}`);
       } else if (m?.type === "open") {
         const mine = ++asked;
         const started = Date.now();

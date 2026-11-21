@@ -20,6 +20,18 @@
         "--extensionDevelopmentPath=${workspaceFolder}/../EDGEmat/extensions/edgemat"
       ],
       "outFiles": ["${workspaceFolder}/extensions/edgefab/dist/**/*.js"]
+    },
+    {
+      // With EDGEwave's own build from the sibling checkout (built there: npm run build), in place of the
+      // installed EDGEwave: for the Lip Sync tab's Add a Line until EDGEwave's speakLine is released.
+      "name": "Run EDGEfab with EDGEwave's build",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/extensions/edgefab",
+        "--extensionDevelopmentPath=${workspaceFolder}/../EDGEwave"
+      ],
+      "outFiles": ["${workspaceFolder}/extensions/edgefab/dist/**/*.js"]
     }
   ]
 }

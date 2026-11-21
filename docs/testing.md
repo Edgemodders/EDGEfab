@@ -45,6 +45,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Spike LS1: the jaw on command](#spike-ls1-the-jaw-on-command) | Automated build of the test archive; in the game by the owner | LS | 2026-11-20 | **Pass**: the jaw follows a number set through an anim feature. `SetInputFloat` does nothing |
 | [Spike LS2: mouth shapes](#spike-ls2-mouth-shapes) | Automated build of the test archive; in the game by the owner | LS | 2026-11-20 | The archive builds. **In the game: not run** |
 | [The head in the Lip Sync tab (without VS Code)](#the-head-in-the-lip-sync-tab-without-vs-code) | Automated, with REDbridge; the page by Claude in a browser | FL (R-face) | 2026-11-20 | Pass. **The tab in VS Code: not run** |
+| [Add a Line in the Lip Sync tab](#add-a-line-in-the-lip-sync-tab) | Automated; the page by Claude in a browser; with EDGEwave by the owner | FL (Add a Line) | 2026-11-20 | Steps 1 and 2 pass. **With EDGEwave's voice in VS Code: not run** |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
 
 ## F1: the extension in VS Code (the owner's pass)
@@ -997,6 +998,18 @@ For the talking head ([Made lip sync](lipsync.html#r-face-the-head-in-the-tab-si
 | Run | Result |
 |---|---|
 | 2026-11-20, REDbridge 0.16.0, game 2.5 | Steps 1 and 2 **pass**. Step 1, 24 checks: 344 bones and 414 tracks; face 121 poses and 255 correctives, tongue 18, eyes 12; the jaw's lip sync output at 1 turns the jaw bone 20.0 degrees, 9.4 at 0.5 (the half-open in-between), 4.7 at 0.25; the upper and lower face, the override weights and the correctives act as the rules say; 0.04 ms a solve; the jaw opens up to 9.4 degrees in "There you are."; a head 1 s the first time, 0.6 s from the cache; the man's head has the same tracks. Before it, by eye: `jaw_mid_open` on the exported head is an open mouth, front and side. Step 2: the clip names the rig of the head it was made on (`h0_019_wa_c__young`), and that head's meshes and setup are found from the rig's folder; at 0.93 s the mouth is open with the teeth showing and the brows raised. The head's message to the page is 2 MB. Meshes are plain colours (no textures), the eyes are white shells, no hair. Step 3 not run |
+
+## Add a Line in the Lip Sync tab
+
+The editor's main use ([Made lip sync](lipsync.html)): type a new line, EDGEwave voices it through ElevenLabs, and the audio and its lip sync play on the head. EDGEfab's part is the lip sync, made from the words and when each letter is spoken (core `src/core/lipsync/speech.ts`, version 0: spelling rules and a short list of common words, 13 hand-made mouth shapes).
+
+1. `npm run build`, then `npm run lipsync:speech --workspace extensions/edgefab`. Words with evenly spaced letter timings become mouth shapes and a clip; no game, no service. **Expected:** every line `ok`, then `ok`. With words after `--` it prints their shapes in time.
+2. The page, in a browser: a line typed into the box, made with evenly spaced timings, sent to the page as the extension would. **Expected:** the words, the shapes in the line under them, curves for the jaw, lips and tongue, and the head moving with the marker.
+3. **In VS Code, with EDGEwave from its main (its #13; not run):** F5 with **Run EDGEfab with EDGEwave's build**; **EDGEfab: Open Lip Sync**, pick a character, type a line, press Enter. **Expected:** EDGEwave asks once before EDGEfab first spends credits; then the line plays in the character's voice with the head speaking it. **New Take** speaks it again. Say how well the mouth matches the voice, and which sounds look wrong.
+
+| Run | Result |
+|---|---|
+| 2026-11-20 | Steps 1 and 2 **pass**. Step 1, 22 checks: "mama" is closed, open, closed, open; "the", "you" from the word list; "time" leaves its e silent; "city" starts with an s; letters marked not spoken (a direction in brackets) move nothing; on an m the lips are together and the jaw shut; the mouth starts before the sound. Found and fixed: lips that close must snap (45 ms), or a short vowel beside them never opens; at 14 letters a second a vowel between two closed lips opens to about two thirds. Step 2: "Hello there, how are you my friend?" gave 19 shapes and 16 tracks, and the head moved. Step 3 not run: **the real voice and real timings have not been through it** |
 
 ## F5a check: a game animation through REDbridge
 
