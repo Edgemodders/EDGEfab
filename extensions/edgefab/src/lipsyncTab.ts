@@ -35,8 +35,17 @@ async function pickCharacter(call: BridgeCall, language: string): Promise<Lipsyn
   return picked?.character;
 }
 
-/** Opens the Lip Sync tab, on `character` (a voice tag) when given, else on the one the modder picks. */
-export async function openLipSync(host: LipSyncHost, character?: string): Promise<void> {
+/** Brings the tab back after a window reload: VS Code hands over the panel it kept and what the page saved
+ *  (the character, and the line that was open). A tab that can't come back is closed. */
+export async function restoreLipSync(host: LipSyncHost, kept: vscode.WebviewPanel, saved: unknown): Promise<void> {
+  const state = (saved ?? {}) as { character?: unknown; clip?: unknown };
+  if (panel || typeof state.character !== "string") return void kept.dispose();
+  await openLipSync(host, state.character, { panel: kept, clip: typeof state.clip === "string" ? state.clip : undefined });
+}
+
+/** Opens the Lip Sync tab, on `character` (a voice tag) when given, else on the one the modder picks.
+ *  `restored` is a panel VS Code kept over a reload, with the line to open again. */
+export async function openLipSync(host: LipSyncHost, character?: string, restored?: { panel: vscode.WebviewPanel; clip?: string }): Promise<void> {
   if (panel) {
     panel.reveal();
     if (character) tell?.({ type: "pick", character });
@@ -47,6 +56,7 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
     bridge = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "EDGEfab: reading the game's lip sync" }, () => host.bridge());
   } catch (e) {
     void vscode.window.showErrorMessage(`EDGEfab: Lip Sync needs the game's files through REDbridge: ${message(e)}`);
+    restored?.panel.dispose();
     return;
   }
   const call = bridge.call;
@@ -55,26 +65,29 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
   let sceneFilter: string | undefined;
   try {
     if (character) current = (await lipsyncCharacters(call, { language })).find((c) => c.voiceTag === character || c.id === character);
-    current ??= await pickCharacter(call, language);
+    // A restored tab never asks who: without its character it closes.
+    if (!restored) current ??= await pickCharacter(call, language);
   } catch (e) {
     bridge.stop?.();
+    restored?.panel.dispose();
     host.log(`Lip Sync: ${message(e)}`);
     void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}${/anims\.info|method/i.test(message(e)) ? " Lip Sync needs REDbridge 0.14.0 or later." : ""}`);
     return;
   }
-  if (!current) {
+  if (!current || panel) {
     bridge.stop?.();
+    restored?.panel.dispose();
     return;
   }
 
   // The page may load two kinds of file: the head viewer's script from the extension, and heads from the cache.
   const webviewDir = host.extensionPath ? path.join(host.extensionPath, "dist", "webview") : undefined;
   const headsDir = path.join(lipsyncCacheDir(), "heads");
-  const p = (panel = vscode.window.createWebviewPanel("edgefab.lipsync", "Lip Sync", vscode.ViewColumn.Active, {
-    enableScripts: true,
-    retainContextWhenHidden: true,
-    localResourceRoots: [...(webviewDir ? [vscode.Uri.file(webviewDir)] : []), vscode.Uri.file(headsDir)],
-  }));
+  const localResourceRoots = [...(webviewDir ? [vscode.Uri.file(webviewDir)] : []), vscode.Uri.file(headsDir)];
+  const p = (panel = restored?.panel ?? vscode.window.createWebviewPanel("edgefab.lipsync", "Lip Sync", vscode.ViewColumn.Active, { enableScripts: true, retainContextWhenHidden: true, localResourceRoots }));
+  if (restored) p.webview.options = { enableScripts: true, localResourceRoots };
+  // After a reload, the line that was open: the page opens it again once its scene is listed.
+  let reopen = restored?.clip;
   const post = (tell = (m: unknown) => void p.webview.postMessage(m));
 
   // The head for a clip: the one its lip sync set's rig belongs to, else the plain head of that gender. Read and
@@ -121,7 +134,8 @@ export async function openLipSync(host: LipSyncHost, character?: string): Promis
   const showCharacter = async () => {
     if (!current) return;
     p.title = `Lip Sync: ${pretty(current.voiceTag)}`;
-    post({ type: "character", character: { ...current, name: pretty(current.voiceTag) }, language, audio: !!host.sound });
+    post({ type: "character", character: { ...current, name: pretty(current.voiceTag) }, language, audio: !!host.sound, reopen });
+    reopen = undefined;
     await showLines(0);
   };
 

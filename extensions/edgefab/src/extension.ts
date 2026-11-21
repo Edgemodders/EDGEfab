@@ -18,7 +18,7 @@ import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { clearKey, getKey, initKeys, setKey } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
-import { openLipSync } from "./lipsyncTab";
+import { openLipSync, restoreLipSync, type LipSyncHost } from "./lipsyncTab";
 
 declare const __VERSION__: string;
 
@@ -730,6 +730,27 @@ async function refreshFromLibrary(): Promise<void> {
   }
 }
 
+/** What the Lip Sync tab needs from the extension. REDcode is looked for at each call, not once: after a
+ *  window reload the tab can come back before REDcode has started. */
+function lipSyncHost(): LipSyncHost {
+  return {
+    log,
+    // REDcode's REDbridge when REDcode runs, else one of our own that ends with the tab.
+    bridge: async () => {
+      const shared = redcode()?.bridge();
+      if (shared) return { call: callOf(shared) };
+      const own = await startBridge(log);
+      return { call: own.call, stop: () => own.client.stop() };
+    },
+    sound: async (gamePath) => {
+      const api = redcode();
+      if (typeof api?.sound !== "function") throw new Error("REDcode plays the voice: install it, or open the line again once it has started.");
+      return api.sound({ path: gamePath });
+    },
+    extensionPath: extensionUri?.fsPath,
+  };
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
   extensionUri = context.extensionUri;
@@ -858,23 +879,11 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("edgefab.clearTripoKey", () => clearKey("tripo")),
     vscode.commands.registerCommand("edgefab.tripoPlan", askTripoPlan),
-    vscode.commands.registerCommand("edgefab.openLipSync", (character?: unknown) =>
-      openLipSync(
-        {
-          log,
-          // REDcode's REDbridge when REDcode runs, else one of our own that ends with the tab.
-          bridge: async () => {
-            const shared = redcode()?.bridge();
-            if (shared) return { call: callOf(shared) };
-            const own = await startBridge(log);
-            return { call: own.call, stop: () => own.client.stop() };
-          },
-          sound: typeof redcode()?.sound === "function" ? (gamePath) => redcode()!.sound!({ path: gamePath }) : undefined,
-          extensionPath: context.extensionPath,
-        },
-        typeof character === "string" ? character : undefined,
-      ),
-    ),
+    vscode.commands.registerCommand("edgefab.openLipSync", (character?: unknown) => openLipSync(lipSyncHost(), typeof character === "string" ? character : undefined)),
+    // The Lip Sync tab comes back after a window reload, on the character and line it showed.
+    vscode.window.registerWebviewPanelSerializer("edgefab.lipsync", {
+      deserializeWebviewPanel: async (panel, state) => restoreLipSync(lipSyncHost(), panel, state),
+    }),
     vscode.commands.registerCommand("edgefab.connectAssistant", () => connectAssistant(context, log)),
     vscode.commands.registerCommand("edgefab.showLog", () => output.show()),
     vscode.commands.registerCommand("edgefab.refresh", () => view.refresh()),

@@ -345,6 +345,7 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
         row.innerHTML = "<span class='t'>" + (l.text ? text(l.text) : "<span class='dim'>(no words in this language) " + l.clip + "</span>") + "</span>" +
           (state.twoVoices ? "<span class='g'>" + (l.gender === "female" ? "F" : "M") + "</span>" : "") + "<span class='s'>" + l.seconds.toFixed(1) + " s</span>";
         row.onclick = function () { openLine(sc, l, row); };
+        if (state.reopen && state.reopen === l.clip) { state.reopen = null; setTimeout(function () { openLine(sc, l, row); row.scrollIntoView({ block: "nearest" }); }, 0); }
         div.appendChild(row);
       });
       box.appendChild(div);
@@ -367,7 +368,11 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
     $("audioNote").textContent = ""; $("readout").textContent = "Reading the clip"; $("tracks").hidden = true;
     var c = $("curves"); c.getContext("2d").clearRect(0, 0, c.width, c.height);
     host.postMessage({ type: "open", set: sc.set, clip: l.clip, audio: l.audio });
+    remember();
   }
+
+  // What VS Code keeps for this tab over a window reload: the character, and the line that is open.
+  function remember() { if (host.setState) host.setState({ character: state.character, clip: state.line ? state.line.clip : undefined }); }
 
   function setStatus(s, bad) { var e = $("status"); e.textContent = s; e.className = bad ? "bad" : ""; }
 
@@ -395,7 +400,9 @@ ${headScript ? `<script nonce="${nonce}" src="${headScript}"></script>` : ""}
       $("name").textContent = m.character.name;
       $("tag").textContent = "voice tag " + m.character.voiceTag + " · " + m.character.scenes + (m.character.scenes === 1 ? " scene" : " scenes") + " · " + m.language;
       state.twoVoices = /^v(_|$)/.test(m.character.voiceTag);
+      state.character = m.character.voiceTag; state.reopen = m.reopen || null;
       state.clip = null; state.line = null; $("detail").hidden = true; $("empty").hidden = false; $("filter").value = "";
+      remember();
     } else if (m.type === "lines") showLines(m.data, m.append);
     else if (m.type === "clip") {
       if (!state.line || m.data.clip !== state.line.clip) return;

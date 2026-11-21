@@ -39,6 +39,7 @@
   "activationEvents": [
     "onView:edgefab.desk",
     "onWebviewPanel:edgefab.pictures",
+    "onWebviewPanel:edgefab.lipsync",
     "onCommand:edgefab.importGlb",
     "onCommand:edgefab.generate",
     "onCommand:edgefab.setTripoKey",
