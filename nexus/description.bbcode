@@ -7,9 +7,8 @@
 [line]
 
 [quote][size=4][b][color=#fcee0a]STATUS: PREVIEW[/color][/b][/size]
-Version 0.1.0 makes props: objects that stand in the world, such as a vending machine, a crate or a lamp. Clothing, characters and animation come in later versions. Everything on this page is built and tested on the developer's PC, with game version 2.5.
+Version 0.2.0 makes props: objects that stand in the world, such as a vending machine, a crate or a lamp. Clothing and animated props come in later versions. Everything on this page is built and tested on the developer's PC, with game version 2.5.
 [b]This is a VS Code extension, not a game mod.[/b] It never changes your game's files: it writes into a WolvenKit project, which REDcode packs into a mod. Do not install it with Vortex.[/quote]
-
 [line]
 
 [size=5][b][color=#fcee0a]What EDGEfab is[/color][/b][/size]
@@ -23,20 +22,36 @@ EDGEfab is built by [url=https://edgemodders.ai/]EDGEmodders[/url], a modding co
 [size=4][b][color=#19f3ff]From your words: a picture first, then 3D[/color][/b][/size]
 Describe it, "a rusty oil drum with a hazard sticker". OpenAI's image model draws it from four sides in about 30 seconds, for a few cents. It opens in its own [b]Pictures[/b] tab. Not right yet? Change it by words, "paint the drum blue and the sticker yellow", and only that changes. Go back to any earlier picture and change that one instead: every picture is kept, with the words that made it. When one looks right, [b]Generate 3D Model[/b]: Tripo builds the model from the four views, true to every side, with crisp 4096 x 4096 textures. EDGEfab says what it will cost and your Tripo balance before anything is paid (about 60 credits, a few minutes). Both services use [b]your own keys[/b], and nothing is sent anywhere until you press the button.
 
+[b][color=#00ffff][size=4]Describe It[/size][/color][/b][img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795078449-330804309.png[/img]
+
+
+[b][color=#00ffff][size=4]Preview It[/size][/color][/b]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795078462-1614014379.png[/img]
+
+[b][color=#00ffff][size=4]Make It[/size][/color][/b]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795078474-205430941.png[/img]
+[color=#00ffff][size=4][b]See It[/b][/size][/color]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795078795-1962369295.gif[/img]
+
+[color=#00ffff][size=4]Change the Material to A Metallic Red Car Paint From the Game in [url=https://www.nexusmods.com/cyberpunk2077/mods/35422]EDGEmat[/url][/size][/color]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795079432-772902550.png[/img]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795079410-1171160914.png[/img]
+[b][color=#00ffff][size=4]Add to the Game Live with [url=https://www.nexusmods.com/cyberpunk2077/mods/36627]EDGEbuilder[/url][/size][/color][/b]
+[img]https://staticdelivery.nexusmods.com/mods/3333/images/38605/38605-1795078865-682491476.png[/img]
+
+
 [size=4][b][color=#19f3ff]From a model of your own[/color][/b][/size]
 [b]Import a GLB[/b] takes a textured model from Blender, a store or anywhere else. Right-click a [i].glb[/i] in VS Code's Explorer and choose [b]Make a Prop[/b], the same thing.
 
 [size=4][b][color=#19f3ff]Ready for the game, without Blender[/color][/b][/size]
 EDGEfab does the work a game prop needs:
 [list]
-[*][b]Its real size[/b], standing on its base. [b]Set Size[/b] changes it any time.
-[*][b]Three levels of detail[/b] (full, half, a fifth), so it costs less to draw from afar. They keep to the texture, without black shards across flat panels.
-[*][b]Named parts[/b], each with its own material: body, front, base, glass... so EDGEmat can give one part a new look.
-[*][b]Facing forward[/b]: Tripo's models are turned so their front faces the way the game's props do.
-[*][b]Not see-through[/b]: thin panels and open shells get back faces.
-[/list]
-
-[size=4][b][color=#19f3ff]Painted lights that really glow[/color][/b][/size]
+[*][b]Its real size[/b], standing on its base. [b]Set Size[/b] changes it any time.[/*]
+[*][b]Three levels of detail[/b] (full, half, a fifth), so it costs less to draw from afar. They keep to the texture, without black shards across flat panels.[/*]
+[*][b]Named parts[/b], each with its own material: body, front, base, glass... so EDGEmat can give one part a new look.[/*]
+[*][b]Facing forward[/b]: Tripo's models are turned so their front faces the way the game's props do.[/*]
+[*][b]Not see-through[/b]: thin panels and open shells get back faces.[/*]
+[/list][b][size=4][color=#19f3ff]Painted lights that really glow[/color][/size][/b]
 AI-made models have their lights painted on. [b]Make the Painted Lights Glow[/b] finds the bright, strongly colored areas and makes them glow in the game, from a deep color to white-hot, your choice per part. It works offline and costs nothing. A model that already glows (from Blender or a store) keeps its glow.
 
 [size=4][b][color=#19f3ff]See it in 3D[/color][/b][/size]
@@ -56,18 +71,16 @@ Pictures made with your OpenAI key are yours. Models made with Tripo are yours o
 
 [size=5][b][color=#fcee0a]Requirements[/color][/b][/size]
 [list]
-[*]Windows 10 or 11, 64-bit, and VS Code 1.70 or later (or VSCodium, or EDGEkit).
-[*][url=https://www.nexusmods.com/cyberpunk2077/mods/35421]REDcode[/url], for Add to Project, packing the mod, and the 3D view. It brings REDbridge, which reads and writes the game's files.
-[*]To make props from words: your own [url=https://platform.tripo3d.ai/]Tripo[/url] API key (credits), and optionally your own OpenAI API key for the picture first. Without OpenAI, Straight to 3D makes the model from the words alone.
-[*]To place props in the game: [url=https://www.nexusmods.com/cyberpunk2077/mods/36627]EDGEbuilder[/url] (on REDnode).
-[/list]
-
-[size=5][b][color=#fcee0a]Install[/color][/b][/size]
+[*]Windows 10 or 11, 64-bit, and VS Code 1.70 or later (or VSCodium, or EDGEkit).[/*]
+[*][url=https://www.nexusmods.com/cyberpunk2077/mods/35421]REDcode[/url] 0.10.16 or later, for Add to Project, packing the mod, the 3D view and your keys. It brings REDbridge, which reads and writes the game's files.[/*]
+[*]To make props from words: your own [url=https://platform.tripo3d.ai/]Tripo[/url] API key (credits), and optionally your own OpenAI API key for the picture first, both set once in REDcode's Keys (shared by every EDGE tool). Without OpenAI, Straight to 3D makes the model from the words alone.[/*]
+[*]To place props in the game: [url=https://www.nexusmods.com/cyberpunk2077/mods/36627]EDGEbuilder[/url] (on REDnode).[/*]
+[/list][b][size=5][color=#fcee0a]Install[/color][/size][/b]
 The easy way: search for [b]EDGEfab[/b] in VS Code's Extensions view (Ctrl+Shift+X) and click Install. It updates itself from then on.
 Or download the file here, extract it, and in VS Code's Extensions view click [b]...[/b], [b]Install from VSIX...[/b], and pick the [i].vsix[/i]. The zip's README.txt says how to connect the MCP server to Claude Code by hand.
 
 [size=5][b][color=#fcee0a]Coming next[/color][/b][/size]
-FBX and Blender files, changing a prop by words, animated props, clothing fitted to the body, and whole characters with their clothes and animations. The plan: [url=https://edgemodders.github.io/EDGEfab/plan.html]the build plan[/url].
+FBX and Blender files, changing a prop by words, animated props, and clothing fitted to the body. The plan: [url=https://edgemodders.github.io/EDGEfab/plan.html]the build plan[/url].
 
 [line]
 

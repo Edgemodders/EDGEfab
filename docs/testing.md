@@ -12,7 +12,7 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. Built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
+Last updated 2026-11-22. Each row links to its test. **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. Built but not seen in VS Code: a failed rename's message naming another window's 3D view, and its closed tabs put back.
 
 **Lip sync's six tests moved to REDcode on 2026-11-22**, with the Lip Sync editor (the owner: EDGEfab covers props and clothing only): FL1, the spikes LS1, LS2 and A2F, the head in the tab, and Add a Line, each with every run, are in REDcode's branch `lipsync`, `lipsync/docs/testing.md`. None of them counts for EDGEfab's release gate now.
 
@@ -23,14 +23,14 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
 | [The phase test, props placed with EDGEbuilder (EDGEfab #2)](#f1-the-phase-test-props-placed-with-edgebuilder-edgefab-2) | In the game, with EDGEbuilder: scripted, then the owner | F1 | 2026-11-15 | **Pass**. The phase test; EDGEfab #2 closed |
-| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
+| [Prepare a model (smoke test, without VS Code)](#f1-prepare-a-model-smoke-test-without-vs-code) | Automated, with REDbridge | F1 | 2026-11-22 | **Pass** on the build for 0.2.0 |
 | [Add to Project (without the game)](#f1-add-to-project-without-the-game) | Automated, with REDbridge | F1 | 2026-11-15 | Pass (normal maps' green flipped) |
 | [Add to Project again (without the game)](#f1-add-to-project-again-without-the-game) | Automated, with REDbridge | F1 | 2026-11-18 | **Pass**: unchanged materials and swapped parts kept |
 | [Add to Project again, with EDGEmat's parts (without the game)](#f1-add-to-project-again-with-edgemats-parts-without-the-game) | Automated, with REDbridge and EDGEmat's build | F1 | 2026-11-18 | **Pass**: parts swapped by EDGEmat's own tools kept, and back again |
 | [Add to Project again and Open in EDGEmat, in VS Code](#f1-add-to-project-again-and-open-in-edgemat-in-vs-code-the-owner) | By hand in VS Code, both tools' builds: the owner | F1 | 2026-11-18 | **Pass** (owner), after Open in EDGEmat and Reveal in REDcode were added |
 | [The Library (without the game)](#f1-the-library-without-the-game) | Automated, a scratch Library | F1 | 2026-11-13 | Pass, after a fix |
 | [Rename, and copied items (without the game)](#f1-rename-and-copied-items-without-the-game) | Automated, with REDbridge for `--add` | F1 | 2026-11-17 | **Pass**: the files inside take the name too |
-| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-17 | **Pass** on the final build for 0.1.0 |
+| [The core package (EDGEfab #5)](#f1-the-core-package-edgefab-5) | By Claude, a scratch project | F1 | 2026-11-22 | **Pass** on the build for 0.2.0 |
 | [Keys in VS Code's secret storage (EDGEfab #4)](#f1-keys-in-vs-codes-secret-storage-edgefab-4) | Package check by Claude; VS Code steps by the owner | F1 | 2026-11-17 | **Pass**; step 1 on the final build for 0.1.0. Step 1 reruns before each release |
 | [Picture first and parts (without the game)](#f1-picture-first-and-parts-without-the-game) | Automated, with OpenAI and Tripo keys | F1 | 2026-11-10 | Pass, after a fix |
 | [The glow on a Desk item (without the game)](#f1-the-glow-on-a-desk-item-without-the-game) | Automated | F1 | 2026-11-05 | Pass |
@@ -619,6 +619,10 @@ On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename w
 | 2 | Installed in an empty folder; EDGEmat's core came from npm |
 | 3 | `tsc --noEmit --strict` without `skipLibCheck`: no errors. One esbuild bundle, no plugins |
 | 4 | A scratch Desk item from the vending machine's GLB, levels of detail 1, 2 and 4, 1.75 m after `setSize`; `addToProject` wrote the mesh, 6 materials and the `.ent` (physical collision) into a scratch project. The unbundled `require` works |
+
+### Run 4, 2026-11-22: passed, the build for 0.2.0
+
+On the 0.2.0 build (after the keys moved to REDcode's Keys and lip sync left). 20 files, 780 kB packed; installed in an empty folder; `tsc --noEmit --strict` without `skipLibCheck`: no errors; one esbuild bundle, no plugins (1.6 MB). The drum in parts: 18 submeshes over 3 levels, 1.00 m, set to 1.75 m, added as `coretestpropscore_test_drumcore_test_drum.ent`, physical, 34 files. Unbundled: 88 exports, all of #5's.
 
 ## F1 check: an added prop in the game
 
