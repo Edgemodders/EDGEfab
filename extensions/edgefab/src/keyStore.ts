@@ -37,6 +37,28 @@ export interface KeyInfo {
 export const Caller = "EDGEfab";
 export const McpCaller = "EDGEfab MCP";
 
+/** REDcodeApi.keys.status (REDcode after f6c7cbf): whether a key is set and whether a tool may read it, never the key. */
+export interface KeyStatus {
+  service: string;
+  set: boolean;
+  source: "env" | "file" | null;
+  unreadable: boolean;
+  access: "allowed" | "denied" | "unasked";
+}
+
+/**
+ * Why a tool got no key when the store answered undefined, in words, or undefined when it should ask for one
+ * (EDGEhack's rule, f56478e). Denied: the modder said Don't Allow, so no password box. Set but unasked: REDcode's
+ * question was closed unanswered, and a password box would replace the key that is there.
+ */
+export function noKeyReason(s: KeyStatus | undefined, name: string, caller: string, action: string): string | undefined {
+  if (!s) return undefined;
+  if (s.access === "denied")
+    return `You chose Don't Allow when REDcode asked whether ${caller} may read your ${name} key. To change that, run Forget Tool Permissions for Keys in REDcode's Keys view, then ${action} again.`;
+  if (s.set && !s.unreadable && s.access === "unasked") return `REDcode's question about your ${name} key was closed without an answer. ${action[0].toUpperCase()}${action.slice(1)} again and choose Allow.`;
+  return undefined;
+}
+
 /** A REDbridge that answers JSON-RPC methods by name has no keys.* when it is older than 0.18.0. */
 const MethodNotFound = -32601;
 export const TooOld = "The key store needs REDbridge 0.18.0 or later. In VS Code: REDcode: Install REDbridge (or Update REDbridge).";

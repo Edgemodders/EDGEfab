@@ -12,7 +12,7 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 **Changed**
 
-- **Your Tripo and OpenAI keys live in REDcode's Keys**, shared by every EDGE tool: set a key once in REDcode's Keys view and EDGEfab, EDGEmat and the rest use it. REDcode asks once whether EDGEfab may read each key. The keys EDGEfab kept itself move there the first time, and EDGEfab says so. EDGEfab's MCP server reads them there too, so an assistant needs no key in its settings or your environment. Needs REDcode with its Keys view; with an older REDcode, EDGEfab keeps its keys as before. An environment variable (`TRIPO_API_KEY`, `OPENAI_API_KEY`) still wins.
+- **Your Tripo and OpenAI keys live in REDcode's Keys**, shared by every EDGE tool: set a key once in REDcode's Keys view and EDGEfab, EDGEmat and the rest use it. REDcode asks once whether EDGEfab may read each key; if you choose Don't Allow, EDGEfab says so and how to change it, and never opens a key box over it. The keys EDGEfab kept itself move there the first time, and EDGEfab says so. EDGEfab's MCP server reads them there too, so an assistant needs no key in its settings or your environment. Needs REDcode with its Keys view; with an older REDcode, EDGEfab keeps its keys as before. An environment variable (`TRIPO_API_KEY`, `OPENAI_API_KEY`) still wins.
 
 **New**
 

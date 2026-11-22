@@ -10,7 +10,7 @@
 
 import * as vscode from "vscode";
 import { checkKey, envKey, KeyServices, type KeyService } from "./core";
-import { Caller, findBridge, KeysBridge } from "./keyStore";
+import { Caller, findBridge, KeysBridge, noKeyReason, type KeyStatus } from "./keyStore";
 
 const RedcodeId = "edgemodders.redcode-cyberpunk";
 const secretName = (service: KeyService) => `edgefab.${service}.key`;
@@ -27,6 +27,8 @@ interface KeysApi {
   get(service: string, caller: string): Promise<string | undefined>;
   /** REDcode's password box; saves the key for every tool. Undefined when the modder cancels. */
   ask(service: string, caller: string): Promise<string | undefined>;
+  /** Whether a key is set and whether caller may read it, never asking and never the key (REDcode after f6c7cbf). */
+  status?(service: string, caller: string): Promise<KeyStatus>;
   readonly onDidChange: vscode.Event<string>;
 }
 
@@ -151,6 +153,42 @@ export async function getKey(service: KeyService): Promise<string | undefined> {
   }
 }
 
+/**
+ * Why there is no key, in words, when REDcode can say: the modder chose Don't Allow, or closed REDcode's question
+ * while a key is set. Undefined when EDGEfab should ask for a key (none set), or with a REDcode without status.
+ */
+export async function noKeyWhy(service: KeyService): Promise<string | undefined> {
+  const keys = await keyStore();
+  if (typeof keys?.status !== "function") return undefined;
+  try {
+    return noKeyReason(await keys.status(service, Caller), KeyServices[service].name, Caller, "try");
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether REDcode can tell "no key" from "not allowed" (its keys.status). */
+export async function knowsWhy(): Promise<boolean> {
+  return typeof (await keyStore())?.status === "function";
+}
+
+/** Says why there is no key, with a way to REDcode's Keys. */
+export function showNoKeyWhy(why: string): void {
+  void vscode.window.showInformationMessage(`EDGEfab: ${why}`, "Open REDcode's Keys").then((pick) => {
+    if (pick) void vscode.commands.executeCommand("redcode.keys.focus");
+  });
+}
+
+/** After no key: the reason when the modder said no (no password box then), else the password box. */
+export async function askForKey(service: KeyService): Promise<string | undefined> {
+  const why = await noKeyWhy(service);
+  if (why) {
+    showNoKeyWhy(why);
+    return undefined;
+  }
+  return setKey(service);
+}
+
 /** Asks for the key: REDcode's password box (saved for every EDGE tool), else EDGEfab's own. Undefined when the modder cancels or it fails. */
 export async function setKey(service: KeyService): Promise<string | undefined> {
   const keys = await keyStore();
@@ -178,7 +216,7 @@ export async function setKey(service: KeyService): Promise<string | undefined> {
 /** The key, else asked for; undefined when the modder stops. A store that can't be reached says why, once. */
 export async function keyOrAsk(service: KeyService): Promise<string | undefined> {
   try {
-    return (await getKey(service)) ?? (await setKey(service));
+    return (await getKey(service)) ?? (await askForKey(service));
   } catch (e) {
     void vscode.window.showErrorMessage(`EDGEfab: ${(e as Error).message}`);
     return undefined;

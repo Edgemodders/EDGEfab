@@ -16,7 +16,7 @@ import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
-import { clearKey, getKey, hasKeyStore, initKeys, keyOrAsk, keysPlace, setKey } from "./keys";
+import { askForKey, clearKey, getKey, hasKeyStore, initKeys, keyOrAsk, keysPlace, knowsWhy, noKeyWhy, setKey, showNoKeyWhy } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
 import { openLipSync, restoreLipSync, type LipSyncHost, type SpokenLine } from "./lipsyncTab";
 
@@ -264,9 +264,14 @@ async function readyForTripo(): Promise<{ key: string; plan: TripoPlan } | undef
     return undefined;
   }
   if (!key) {
-    // With REDcode's Keys, no key can also mean the modder told REDcode not to let EDGEfab read it (REDcode's
-    // API doesn't say which), so the message names both and opens the Keys view.
-    const shared = await hasKeyStore();
+    // With REDcode's Keys, no key can also mean the modder said Don't Allow: REDcode's keys.status says which, and
+    // then no password box. A REDcode without status can't say, so the message names both and opens the Keys view.
+    const why = await noKeyWhy("tripo");
+    if (why) {
+      showNoKeyWhy(why);
+      return undefined;
+    }
+    const shared = (await hasKeyStore()) && !(await knowsWhy());
     const go = await vscode.window.showInformationMessage(
       shared
         ? "EDGEfab can't read a Tripo key: none is set in REDcode's Keys, or EDGEfab isn't allowed to read it. To allow it: Forget Tool Permissions for Keys in REDcode's Keys view, then try again."
@@ -870,7 +875,7 @@ export function activate(context: vscode.ExtensionContext): void {
         );
         if (!picked) return;
         how = picked.how;
-        if (how === "picture" && !(await setKey("openai"))) return;
+        if (how === "picture" && !(await askForKey("openai"))) return;
       }
       if (how === "picture") return drawAndOffer(words, undefined, view);
       const tripo = await readyForTripo();
