@@ -12,8 +12,8 @@ EDGEfab for AI assistants over MCP (stdio): make a Cyberpunk 2077 prop from a te
 | `fab_rename` | Renames a prop on the Desk, its files too |
 | `fab_add` | Puts a prop into a WolvenKit project: mesh, materials, an entity with collision. Adding it again keeps the materials that didn't change and the parts given another material (`textures`, `parts` to start over) |
 | `fab_library`, `fab_library_add`, `fab_library_edit`, `fab_refresh` | The EDGE Library: list it, add a prop, bring one back to the Desk to change, refresh a project's props from it |
-| `fab_tripo` | Whether a Tripo key is set (never the key itself), the plan recorded (paid or free), the credit balance; `set_plan` records the plan |
+| `fab_tripo` | Whether a Tripo key is set and where it comes from (never the key itself), the plan recorded (paid or free), the credit balance; `set_plan` records the plan |
 
-The keys come from the server's environment only: `TRIPO_API_KEY` for Tripo, `OPENAI_API_KEY` for pictures. Made props go on EDGEfab's Desk, `%LOCALAPPDATA%\EDGEfab\desk`.
+The keys come from REDcode's Keys, the key store every EDGE tool shares (`%APPDATA%Edgemodderskeys`): the server reads them at each call through its own REDbridge (0.18.0 or later, found as REDcode finds it), so set a key once in VS Code, in REDcode's Keys view, and the server has it. `TRIPO_API_KEY` for Tripo and `OPENAI_API_KEY` for pictures in the server's environment win over the store. No key goes in the assistant's settings. Made props go on EDGEfab's Desk, `%LOCALAPPDATA%\EDGEfab\desk`.
 
 Docs: [edgemodders.github.io/EDGEfab](https://edgemodders.github.io/EDGEfab/). MIT license.

@@ -1,9 +1,7 @@
 // The modder's AI service keys, as far as core goes: a key passed in by the caller, else the service's
-// environment variable. The extension keeps its keys in VS Code's own encrypted secret storage and passes them
-// in (src/keys.ts); the MCP server, which runs without VS Code, has its environment only.
-//
-// The EDGE tools' shared key store (keys.mjs) is shelved (owner, 2026-11-11, EDGEfab #4): it decrypted key files
-// through PowerShell, and the VS Code Marketplace refused EDGEhack for "suspicious content" with it inside.
+// environment variable. The extension reads its keys from REDcode's Keys (or, with an older REDcode, VS Code's
+// secret storage) and passes them in (src/keys.ts); the MCP server reads REDcode's Keys through its own REDbridge
+// (src/keyStore.ts, EDGEfab #10). Core reads no key file: REDbridge keeps the store.
 // Never print a key, put it on a command line or in a child's environment.
 
 export type KeyService = "tripo" | "openai";

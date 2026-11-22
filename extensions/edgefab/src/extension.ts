@@ -16,7 +16,7 @@ import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
-import { clearKey, getKey, initKeys, setKey } from "./keys";
+import { clearKey, getKey, initKeys, keyOrAsk, keysPlace, setKey } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
 import { openLipSync, restoreLipSync, type LipSyncHost, type SpokenLine } from "./lipsyncTab";
 
@@ -256,7 +256,13 @@ async function askSize(folder: string, title: string, current: number, view: Des
 
 /** The Tripo key and plan, asked for when missing; undefined when the modder stops. */
 async function readyForTripo(): Promise<{ key: string; plan: TripoPlan } | undefined> {
-  let key = await getKey("tripo");
+  let key: string | undefined;
+  try {
+    key = await getKey("tripo");
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+    return undefined;
+  }
   if (!key) {
     const go = await vscode.window.showInformationMessage("Making a 3D model needs your own Tripo API key: Tripo makes it, with your credits.", "Set Tripo Key");
     if (go !== "Set Tripo Key" || !(key = await setKey("tripo"))) return undefined;
@@ -306,7 +312,7 @@ async function make3d(folder: string, title: string, view: DeskView, take?: numb
 /** What the Pictures tab needs from here. */
 function pictureHooks(view: DeskView): PictureTabHooks {
   return {
-    openaiKey: async () => (await getKey("openai")) ?? (await setKey("openai")),
+    openaiKey: () => keyOrAsk("openai"),
     make3d: (folder, title, take) => make3d(folder, title, view, take),
     changed: () => view.refresh(),
     log,
@@ -321,7 +327,7 @@ function showPictures(folder: string, view: DeskView, opts: { select?: number; f
 
 /** Picture first, step 1: draws the four views, then opens them in the Pictures tab, where they're changed or made 3D. */
 async function drawAndOffer(words: string, item: string | undefined, view: DeskView): Promise<void> {
-  const key = (await getKey("openai")) ?? (await setKey("openai"));
+  const key = await keyOrAsk("openai");
   if (!key) return;
   let drawn: Awaited<ReturnType<typeof drawPicture>>;
   try {
@@ -767,7 +773,7 @@ function lipSyncHost(): LipSyncHost {
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
   extensionUri = context.extensionUri;
-  initKeys(context);
+  void initKeys(context, log);
   const version = __VERSION__;
   log(`EDGEfab ${version}`);
   const view = new DeskView();
@@ -844,7 +850,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }))?.trim();
       if (!words) return;
       let how: "picture" | "words" = "picture";
-      if (!(await getKey("openai"))) {
+      if (!(await getKey("openai").catch(() => undefined))) {
         const picked = await vscode.window.showQuickPick(
           [
             { label: "$(file-media) Draw it first", description: "(recommended)", detail: "OpenAI's GPT Image draws it from four sides in about 30 seconds, for a few cents of your OpenAI credit: change the words until it's right, then make it 3D. Needs your own OpenAI key (set with Set OpenAI Key, or asked for now).", how: "picture" as const },
@@ -883,12 +889,12 @@ export function activate(context: vscode.ExtensionContext): void {
       if (entry?.prepared) await askSize(entry.folder, entry.title, entry.prepared.size.height, view);
     }),
     vscode.commands.registerCommand("edgefab.setOpenAIKey", async () => {
-      if (await setKey("openai")) void vscode.window.showInformationMessage("EDGEfab: the OpenAI key is set, in VS Code's secret storage.");
+      if (await setKey("openai")) void vscode.window.showInformationMessage(`EDGEfab: the OpenAI key is set, ${await keysPlace()}.`);
     }),
     vscode.commands.registerCommand("edgefab.clearOpenAIKey", () => clearKey("openai")),
 
     vscode.commands.registerCommand("edgefab.setTripoKey", async () => {
-      if (await setKey("tripo")) void vscode.window.showInformationMessage("EDGEfab: the Tripo key is set, in VS Code's secret storage.");
+      if (await setKey("tripo")) void vscode.window.showInformationMessage(`EDGEfab: the Tripo key is set, ${await keysPlace()}.`);
     }),
     vscode.commands.registerCommand("edgefab.clearTripoKey", () => clearKey("tripo")),
     vscode.commands.registerCommand("edgefab.tripoPlan", askTripoPlan),

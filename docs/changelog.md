@@ -10,6 +10,10 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 ## Unreleased
 
+**Changed**
+
+- **Your Tripo and OpenAI keys live in REDcode's Keys**, shared by every EDGE tool: set a key once in REDcode's Keys view and EDGEfab, EDGEmat and the rest use it. REDcode asks once whether EDGEfab may read each key. The keys EDGEfab kept itself move there the first time, and EDGEfab says so. EDGEfab's MCP server reads them there too, so an assistant needs no key in its settings or your environment. Needs REDcode with its Keys view; with an older REDcode, EDGEfab keeps its keys as before. An environment variable (`TRIPO_API_KEY`, `OPENAI_API_KEY`) still wins.
+
 **New**
 
 - **Lip Sync: add a line.** Type a new line for the character in the Lip Sync tab and press Enter: EDGEwave speaks it in the character's voice (ElevenLabs, your own key), and EDGEfab makes the lip sync from the words and the voice's timing and plays both on the head. **New Take** speaks it again. It stays in the tab for now: writing it into a mod comes later. Needs EDGEwave with Speak a Line. For assistants, `fab_lipsync_make`.

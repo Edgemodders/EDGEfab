@@ -1,6 +1,6 @@
 // Tripo's v3 REST API (openapi.tripo3d.ai; v2 shut down on 2026-10-31): text to a textured model.
 // Routes and model names from Tripo's MIT Python SDK, checked with a real key in F0 (docs/testing.md).
-// The key comes from the caller (the extension's secret storage) or TRIPO_API_KEY, and goes only into the Authorization header of
+// The key comes from the caller (REDcode's Keys, or EDGEfab's own secret storage with an older REDcode) or TRIPO_API_KEY, and goes only into the Authorization header of
 // calls to Tripo: never logged, never in a URL, never to a child process. Downloads of the results go to
 // Tripo's signed storage URLs without the key.
 
@@ -27,7 +27,7 @@ export interface TripoCall {
 
 async function tripoKey(call: TripoCall): Promise<string> {
   const key = call.key ?? envKey("tripo");
-  if (!key) throw new TripoError("No Tripo API key. In VS Code, set one with EDGEfab: Set Tripo Key; for the MCP server, set TRIPO_API_KEY in its environment.");
+  if (!key) throw new TripoError("No Tripo API key. In VS Code, set one with EDGEfab: Set Tripo Key (it goes in REDcode's Keys, for every EDGE tool), or set TRIPO_API_KEY.");
   return key;
 }
 
@@ -48,7 +48,7 @@ async function api<T>(call: TripoCall, method: "GET" | "POST", route: string, bo
   }
   if (!res.ok || (json.code !== undefined && json.code !== 0)) {
     const why = typeof json.message === "string" ? json.message : `code ${json.code ?? "?"}`;
-    const hint = res.status === 401 ? " The Tripo key was refused: set it again with EDGEfab: Set Tripo Key." : res.status === 403 && /credit|balance/i.test(why) ? " Not enough credits." : "";
+    const hint = res.status === 401 ? " The Tripo key was refused: set it again in REDcode's Keys (Set Key on Tripo), or with EDGEfab: Set Tripo Key." : res.status === 403 && /credit|balance/i.test(why) ? " Not enough credits." : "";
     throw new TripoError(`Tripo: ${why} (HTTP ${res.status}).${hint}`, res.status, json.code);
   }
   return ("data" in json ? json.data : json) as T;

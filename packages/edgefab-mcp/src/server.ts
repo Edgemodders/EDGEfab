@@ -4,8 +4,9 @@
 //
 //   edgefab-mcp
 //
-// The Tripo and OpenAI keys come from this process's environment only, TRIPO_API_KEY and OPENAI_API_KEY (EDGEfab #4:
-// the extension keeps its own in VS Code's secret storage and doesn't hand them on).
+// The Tripo and OpenAI keys: TRIPO_API_KEY and OPENAI_API_KEY when set, else REDcode's shared key store (REDcode's Keys,
+// EDGEfab #10), read at each call through this server's own REDbridge started with --keys, so a key set, changed or
+// removed in REDcode's Keys counts at once. No key is ever handed to the server by its client's settings.
 // stdout is the MCP channel;
 // logs go to stderr.
 
@@ -15,12 +16,15 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
+import { vscodeUserSettings } from "@edgemodders/edgemat-core";
 import {
   addToProject, deskItem, drawPicture, envKey, readPrepared, renameItem, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
   lipsyncCharacters, lipsyncClip, lipsyncLines, sampleTrack, speechClip, DefaultLanguage, type LineTimings,
 } from "../../../extensions/edgefab/src/core";
+import { findBridge, installedRedcodeDirs, KeysBridge, McpCaller } from "../../../extensions/edgefab/src/keyStore";
+import { KeyServices, type KeyService } from "../../../extensions/edgefab/src/core/keys";
 
 declare const __VERSION__: string;
 
@@ -52,6 +56,51 @@ function describe(made: MadeModel) {
   };
 }
 
+/** REDbridge for the key store, started on the first call that needs a key and kept while the server runs. */
+let keysBridge: KeysBridge | undefined;
+
+function keyStore(): KeysBridge {
+  if (!keysBridge) {
+    const settings = vscodeUserSettings();
+    const exe = process.env.EDGEFAB_REDBRIDGE?.trim() || findBridge({ configured: settings("redcode.bridgePath"), redcodeDirs: installedRedcodeDirs(), pathEnv: process.env.PATH });
+    if (!exe) throw new Error("EDGEfab reads keys from REDcode's Keys, through REDbridge, and REDbridge.exe is not installed (in VS Code: REDcode: Install REDbridge).");
+    // EDGEFAB_REDBRIDGE may name a stand-in script, for the keys check (scripts/keys-check.mjs).
+    keysBridge = new KeysBridge(/\.c?js$/i.test(exe) ? { exe: process.execPath, args: [exe] } : { exe, dotnetRoot: settings("redcode.dotnetRoot") });
+  }
+  return keysBridge;
+}
+
+/** A service's key: its environment variable, else REDcode's Keys. Throws in plain words when there is none. */
+async function apiKey(service: KeyService): Promise<string> {
+  const env = envKey(service);
+  if (env) return env;
+  const { name, env: variable } = KeyServices[service];
+  let r;
+  try {
+    r = await keyStore().get(service, McpCaller);
+  } catch (e) {
+    throw new Error(`No ${name} API key here: REDcode's Keys can't be reached (${e instanceof Error ? e.message : String(e)}). Or set ${variable} for this server.`);
+  }
+  if (r.key) return r.key;
+  throw new Error(
+    r.unreadable
+      ? `The ${name} key in REDcode's Keys was saved by another Windows user, so it can't be read here. Set it again in VS Code: REDcode's Keys view, Set Key.`
+      : `No ${name} API key is set. In VS Code: REDcode's Keys view, Set Key on ${name} (every EDGE tool shares it), or EDGEfab: Set ${name} Key.`,
+  );
+}
+
+/** Where a service's key comes from, never the key: "environment", "REDcode's Keys", or why there is none. */
+async function keySource(service: KeyService): Promise<{ set: boolean; from: string }> {
+  if (envKey(service)) return { set: true, from: `${KeyServices[service].env} in this server's environment` };
+  try {
+    const info = await keyStore().info(service);
+    if (info.set && !info.unreadable) return { set: true, from: "REDcode's Keys (shared by every EDGE tool)" };
+    return { set: false, from: info.unreadable ? "REDcode's Keys has one saved by another Windows user: set it again in REDcode's Keys view" : "not set: the user sets it in VS Code, REDcode's Keys view, Set Key" };
+  } catch (e) {
+    return { set: false, from: `REDcode's Keys can't be reached: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+
 const readJson = (file: string): any => {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -70,7 +119,7 @@ server.registerTool(
   {
     description:
       "Picture first, step 1 of making a prop from words (the extension's Generate from Words): OpenAI's GPT Image draws the object from four sides (front, left, back, right) as one 2 by 2 picture, " +
-      "with the modder's own OpenAI key from OPENAI_API_KEY in this server's environment. About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG). " +
+      "with the modder's own OpenAI key (from REDcode's Keys, shared by every EDGE tool, or OPENAI_API_KEY). About 30 seconds and a few cents of OpenAI credit. Show the user the sheet (it's a PNG). " +
       "To change a picture (the extension's Pictures tab, Edit Picture): pass prop and from (a take number) with words saying only what to change, such as 'make the cabinet red and the glow blue': " +
       "that picture goes to GPT Image with the words and comes back changed only as they say. To draw afresh into the same item, pass prop without from, with words describing the whole object. Every take is kept (fab_desk lists them). " +
       "When they like one, fab_make with from 'picture' (and take, default the last) makes the 3D model from its four views with Tripo, which follows each side closely. " +
@@ -85,7 +134,8 @@ server.registerTool(
   async ({ words, prop, from, name }) => {
     try {
       if (from !== undefined && !prop) throw new Error("Pass prop with from: the Desk item whose picture to change.");
-      const drawn = await drawPicture(words, { version: __VERSION__, item: prop ? deskItem(prop) : undefined, from, name });
+      const key = await apiKey("openai");
+      const drawn = await drawPicture(words, { version: __VERSION__, item: prop ? deskItem(prop) : undefined, from, name, call: { key } });
       return text({
         prop: drawn.name,
         folder: drawn.folder,
@@ -140,10 +190,10 @@ server.registerTool(
       const settings: Omit<TextToModel, "prompt"> = { ...DetailLevels[detail as Detail].settings, parts };
       if (from === "picture") {
         if (!prop) throw new Error("Pass prop: the Desk item with the picture (fab_picture made it).");
-        return text(describe(await makeModel({ from: "picture", item: deskItem(prop), take, request: settings, plan: p }, { version, onProgress: progress, prepare })));
+        return text(describe(await makeModel({ from: "picture", item: deskItem(prop), take, request: settings, plan: p }, { version, onProgress: progress, prepare, call: { key: await apiKey("tripo") } })));
       }
       if (!prompt?.trim()) throw new Error("Pass prompt: the object for Tripo to make.");
-      return text(describe(await makeModel({ from: "tripo", request: { ...settings, prompt }, name, plan: p }, { version, onProgress: progress, prepare })));
+      return text(describe(await makeModel({ from: "tripo", request: { ...settings, prompt }, name, plan: p }, { version, onProgress: progress, prepare, call: { key: await apiKey("tripo") } })));
     } catch (e) {
       return failure(e);
     }
@@ -459,7 +509,7 @@ server.registerTool(
   "fab_tripo",
   {
     description:
-      "Tripo, EDGEfab's 3D model service. action 'status': whether a Tripo key is set (TRIPO_API_KEY in this server's environment; the key itself is never shown), the plan recorded, and the credit balance. " +
+      "Tripo, EDGEfab's 3D model service. action 'status': whether a Tripo key is set and where it comes from (REDcode's Keys, shared by every EDGE tool, or TRIPO_API_KEY; the key itself is never shown), the plan recorded, and the credit balance. " +
       "action 'set_plan' records whether the modder's Tripo plan is 'paid' (the models are theirs to release) or 'free' (Tripo keeps all rights): ask the user, don't guess.",
     inputSchema: { action: z.enum(["status", "set_plan"]).default("status"), plan: z.enum(["paid", "free"]).optional() },
   },
@@ -469,18 +519,18 @@ server.registerTool(
         if (!plan) throw new Error("Pass plan: 'paid' or 'free', as the user says.");
         return text({ plan: writeSettings({ tripoPlan: plan }).tripoPlan });
       }
-      const key = !!envKey("tripo");
-      const openai = !!envKey("openai");
+      const tripo = await keySource("tripo");
+      const openai = await keySource("openai");
       let balance: number | string | undefined;
-      if (key) {
+      if (tripo.set) {
         try {
-          balance = (await tripoBalance()).balance;
+          balance = (await tripoBalance({ key: await apiKey("tripo") })).balance;
         } catch (e) {
           balance = e instanceof Error ? e.message : String(e);
         }
       }
       return text({
-        key: key ? "set" : "not set: the user sets TRIPO_API_KEY in this server's environment (EDGEchat's plugin settings, or their own environment variables). Keys set in VS Code stay there; the user can still make models from words in VS Code's Desk",
+        key: tripo.set ? `set, from ${tripo.from}` : tripo.from,
         plan: readSettings().tripoPlan ?? "not recorded",
         credits: balance,
         perModel: {
@@ -488,7 +538,7 @@ server.registerTool(
           fromWords: { standard: tripoCredits({ ...DetailLevels.standard.settings, parts: true }), high: tripoCredits({ ...DetailLevels.high.settings, parts: true }) },
           note: "in parts with the detailed texture, as Tripo charged on 2026-11-09",
         },
-        pictures: openai ? "OpenAI key set: fab_picture draws four views first" : "no OpenAI key: the user sets OPENAI_API_KEY in this server's environment; fab_make from 'tripo' works without it",
+        pictures: openai.set ? `OpenAI key set, from ${openai.from}: fab_picture draws four views first` : `no OpenAI key (${openai.from}); fab_make from 'tripo' works without it`,
       });
     } catch (e) {
       return failure(e);
@@ -604,7 +654,10 @@ server.registerTool(
 );
 
 // The bridge goes with the server: when the assistant closes the channel, or the process ends.
-const stopBridge = () => void bridge?.then((b) => b.client.stop(), () => undefined);
+const stopBridge = () => {
+  keysBridge?.close();
+  void bridge?.then((b) => b.client.stop(), () => undefined);
+};
 process.stdin.on("close", () => {
   stopBridge();
   setTimeout(() => process.exit(0), 500);

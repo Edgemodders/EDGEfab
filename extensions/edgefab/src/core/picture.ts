@@ -3,7 +3,7 @@
 // right; then Tripo makes the model from the four views (multiview to model), which follows each side far more
 // closely than text to model. The sheet's layout is EDGEmat's Reshape's: front and left above, back and right below.
 //
-// OpenAI's GPT Image, with the modder's own key (the extension's secret storage, or OPENAI_API_KEY), sent
+// OpenAI's GPT Image, with the modder's own key (REDcode's Keys, or EDGEfab's own secret storage with an older REDcode, or OPENAI_API_KEY), sent
 // only to OpenAI. EDGEmat's core has the same service (imageServices.ts) but draws 1024² only; EDGEfab asks
 // 2048² (1024² a view) until EDGEmat's generateImage takes a size (EDGEmat #9).
 
@@ -100,7 +100,7 @@ export function readPictures(raw: string): PictureRecord | undefined {
 
 async function openaiKey(call: PictureCall): Promise<string> {
   const key = call.key ?? envKey("openai");
-  if (!key) throw new PictureError("No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key; for the MCP server, set OPENAI_API_KEY in its environment.");
+  if (!key) throw new PictureError("No OpenAI API key. In VS Code, set one with EDGEfab: Set OpenAI Key (it goes in REDcode's Keys, for every EDGE tool), or set OPENAI_API_KEY.");
   return key;
 }
 
@@ -140,7 +140,7 @@ export async function drawViews(words: string, raw: string, call: PictureCall = 
     if (res.ok) break;
     const why = body.error?.message ?? `HTTP ${res.status}`;
     if (res.status === 400 && /size/i.test(why) && size !== "1024x1024") continue; // an older model: smaller
-    if (res.status === 401) throw new PictureError("OpenAI refused the key: set it again with EDGEfab: Set OpenAI Key.", 401);
+    if (res.status === 401) throw new PictureError("OpenAI refused the key: set it again in REDcode's Keys (Set Key on OpenAI), or with EDGEfab: Set OpenAI Key.", 401);
     if (/safety|moderation|policy/i.test(why)) throw new PictureError(`OpenAI won't draw that: ${why} Change the words and try again.`, res.status);
     if (res.status === 429) throw new PictureError(`OpenAI says too many requests or no credit left: ${why}`, 429);
     throw new PictureError(`OpenAI: ${why}`, res.status);

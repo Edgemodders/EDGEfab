@@ -16,6 +16,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
+| [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, and the real store). **Part B: not run** |
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | **Pass**: part A (23 checks) and part B (11 steps, the owner) |
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
@@ -48,6 +49,24 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 | [Add a Line in the Lip Sync tab](#add-a-line-in-the-lip-sync-tab) | Automated; the page by Claude in a browser; with EDGEwave by the owner | FL (Add a Line) | 2026-11-21 | Steps 1 and 2 pass. Step 3 ran (the owner): it works, **the voice was not the character's, and the mouth was exaggerated** (the shapes retuned since, not seen again) |
 | [Spike A2F: Audio2Face against the game's clip](#spike-a2f-audio2face-against-the-games-clip) | Run by Claude on the owner's PC; judged by the owner in the tab | A2F | 2026-11-21 | **The owner: Audio2Face reads better than the game's**; full strength too extreme; lips didn't round on "you" and "go". Three models run since; the newest rounds and closes far more. **The owner's second look: not run** |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
+
+## Keys in REDcode's Keys (EDGEfab #10)
+
+Built 2026-11-22 for [EDGEfab #10](https://github.com/Edgemodders/EDGEfab/issues/10), REDcode's K4d (REDcode's [design](https://edgemodders.github.io/REDcode/design/keys.html), [API](https://edgemodders.github.io/REDcode/api.html#keys); EDGEwave #12 was the pilot). The owner: "REDcode has a new key management feature now, so we need to use that". The Tripo and OpenAI keys live in REDcode's shared key store, `%APPDATA%\Edgemodders\keys`, one per service for every EDGE tool. In VS Code EDGEfab reads them through REDcode's API (`src/keys.ts`), which asks once "EDGEfab wants your OpenAI key". The MCP server reads them at each call through its own REDbridge started with `--keys` (`src/keyStore.ts`, copied from EDGEwave's), after `TRIPO_API_KEY` and `OPENAI_API_KEY`. With a REDcode that has no Keys (0.10.15 and before), EDGEfab keeps its keys in VS Code's secret storage as in 0.1.0. A key EDGEfab kept itself moves into the store once. **Released together with REDcode, EDGEwave 0.3.0 and the other K4d tools, when the owner says.**
+
+**Part A, the MCP server without VS Code (by Claude).** `npm run build`, then `node extensions/edgefab/scripts/keys-check.mjs`: the built server against a stand-in REDbridge (keys in memory, no real key, store or AI service). Expected `all passed`: status says where each key comes from and never shows it, asking `keys.info` only, with REDbridge started with `--keys`; `fab_picture` reads the OpenAI key with `keys.get` as "EDGEfab MCP"; without a key, plain words naming REDcode's Keys view; `OPENAI_API_KEY` wins with no store call; a REDbridge older than 0.18.0 says to update it. Then the same server's `fab_tripo` status against the real REDbridge 0.18.0 and the owner's store: both keys from REDcode's Keys, the balance read, no key shown.
+
+**Part B, in VS Code (the owner).** Needs REDcode main with Keys (pull, then `npm run build` in `REDcode/extensions/redcode`), REDbridge 0.18.0 (**REDcode: Update REDbridge**; `redcode.bridgePath` may point at it), and F5 > **Run EDGEfab with REDcode main**. Take `OPENAI_API_KEY` out of Windows' user environment variables first (set for the Pictures tab's step 7), and restart VS Code, or the environment wins everywhere. Every step uses the real store. Your everyday window, with EDGEfab 0.1.0 and a REDcode without Keys, keeps using EDGEfab's own copies; step 1 moves them, so the everyday window asks for a key once more until both releases have the store.
+
+1. **Moved.** With the keys EDGEfab saved before (Set Tripo Key, Set OpenAI Key in 0.1.0): start the F5 window. Expect: once, "REDcode's Keys already had keys for Tripo and OpenAI, so EDGEfab uses those" (your store has both from before), with **Open REDcode's Keys**; or, for a service the store doesn't have, "your ... key is now in REDcode's Keys". Reload the window: no message. EDGEfab's log says what moved.
+2. **Asked.** **Generate from Words...**, a few words, **Draw it first**. Expect: REDcode asks "EDGEfab wants your OpenAI key". **Allow**: the picture is drawn. Then **Generate 3D Model** on it: REDcode asks for the Tripo key the same way; **Allow**, and the cost box shows your balance (cancel there, nothing is spent). Do both again: no question. The Keys view lists EDGEfab as a reader of both.
+3. **Read by the MCP server.** **EDGEfab: Connect an Assistant (MCP)** > **Connect Claude Code**. Expect: "It uses your Tripo and OpenAI keys from REDcode's Keys". In a new Claude Code session, ask for EDGEfab's Tripo status (`fab_tripo`). Expect: both keys "set, from REDcode's Keys", your balance. Ask it to change a picture on the Desk (`fab_picture` with `from`): it works with no key in its settings. The Keys view lists EDGEfab MCP.
+4. **Changed.** In REDcode's Keys view, **Set Key** on OpenAI with a wrong key (one letter changed). Expect, with no reload: **Edit Picture** in the Pictures tab says OpenAI refused the key; `fab_picture` says so too. Set the right key again: both work.
+5. **Cleared.** **EDGEfab: Clear OpenAI Key**. Expect: it says the key is shared in REDcode's Keys, with **Open REDcode's Keys**. There, **Remove Key** on OpenAI. Expect: **Generate from Words...** offers Draw it first or Straight to 3D (no OpenAI key); **Draw it first** opens REDcode's password box; cancel: nothing is drawn. `fab_tripo` says no OpenAI key and where to set one. **EDGEfab: Set OpenAI Key**, paste the key: "the OpenAI key is set, in REDcode's Keys, shared by every EDGE tool", and the Keys view shows it set.
+
+| Round | Date | Result |
+|---|---|---|
+| 1 | 2026-11-22 | **Part A passed** (Claude): 13 checks, `all passed`; the real status read both keys from REDcode's Keys and the balance, with no key shown. **Part B: not run** |
 
 ## F1: the extension in VS Code (the owner's pass)
 
@@ -381,6 +400,10 @@ After the normal maps' green default (`addToProject.ts`, 2026-11-15), on the bui
 
 After the Pictures tab and its changes, on main `2f04616`, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, on `af59fb8` after Add to Project again, and on `c579bf4` after Open in EDGEmat (`ok` both, each time). Step 1 on copies of two Desk models in parts, into a scratch folder: `ok` both. The picture-first vending machine: 70 pieces into 6 parts, back faces on 5. The red vending machine made in the Pictures tab's run: 49 pieces into 10 parts, back faces on all 10. Both: three levels of detail, the quarter turn, the size-unknown note. Steps 2 and 3 are covered by the core package's Run 3 the same day.
 
+
+### Run 10, 2026-11-22: passed (step 1)
+
+After the keys moved to REDcode's Keys (EDGEfab #10; core's key messages changed). Step 1 on copies of two Desk models (`vending_small` and `neon_vending_box2`, their `original.glb`), into a scratch folder with `EDGEFAB_DATA` set: `ok` both.
 ## F1: Add to Project (without the game)
 
 A Desk item becomes a prop in a WolvenKit project, through the bundled core, the MCP server's `fab_add` and (not yet tried) the extension's Add to Project. Run after every change to `addToProject.ts`.
@@ -732,7 +755,7 @@ Both 1.8 m (`auto_size` kept), facing +X like text to model (prepare's turn appl
 
 ## F1: keys in VS Code's secret storage (EDGEfab #4)
 
-The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the MCP server reads its environment only, and nothing in the package decrypts key files through PowerShell (the likely reason the Marketplace refused EDGEhack). A release test: rerun before each release.
+The extension keeps its Tripo and OpenAI keys in VS Code's secret storage, the MCP server reads its environment only, and nothing in the package decrypts key files through PowerShell (the likely reason the Marketplace refused EDGEhack). A release test: rerun before each release. **Since 2026-11-22** the keys live in REDcode's Keys ([Keys in REDcode's Keys](#keys-in-redcodes-keys-edgefab-10)): step 1 still holds (REDbridge decrypts the store, nothing in EDGEfab does), step 2's words name REDcode's Keys, and step 3 applies with a REDcode that has no Keys.
 
 **Steps.**
 
@@ -766,6 +789,10 @@ Step 3 ran as [the owner's pass](#f1-the-extension-in-vs-code-the-owners-pass), 
 
 On main `2f04616`, after the Pictures tab, and again on `8d0c9ed` after Rename went all the way in, on `ac488ed`, on `8910f46` after the Desk's labels changed, on `af59fb8` after Add to Project again, and on `c579bf4` after Open in EDGEmat (803 kB): `edgefab-0.1.0.vsix`, 11 files: **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, and no key files.
 
+
+### Run 4, 2026-11-22: step 1 passed, with the keys in REDcode's Keys
+
+Step 1 on main with EDGEfab #10 built (`dist/edgefab-0.1.0.vsix` of 2026-11-22 06:27, 1,010,544 bytes, 12 files): **no match** for `ConvertTo-SecureString`, `SecureStringToBSTR` or `powershell`, no files named like `keys` (the REDbridge key client is inside `extension.js` and the server). Step 2 is part A of [Keys in REDcode's Keys](#keys-in-redcodes-keys-edgefab-10).
 ## F1: picture first and parts (without the game)
 
 Generate from Words as built (core `picture.ts`, `parts.ts`, Tripo's multiview with `generate_parts` and the texture step, Set Size), through the MCP server as an assistant uses it. A release test: rerun before F1's release.

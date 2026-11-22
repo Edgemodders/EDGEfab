@@ -8,7 +8,7 @@ Turn a textured 3D model into a prop the game can use: one of your own (GLB), or
 - EDGEfab gets the model ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits on your **Desk** until you use it.
 - **Add to Project** puts it in your REDcode project with collision and its materials, ready to place with EDGEbuilder or spawn.
 - **Add to Library** keeps it in the EDGE Library, the folder every EDGE tool shares, ready for any project. **Refresh Project from Library** brings newer versions in.
-- Your Tripo and OpenAI keys are kept encrypted in VS Code's secret storage, for EDGEfab only, and sent only to Tripo and OpenAI. EDGEfab asks once whether your Tripo plan is paid or free: on a free plan Tripo keeps the rights to the models.
+- Your Tripo and OpenAI keys are kept encrypted in REDcode's Keys, shared by every EDGE tool (set one once, in REDcode's Keys view), and sent only to Tripo and OpenAI. REDcode asks once whether EDGEfab may read each. With an older REDcode, EDGEfab keeps them in VS Code's secret storage. EDGEfab asks once whether your Tripo plan is paid or free: on a free plan Tripo keeps the rights to the models.
 - Assistants (Claude Code, agents in VS Code) get the same through EDGEfab's MCP server: **Connect an Assistant (MCP)...**.
 
 Docs: [edgemodders.github.io/EDGEfab](https://edgemodders.github.io/EDGEfab/). Part of the [EDGE tools](https://github.com/Edgemodders). MIT license.
