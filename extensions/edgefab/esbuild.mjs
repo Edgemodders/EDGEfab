@@ -17,8 +17,6 @@ const builds = [
   // The MCP server ships inside the extension (src/mcp.ts copies it to a fixed path and registers it), built as
   // packages/edgefab-mcp builds it, with the MCP SDK bundled in, so any Node 20 runs it.
   { ...common, entryPoints: ["../../packages/edgefab-mcp/src/server.ts"], outfile: "dist/mcp/edgefab-mcp.cjs", define: { __VERSION__: JSON.stringify(mcpVersion) }, banner: { js: "#!/usr/bin/env node" } },
-  // The Lip Sync tab's head: three.js and the face solver for the tab's page, the one script a webview loads from a file.
-  { bundle: true, platform: "browser", format: "iife", target: "es2022", minify: true, sourcemap: true, logLevel: "info", entryPoints: ["src/webview/lipsyncHead.ts"], outfile: "dist/webview/lipsyncHead.js" },
 ];
 
 

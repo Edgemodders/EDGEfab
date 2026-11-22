@@ -14,13 +14,6 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 - **Your Tripo and OpenAI keys live in REDcode's Keys**, shared by every EDGE tool: set a key once in REDcode's Keys view and EDGEfab, EDGEmat and the rest use it. REDcode asks once whether EDGEfab may read each key; if you choose Don't Allow, EDGEfab says so and how to change it, and never opens a key box over it. The keys EDGEfab kept itself move there the first time, and EDGEfab says so. EDGEfab's MCP server reads them there too, so an assistant needs no key in its settings or your environment. Needs REDcode with its Keys view; with an older REDcode, EDGEfab keeps its keys as before. An environment variable (`TRIPO_API_KEY`, `OPENAI_API_KEY`) still wins.
 
-**New**
-
-- **Lip Sync: add a line.** Type a new line for the character in the Lip Sync tab and press Enter: EDGEwave speaks it in the character's voice (ElevenLabs, your own key), and EDGEfab makes the lip sync from the words and the voice's timing and plays both on the head. **New Take** speaks it again. It stays in the tab for now: writing it into a mod comes later. Needs EDGEwave with Speak a Line. For assistants, `fab_lipsync_make`.
-- **Lip Sync: a volume slider** beside the play buttons, kept with the tab.
-- **Lip Sync: the timeline.** Drag the marker along the curves; buttons and keys for play or pause (Space), a frame back or forward (arrows), the start and the end (Home, End). The curves scroll in their own box, and the tab comes back after a window reload.
-- **Lip Sync: the head.** A line in the Lip Sync tab now shows on the head it was made on, in 3D: the mouth, jaw, brows and eyelids move with the voice as the game's own face solver would move them. Drag the head to turn it. The head is plain (no skin texture or hair yet). Needs REDbridge 0.16.0.
-- **Lip Sync, a first look**: **EDGEfab: Open Lip Sync** asks for a character and opens a tab with every lip synced line the game has for them, scene by scene. Pick a line to hear it and see what the game's clip moves for it, as curves under the voice: jaw, lips, tongue, brows, blinks, throat. Point at a curve to read it; the game's own track names are one click away. Needs REDbridge 0.14.0; REDcode plays the voice. For assistants, `fab_lipsync_lines` and `fab_lipsync_line`. Making new lip sync comes later ([Made lip sync](https://edgemodders.github.io/EDGEfab/lipsync.html)).
 
 ## 0.1.0 (2026-11-18)
 

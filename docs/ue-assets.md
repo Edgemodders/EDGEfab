@@ -141,7 +141,7 @@ The face is the weak point.
 
 Recommendation: start with the first or second option. Treat speaking UE faces as research.
 
-How the game's faces work (pose-based facial setups, moods, baked lip sync per language) is in [NPC faces](faces.html) (2026-11-17). It confirms the third option's cost: a head that speaks needs its own `.facialsetup`, whose poses are baked binary data.
+How the game's faces work (pose-based facial setups, moods, baked lip sync per language) is in NPC faces (moved to REDcode's `lipsync` branch, `lipsync/docs/faces.md`, on 2026-11-22) (2026-11-17). It confirms the third option's cost: a head that speaks needs its own `.facialsetup`, whose poses are baked binary data.
 
 ## Animations
 

@@ -13,8 +13,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("../../", import.meta.url)));
 const extension = process.argv.includes("--extension");
-// The Lip Sync tab's head viewer is a bundle of its own (three.js): the page loads it, so it ships in the extension.
-const maps = [join(root, "extensions/edgefab/dist/extension.js.map"), join(root, "extensions/edgefab/dist/mcp/edgefab-mcp.cjs.map"), join(root, "extensions/edgefab/dist/webview/lipsyncHead.js.map")];
+const maps = [join(root, "extensions/edgefab/dist/extension.js.map"), join(root, "extensions/edgefab/dist/mcp/edgefab-mcp.cjs.map")];
 if (!extension) maps.push(join(root, "packages/edgefab-mcp/dist/server.cjs.map"));
 const out = extension ? join(root, "extensions/edgefab/THIRD-PARTY-NOTICES.txt") : join(root, "dist/THIRD-PARTY-NOTICES.txt");
 

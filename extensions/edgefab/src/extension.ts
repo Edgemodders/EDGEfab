@@ -18,7 +18,6 @@ import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
 import { askForKey, clearKey, getKey, hasKeyStore, initKeys, keyOrAsk, keysPlace, knowsWhy, noKeyWhy, setKey, showNoKeyWhy } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
-import { openLipSync, restoreLipSync, type LipSyncHost, type SpokenLine } from "./lipsyncTab";
 
 declare const __VERSION__: string;
 
@@ -751,40 +750,6 @@ async function refreshFromLibrary(): Promise<void> {
   }
 }
 
-/** What the Lip Sync tab needs from the extension. REDcode is looked for at each call, not once: after a
- *  window reload the tab can come back before REDcode has started. */
-function lipSyncHost(): LipSyncHost {
-  return {
-    log,
-    // REDcode's REDbridge when REDcode runs, else one of our own that ends with the tab.
-    bridge: async () => {
-      const shared = redcode()?.bridge();
-      if (shared) return { call: callOf(shared) };
-      const own = await startBridge(log);
-      return { call: own.call, stop: () => own.client.stop() };
-    },
-    sound: async (gamePath) => {
-      const api = redcode();
-      if (typeof api?.sound !== "function") throw new Error("REDcode plays the voice: install it, or open the line again once it has started.");
-      return api.sound({ path: gamePath });
-    },
-    extensionPath: extensionUri?.fsPath,
-    // EDGEwave speaks a new line (its speakLine, EDGEwave #13). It is started here if it is installed and not
-    // yet running: asking for a line is the modder asking for it.
-    speak: async (request) => {
-      const wave = vscode.extensions.getExtension<{ apiVersion?: number; speakLine?: (o: Record<string, unknown>) => Promise<SpokenLine | { reason: string }> }>("edgemodders.edgewave");
-      if (!wave) return { reason: "EDGEwave makes the voice: install EDGEwave to add a line." };
-      const api = wave.isActive ? wave.exports : await wave.activate();
-      if (typeof api?.speakLine !== "function") {
-        // Which EDGEwave answered, since an installed one and a development build can both be on the machine.
-        log(`Lip Sync: EDGEwave ${wave.packageJSON?.version} at ${wave.extensionPath} has no speakLine (its API has: ${Object.keys(api ?? {}).join(", ") || "nothing"})`);
-        return { reason: `The EDGEwave that is running (${wave.packageJSON?.version}, from ${wave.extensionPath}) can't speak a line with its timings yet: it needs a newer EDGEwave.` };
-      }
-      return api.speakLine({ ...request, by: "EDGEfab" });
-    },
-  };
-}
-
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel("EDGEfab");
   extensionUri = context.extensionUri;
@@ -913,11 +878,6 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("edgefab.clearTripoKey", () => clearKey("tripo")),
     vscode.commands.registerCommand("edgefab.tripoPlan", askTripoPlan),
-    vscode.commands.registerCommand("edgefab.openLipSync", (character?: unknown) => openLipSync(lipSyncHost(), typeof character === "string" ? character : undefined)),
-    // The Lip Sync tab comes back after a window reload, on the character and line it showed.
-    vscode.window.registerWebviewPanelSerializer("edgefab.lipsync", {
-      deserializeWebviewPanel: async (panel, state) => restoreLipSync(lipSyncHost(), panel, state),
-    }),
     vscode.commands.registerCommand("edgefab.connectAssistant", () => connectAssistant(context, log)),
     vscode.commands.registerCommand("edgefab.showLog", () => output.show()),
     vscode.commands.registerCommand("edgefab.refresh", () => view.refresh()),

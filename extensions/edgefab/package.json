@@ -39,7 +39,6 @@
   "activationEvents": [
     "onView:edgefab.desk",
     "onWebviewPanel:edgefab.pictures",
-    "onWebviewPanel:edgefab.lipsync",
     "onCommand:edgefab.importGlb",
     "onCommand:edgefab.generate",
     "onCommand:edgefab.setTripoKey",
@@ -53,8 +52,7 @@
     "onCommand:edgefab.library.setRoot",
     "onCommand:edgefab.library.setModder",
     "onCommand:edgefab.refreshFromLibrary",
-    "onCommand:edgefab.makeProp",
-    "onCommand:edgefab.openLipSync"
+    "onCommand:edgefab.makeProp"
   ],
   "contributes": {
     "viewsContainers": {
@@ -205,12 +203,6 @@
         "command": "edgefab.glowOff",
         "title": "Stop the Glow",
         "category": "EDGEfab"
-      },
-      {
-        "command": "edgefab.openLipSync",
-        "title": "Open Lip Sync",
-        "category": "EDGEfab",
-        "icon": "$(comment-discussion)"
       },
       {
         "command": "edgefab.openPreview",
@@ -608,13 +600,8 @@
     "vscode:prepublish": "node ../../tools/release/notes.mjs --extension && node esbuild.mjs && node ../../tools/release/notices.mjs --extension",
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
-    "smoke": "node scripts/smoke.mjs",
-    "lipsync": "node scripts/lipsync.mjs",
-    "lipsync:jaw": "node scripts/lipsync-live-jaw.mjs",
-    "lipsync:shapes": "node scripts/lipsync-live-shapes.mjs",
-    "lipsync:face": "node scripts/lipsync-face.mjs",
-    "lipsync:speech": "node scripts/lipsync-speech.mjs"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {
     "@edgemodders/edgemat-core": "~0.3.2",
@@ -623,7 +610,6 @@
     "@gltf-transform/functions": "4.5.1",
     "@types/node": "^24.0.0",
     "@types/pngjs": "^6.0.5",
-    "@types/three": "0.170.0",
     "@types/vscode": "1.70.0",
     "esbuild": "^0.28.2",
     "gl-matrix": "3.4.4",
@@ -631,7 +617,6 @@
     "meshoptimizer": "1.3.0",
     "mikktspace": "1.1.1",
     "pngjs": "^7.0.0",
-    "three": "0.170.0",
     "typescript": "~5.9.3"
   }
 }

@@ -21,7 +21,6 @@ import {
   addToProject, deskItem, drawPicture, envKey, readPrepared, renameItem, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
-  lipsyncCharacters, lipsyncClip, lipsyncLines, sampleTrack, speechClip, DefaultLanguage, type LineTimings,
 } from "../../../extensions/edgefab/src/core";
 import { findBridge, installedRedcodeDirs, KeysBridge, McpCaller } from "../../../extensions/edgefab/src/keyStore";
 import { KeyServices, type KeyService } from "../../../extensions/edgefab/src/core/keys";
@@ -539,113 +538,6 @@ server.registerTool(
           note: "in parts with the detailed texture, as Tripo charged on 2026-11-09",
         },
         pictures: openai.set ? `OpenAI key set, from ${openai.from}: fab_picture draws four views first` : `no OpenAI key (${openai.from}); fab_make from 'tripo' works without it`,
-      });
-    } catch (e) {
-      return failure(e);
-    }
-  },
-);
-
-// Lip sync, the reading half (docs/lipsync.md, FL1): the twins of the Lip Sync tab.
-server.registerTool(
-  "fab_lipsync_lines",
-  {
-    description:
-      "Lip sync, reading the game (the extension's Lip Sync tab): a character's lip synced lines, scene by scene, each with its clip name (f_<HEX> or m_<HEX>, from the line's string id), words, voice file (.wem game path), length and the clip set it is in. " +
-      "The game keys lip sync by voice tag (judy, panam, angelica_whelan), not by head: one clip plays on any head. Without character it lists the characters that have lip sync, most scenes first; find narrows them by name. " +
-      "Scenes come a page at a time (V has hundreds): offset and limit, with total. Voice sets (gameplay barks) are scenes too. Needs REDbridge 0.14.0 and the game folder; the first call starts REDbridge (about 5 seconds). " +
-      "fab_lipsync_line then reads one line's clip as curves.",
-    inputSchema: {
-      character: z.string().optional().describe("The voice tag's name or id; a part of a name works when only one character has it."),
-      find: z.string().optional().describe("Without character: only the characters whose voice tag contains this."),
-      scene: z.string().optional().describe("Only the scenes whose path contains this, such as mq306 or vset_."),
-      language: z.string().default(DefaultLanguage).describe("The voice language, as the game names it: en-us, pl-pl, jp-jp, ..."),
-      offset: z.number().int().min(0).default(0),
-      limit: z.number().int().min(1).max(200).default(20).describe("Scenes per call (characters: this many names)."),
-    },
-  },
-  async ({ character, find, scene, language, offset, limit }) => {
-    try {
-      const { call } = await getBridge();
-      if (!character) {
-        const all = await lipsyncCharacters(call, { language, find });
-        return text({ language, total: all.length, offset, characters: all.slice(offset, offset + limit) });
-      }
-      return text(await lipsyncLines(call, { character, language, scene, offset, limit }));
-    } catch (e) {
-      return failure(e);
-    }
-  },
-);
-
-server.registerTool(
-  "fab_lipsync_line",
-  {
-    description:
-      "Lip sync, reading the game: one line's clip as curves (what the Lip Sync tab draws). Give the set and clip from fab_lipsync_lines. Answers the clip's length and, for every track that moves, its name, group, face part, " +
-      "number of keys, lowest and highest value and when it peaks. Groups: 'lipsync' (<pose>LipsyncPoseOutput, what the clip drives, 0 to about 1: the mouth, and also brows, blinks and the throat; part says which), 'override' (<pose>AnimOverrideWeight, mostly the negative of its lipsync track: " +
-      "it mutes other face animation), 'control' (lipSyncEnvelope, jaliJaw, jaliLips, muzzleLips, upperFace, ...), 'pose' (eyes, head and neck riding along) and 'wrinkle'. " +
-      "tracks: names to get in full, as [seconds, value] keys; every: also each of those sampled at that many frames a second (30 is the game's), for comparing clips. About a third of a second a clip.",
-    inputSchema: {
-      set: z.string().describe("The clip set's game path (.anims), as fab_lipsync_lines gives it."),
-      clip: z.string().describe("The clip's name in the set, such as f_2CE9C077837E0000."),
-      tracks: z.array(z.string()).optional().describe("Track names to return with their keys, such as jaw_mid_openLipsyncPoseOutput; 'lipsync', 'control', 'override' or 'pose' for a whole group."),
-      every: z.number().positive().max(120).optional().describe("Also sample the asked tracks at this many frames a second."),
-    },
-  },
-  async ({ set, clip, tracks, every }) => {
-    try {
-      const { call } = await getBridge();
-      const c = await lipsyncClip(call, { set, clip });
-      const want = new Set((tracks ?? []).map((t) => t.toLowerCase()));
-      return text({
-        set: c.set, clip: c.clip, rig: c.rig, seconds: c.seconds, fps: c.fps, frames: c.frames, trackCount: c.trackCount,
-        moving: c.tracks.map((t) => {
-          let peak = 0;
-          for (let i = 0; i < t.keys.length; i += 2) if (Math.abs(t.keys[i + 1]) > Math.abs(t.keys[peak + 1] ?? 0)) peak = i;
-          const full = want.has(t.name.toLowerCase()) || want.has(t.group);
-          const samples = full && every ? Array.from({ length: Math.floor(c.seconds * every) + 1 }, (_, i) => +sampleTrack(t, i / every).toFixed(4)) : undefined;
-          const keys = full ? Array.from({ length: t.keys.length / 2 }, (_, i) => [t.keys[i * 2], t.keys[i * 2 + 1]]) : undefined;
-          return { name: t.name, group: t.group, part: t.part, keys: t.keys.length / 2, min: t.min, max: t.max, peakAt: t.keys[peak], values: keys, samples };
-        }),
-        held: c.held,
-      });
-    } catch (e) {
-      return failure(e);
-    }
-  },
-);
-
-server.registerTool(
-  "fab_lipsync_make",
-  {
-    description:
-      "Lip sync, making it: a spoken line into mouth shapes and the game's lip sync tracks, from when each letter is spoken (what the Lip Sync tab's Add a Line does). " +
-      "Give the timings as EDGEwave's voice_speak_line returns them (characters, starts and ends in seconds from the audio's start, and spoken, which marks letters that are not said), or timingsFile, the file it keeps beside the WAV. " +
-      "Answers the shapes in time (aa, eh, ee, oh, oo, mbp, fv, th, tdn, kg, sz, sh, r) and each lip sync track's keys; out writes the whole clip as JSON, in the shape of a game clip read by fab_lipsync_line. " +
-      "No game, no network. The sounds come from spelling rules and a short word list, version 0: judge it on the head in the tab. Writing it into a project as an .anims comes later.",
-    inputSchema: {
-      timings: z
-        .object({ characters: z.array(z.string()), starts: z.array(z.number()), ends: z.array(z.number()), spoken: z.array(z.boolean()).optional() })
-        .optional()
-        .describe("When each character is spoken."),
-      timingsFile: z.string().optional().describe("A timings file from EDGEwave (<take>.timings.json), in place of timings."),
-      seconds: z.number().positive().optional().describe("The audio's length, so the clip is as long."),
-      out: z.string().optional().describe("A file to write the clip to, as JSON."),
-    },
-  },
-  async ({ timings, timingsFile, seconds, out }) => {
-    try {
-      const read = timingsFile ? (JSON.parse(fs.readFileSync(timingsFile, "utf8")) as { timings?: LineTimings } & LineTimings) : undefined;
-      const t: LineTimings | undefined = timings ?? read?.timings ?? read;
-      if (!t || !Array.isArray(t.characters) || t.characters.length !== t.starts?.length || t.characters.length !== t.ends?.length) throw new Error("Give timings (characters, starts and ends, the same number of each) or a timingsFile.");
-      const clip = speechClip(t, { seconds });
-      if (out) fs.writeFileSync(out, JSON.stringify(clip));
-      return text({
-        seconds: clip.seconds,
-        shapes: clip.events.map((e) => ({ shape: e.shape, start: +e.start.toFixed(3), end: +e.end.toFixed(3), letters: e.letters })),
-        tracks: clip.tracks.map((k) => ({ name: k.name, keys: k.keys.length / 2, max: k.max })),
-        out,
       });
     } catch (e) {
       return failure(e);

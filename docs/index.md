@@ -10,8 +10,6 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 | [Tools working together](tools-together.html) | How EDGE tools share code (packages), move between tabs (extension APIs), talk to assistants (MCP) and share REDbridge. For every tool's builders. A proposal (2026-11-04); its home is asked of EDGEweb ([#6](https://github.com/Edgemodders/EDGEweb/issues/6)) |
 | [Props, the parallel proposal](props.html) | A first version of props written with the owner in a parallel session (2026-10-27 to 30): takes, parts and a material planner, changes in Blender, edits merged back. Kept for reference; the build plan places each part (reviewed 2026-11-04) |
 | [UE5 assets](ue-assets.html) | Research: Unreal Engine 5 props and characters, with materials, rigs and animations, into the game; driving Unreal headless and through its MCP server; feasibility, effort, tradeoffs |
-| [NPC faces](faces.html) | Research: how NPC faces move (facial setups, the face graph), moods and gestures in scenes, and how lip sync follows a voice line; what it means for EDGEfab, EDGEquest and EDGEdir (2026-11-17) |
-| [Made lip sync](lipsync.html) | Research: turning a talking video, or a voice, into the game's lip sync clips; the services for each step, the game's lip sync tracks, and the long pole (the translation into those tracks); the Lip Sync tab, and live lip sync for a line made while the game runs, with its spikes (2026-11-17) |
 | [Tests](testing.html) | Every test with its steps and results. None yet |
 | [Changelog](changelog.html) | Changes a modder would notice. Nothing yet |
 | [Dev setup](dev-setup.html) | What a PC needs to work on EDGEfab |
@@ -29,13 +27,13 @@ As of 2026-11-18. The first build (F1) is released as **0.1.0, a preview** (2026
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
 | F4 Clothing | Not started |
-| F5a Characters, seen | Not started |
-| F5b Characters, heard and read | Not started |
+| F5a Characters, seen | Left EDGEfab 2026-11-22 (props and clothing only) |
+| F5b Characters, heard and read | Left EDGEfab 2026-11-22 (props and clothing only) |
 | FA The agent (moved out of F2, 2026-11-04) | Not started |
-| F6 Characters, edited | Not started |
+| F6 Characters, edited | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F7a Animated props (a key focus) | Not started |
-| F7b-1 Small animation edits (a key focus) | Not started |
-| F7b-2 Character animation (a key focus) | Not started |
+| F7b-1 Small animation edits (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
+| F7b-2 Character animation (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F8 Unreal assets | Not started |
 | F9 Ship | Not started |
 

@@ -34,10 +34,6 @@ nav:
     url: /tools-together.html
   - title: UE5 assets
     url: /ue-assets.html
-  - title: NPC faces
-    url: /faces.html
-  - title: Made lip sync
-    url: /lipsync.html
   - title: Tests
     url: /testing.html
   - title: Changelog

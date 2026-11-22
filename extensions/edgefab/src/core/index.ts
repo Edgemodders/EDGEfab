@@ -27,12 +27,3 @@ export {
   glowOff, glowWords, lightsMap, percent, paintedLightsGlow, setGlowStrength, DefaultGlowStrength, DefaultLightsAmount, GlowError, GlowLevels, type GlowResult,
 } from "./glow";
 export { changePrompt, drawViews, readPictures, takeWhat, viewsPrompt, PictureError, PictureModel, type PictureCall, type PictureRecord, type PictureTake } from "./picture";
-export {
-  lineOfClip, lipsyncCacheDir, lipsyncCharacter, lipsyncCharacters, lipsyncClip, lipsyncLines, sampleTrack, trackGroups, voiceTags, DefaultLanguage, LipsyncError,
-  type LipsyncCharacter, type LipsyncClip, type LipsyncLine, type LipsyncLines, type LipsyncScene, type LipsyncTrack, type TrackGroup,
-} from "./lipsync";
-export { mouthFeatureFields, MouthFeature, MouthShapes, type MouthShape } from "./lipsync/shapes";
-export { arkitClip, ArkitToPose, type ArkitOptions, type ShapeFrame } from "./lipsync/arkit";
-export { mouthEvents, shapeWeights, speechClip, DefaultSpeechTiming, type LineTimings, type MouthEvent, type SpeechTiming } from "./lipsync/speech";
-export { faceSetupCached, headModel, headOfRig, headParts, readFaceSetup, rigGender, DefaultHeads, type HeadModel, type HeadParts } from "./lipsync/face";
-export { boneToGltf, clipValues, faceSolver, type ClipTracks, type FaceChanges, type FacePart, type FaceSetup } from "./lipsync/faceSolve";
