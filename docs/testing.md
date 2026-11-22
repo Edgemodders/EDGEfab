@@ -16,7 +16,7 @@ Last updated 2026-11-17. Each row links to its test. **Every test for 0.1.0 has 
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
-| [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). Part B steps 1 to 5 **pass** (the owner). **Step 6, Don't Allow: not run** |
+| [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). **Pass**: part A (13 checks, the real store, 8 checks of the no-key reasons) and part B (6 steps, the owner, step 6 Don't Allow included) |
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | **Pass**: part A (23 checks) and part B (11 steps, the owner) |
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
 | [The extension in VS Code (the owner's pass)](#f1-the-extension-in-vs-code-the-owners-pass) | By hand in VS Code: scripted by the EDGEweb session, then the owner | F1 | 2026-11-15 | **Pass** (with fixes) |
@@ -71,6 +71,7 @@ Built 2026-11-22 for [EDGEfab #10](https://github.com/Edgemodders/EDGEfab/issues
 | 2 | 2026-11-22 | **Part B, partly run** (the owner). Step 1: EDGEfab's own copies of both keys are gone from VS Code's storage (checked by Claude; step 1 now opens the Desk first, since EDGEfab starts with it). Step 2: REDcode asked for the Tripo key, the dialog was closed, and REDcode recorded **Don't Allow** for EDGEfab and Tripo (OpenAI allowed); EDGEfab then said no Tripo key was set. **Fixed:** with REDcode's Keys the message says none is set or EDGEfab isn't allowed, and offers Open REDcode's Keys. To go on: Forget Tool Permissions for Keys in REDcode's Keys view, then step 2 again. Steps 3 to 5 not run |
 | 3 | 2026-11-22 | **Part B passed** (the owner): all 5 steps, on `dc3ed42` with REDcode main and REDbridge 0.18.0, after Forget Tool Permissions for Keys. **The test passes** |
 | 4 | 2026-11-22 | Step 6 added at the owner's ask (Don't Allow, with REDcode's `keys.status`): EDGEfab says why there is no key and opens no password box when the modder said no, or closed REDcode's question while a key is set (EDGEhack's rule). Part A again: `keys-check.mjs` all passed, and the new `keys-reason-check.mjs` (8 checks) all passed. **Step 6: not run** |
+| 5 | 2026-11-22 | **Step 6 passed** (the owner): Don't Allow for Tripo and for OpenAI gives the reason and no password box; after Forget Tool Permissions for Keys, Allow works for both. **The test passes**, all 6 steps |
 
 ## F1: the extension in VS Code (the owner's pass)
 
