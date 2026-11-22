@@ -67,6 +67,7 @@ Built 2026-11-22 for [EDGEfab #10](https://github.com/Edgemodders/EDGEfab/issues
 | Round | Date | Result |
 |---|---|---|
 | 1 | 2026-11-22 | **Part A passed** (Claude): 13 checks, `all passed`; the real status read both keys from REDcode's Keys and the balance, with no key shown. **Part B: not run** |
+| 2 | 2026-11-22 | **Part B, partly run** (the owner). Step 1: EDGEfab's own copies of both keys are gone from VS Code's storage (checked by Claude; step 1 now opens the Desk first, since EDGEfab starts with it). Step 2: REDcode asked for the Tripo key, the dialog was closed, and REDcode recorded **Don't Allow** for EDGEfab and Tripo (OpenAI allowed); EDGEfab then said no Tripo key was set. **Fixed:** with REDcode's Keys the message says none is set or EDGEfab isn't allowed, and offers Open REDcode's Keys. To go on: Forget Tool Permissions for Keys in REDcode's Keys view, then step 2 again. Steps 3 to 5 not run |
 
 ## F1: the extension in VS Code (the owner's pass)
 

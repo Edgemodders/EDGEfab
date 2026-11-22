@@ -16,7 +16,7 @@ import type { BridgeCall } from "@edgemodders/edgemat-core";
 import { connectAssistant, installServer, registerWithEditor } from "./mcp";
 import { entryOf, listDesk, DeskView, type DeskEntry } from "./deskView";
 import { libraryAssetOf, libraryPathOf, viewOf, LibraryView } from "./libraryView";
-import { clearKey, getKey, initKeys, keyOrAsk, keysPlace, setKey } from "./keys";
+import { clearKey, getKey, hasKeyStore, initKeys, keyOrAsk, keysPlace, setKey } from "./keys";
 import { closePicturesUnder, openPictures, restorePictures, type PictureTabHooks } from "./pictureTab";
 import { openLipSync, restoreLipSync, type LipSyncHost, type SpokenLine } from "./lipsyncTab";
 
@@ -264,7 +264,17 @@ async function readyForTripo(): Promise<{ key: string; plan: TripoPlan } | undef
     return undefined;
   }
   if (!key) {
-    const go = await vscode.window.showInformationMessage("Making a 3D model needs your own Tripo API key: Tripo makes it, with your credits.", "Set Tripo Key");
+    // With REDcode's Keys, no key can also mean the modder told REDcode not to let EDGEfab read it (REDcode's
+    // API doesn't say which), so the message names both and opens the Keys view.
+    const shared = await hasKeyStore();
+    const go = await vscode.window.showInformationMessage(
+      shared
+        ? "EDGEfab can't read a Tripo key: none is set in REDcode's Keys, or EDGEfab isn't allowed to read it. To allow it: Forget Tool Permissions for Keys in REDcode's Keys view, then try again."
+        : "Making a 3D model needs your own Tripo API key: Tripo makes it, with your credits.",
+      "Set Tripo Key",
+      ...(shared ? ["Open REDcode's Keys"] : []),
+    );
+    if (go === "Open REDcode's Keys") void vscode.commands.executeCommand("redcode.keys.focus");
     if (go !== "Set Tripo Key" || !(key = await setKey("tripo"))) return undefined;
   }
   const plan = readSettings().tripoPlan ?? (await askTripoPlan());
