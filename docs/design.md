@@ -87,7 +87,7 @@ The add-on's license is unverified (Blender add-ons are usually GPL). EDGEfab us
 
 ### Fitting, step by step
 
-Proposed for F3, unverified until tried:
+Proposed for F4b (the build plan's numbering since 2026-11-25), unverified until tried:
 
 | Step | How | Who |
 |---|---|---|

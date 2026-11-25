@@ -18,20 +18,21 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-18. The first build (F1) is released as **0.1.0, a preview** (2026-11-18); the other phases are proposals until F0 ([build plan](plan.html)). The proposed order: F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9 (F5 and F7b split 2026-11-04).
+As of 2026-11-25. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 on 2026-11-22); the other phases are proposals ([build plan](plan.html)). EDGEfab covers **props and clothing** (the owner, 2026-11-22); animation editing is REDcode's (2026-11-24). The proposed order (2026-11-25, clothing up and split): F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9.
 
 | Phase | Status |
 |---|---|
 | F0 Decisions | Done: Tripo and the GLB import over a game prop checked (2026-10-31 and 11-01); both collisions solid in the game (2026-11-09) |
-| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. In the game 2026-11-09: both collisions solid, the facing right. Generate from Words (picture first, in parts) and Set Size built 2026-11-10; keys in VS Code's secret storage 2026-11-11; **the Library** (Add to Library, the Library view, Add to Project from it, Refresh) and Make a Prop in the Explorer built 2026-11-13. Rename built the same day. The owner's VS Code pass and **F1's phase test in the game with EDGEbuilder passed** 2026-11-14 and 15; the normal maps' green flipped by default, confirmed in the game. Next: the first release, 0.1.0 |
+| F1 Props: a textured GLB, imported or from Tripo, added to the project and placed with EDGEbuilder | Started 2026-11-01: the extension and MCP server, Tripo, the prepare step (smoke tested), Open in 3D, glow kept. **Add to Project** built 2026-11-04 (passed without the game; its in-game check is built). Make the Painted Lights Glow and Glow Strength built 2026-11-05. In the game 2026-11-09: both collisions solid, the facing right. Generate from Words (picture first, in parts) and Set Size built 2026-11-10; keys in VS Code's secret storage 2026-11-11; **the Library** (Add to Library, the Library view, Add to Project from it, Refresh) and Make a Prop in the Explorer built 2026-11-13. Rename built the same day. The owner's VS Code pass and **F1's phase test in the game with EDGEbuilder passed** 2026-11-14 and 15; the normal maps' green flipped by default, confirmed in the game. **Released** as 0.1.0 (2026-11-18) and 0.2.0 (keys in REDcode's Keys, 2026-11-22) |
 | F3 Blender sources (FBX, `.blend`) | Not started |
 | F2 Workspace and prompts | Not started |
-| F4 Clothing | Not started |
+| F4a Reshape a game garment (from EDGEmat's Reshape, EDGEfab #3) | Not started. Proposed right after F3 |
+| F4b New clothing, fitted to both bodies | Not started. Proposed right after F4a |
 | F5a Characters, seen | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F5b Characters, heard and read | Left EDGEfab 2026-11-22 (props and clothing only) |
 | FA The agent (moved out of F2, 2026-11-04) | Not started |
 | F6 Characters, edited | Left EDGEfab 2026-11-22 (props and clothing only) |
-| F7a Animated props (a key focus) | Not started |
+| F7a Animated props (a prop's rig and the entity that plays its clip; the clip made in Blender or REDcode) | Not started |
 | F7b-1 Small animation edits (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F7b-2 Character animation (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F8 Unreal assets | Not started |
