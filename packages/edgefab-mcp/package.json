@@ -1,6 +1,6 @@
 {
   "name": "@edgemodders/edgefab-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "EDGEfab for AI assistants over MCP: make a Cyberpunk 2077 prop from a textured 3D model, or from words through Tripo, prepared for the game.",
   "license": "MIT",
   "author": "Edgemodders",

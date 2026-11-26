@@ -1,6 +1,6 @@
 {
   "name": "@edgemodders/edgefab-core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "EDGEfab's core as a library: a textured GLB (or a model made from words) prepared as a Cyberpunk 2077 prop, put into a WolvenKit project or the EDGE Library, for other tools' extensions and Node mods.",
   "license": "MIT",
   "author": "Edgemodders",

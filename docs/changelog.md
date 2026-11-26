@@ -10,6 +10,16 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 ## Unreleased
 
+
+## 0.2.1 (2026-11-25)
+
+<!-- nexus
+Fixed: The MCP server uses the REDbridge EDGEchat names for Add to Project and the Library too, not only for keys
+Needs: Nothing new. In VS Code nothing changes; this is for assistants connected through EDGEchat
+-->
+
+A fix for assistants connected through EDGEchat.
+
 **Fixed**
 
 - **The MCP server finds REDbridge where EDGEchat says it is**, for Add to Project and the Library too, not only for your keys: `EDGEFAB_REDBRIDGE` (a REDbridge.exe, or the folder it is in) now comes first for every REDbridge the server starts. Before, an assistant connected through EDGEchat on a PC without REDcode's `redcode.bridgePath` setting could read your keys but not add a prop to a project (EDGEchat #5).
