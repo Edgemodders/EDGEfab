@@ -10,9 +10,9 @@
   },
   "mod": "14315126036173",
   "pulled": {
-    "sha256": "cbb58bcf7e7e022e06dbfcb5dfc06ca7cf7dd89ace3d7c74ef2aa685942167ab",
-    "at": "2026-11-22T23:28:50.828Z",
-    "version": "0.2.0"
+    "sha256": "27df0f3330f413a05223df4db7f77c7ecd22d3dd45b9643d5ff70cc522ba46e9",
+    "at": "2026-11-26T01:36:37.695Z",
+    "version": "0.2.1"
   },
   "file": 8415858
 }
