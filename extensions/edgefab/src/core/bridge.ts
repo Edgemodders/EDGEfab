@@ -2,7 +2,9 @@
 // In VS Code it is REDcode's (REDcodeApi.bridge()); the MCP server starts its own when it needs one, found
 // as EDGEmat finds it (edgemat.* or redcode.* settings, PATH).
 
-import { BridgeClient, isGameFolder, resolveBridge, resolveGame, vscodeUserSettings, type BridgeCall } from "@edgemodders/edgemat-core";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { BridgeClient, isGameFolder, resolveBridge, resolveGame, vscodeUserSettings, type BridgeCall, type SettingsReader } from "@edgemodders/edgemat-core";
 
 /**
  * The call function of a running BridgeClient (REDcode's or EDGEmat's copy). Its wrappers differ between
@@ -24,13 +26,27 @@ export async function gameFolder(): Promise<string | undefined> {
   }
 }
 
+/**
+ * REDbridge.exe for tools outside VS Code: EDGEFAB_REDBRIDGE first (EDGEchat's plugin sets it, and the MCP
+ * server's key store reads it too), then EDGEmat's and REDcode's settings, then PATH. A folder means REDbridge.exe in it.
+ */
+function bridgeChoice(settings: SettingsReader): { exe: string; dotnetRoot?: string } | undefined {
+  const named = process.env.EDGEFAB_REDBRIDGE?.trim();
+  if (named) {
+    const exe = fs.existsSync(named) && fs.statSync(named).isDirectory() ? path.join(named, "REDbridge.exe") : named;
+    if (!fs.existsSync(exe)) throw new Error(`EDGEFAB_REDBRIDGE names ${named}, and there is no REDbridge.exe there.`);
+    return { exe, dotnetRoot: settings("edgemat.dotnetRoot")?.trim() || settings("redcode.dotnetRoot")?.trim() || undefined };
+  }
+  return resolveBridge(settings);
+}
+
 /** Starts a REDbridge with the game loaded, for tools outside VS Code. */
 export async function startBridge(log: (line: string) => void = () => undefined): Promise<{ client: BridgeClient; call: BridgeCall }> {
   const settings = vscodeUserSettings();
   const game = await resolveGame(settings, {}, true);
   if (!game || !isGameFolder(game.path)) throw new Error("No Cyberpunk 2077 folder found. Set redcode.gamePath in VS Code.");
-  const choice = resolveBridge(settings);
-  if (!choice) throw new Error("REDbridge.exe not found. Set redcode.bridgePath in VS Code, or put REDbridge on PATH.");
+  const choice = bridgeChoice(settings);
+  if (!choice) throw new Error("REDbridge.exe not found. Set redcode.bridgePath in VS Code (or EDGEFAB_REDBRIDGE), or put REDbridge on PATH.");
   log(`starting ${choice.exe} for ${game.path}`);
   const client = new BridgeClient({ exe: choice.exe, gamePath: game.path, dotnetRoot: choice.dotnetRoot });
   client.on("log", (line: string) => log(`bridge | ${line}`));
