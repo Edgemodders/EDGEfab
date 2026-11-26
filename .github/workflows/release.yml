@@ -29,6 +29,9 @@
 #                                               node ../EDGErepo/tools/nexus/nexus.mjs release on the
 #                                               dev PC with the release's zip: it skips what is
 #                                               already done.
+#   Run workflow, only "npm only" ticked         publishes this version to npm alone, when its release
+#                                               run stopped before the npm job (the GitHub release
+#                                               must exist). Added 2026-11-25 for 0.2.1
 #
 # The tokens are Edgemodders organisation secrets, shared with REDcode's and EDGEdeck's workflows
 # (NEXUS_KEY with REDnode's and REDagent's).
@@ -47,12 +50,17 @@ on:
         description: Update Nexus Mods (with Make a release) - upload the Nexus zip, its changelog and the page's description
         type: boolean
         default: false
+      npm_only:
+        description: Finish a release whose run stopped before npm - publish this version to npm only (its GitHub release must exist). Leave the other boxes unticked
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
   build:
+    if: ${{ !inputs.npm_only }}
     runs-on: windows-latest
     defaults:
       run:
@@ -171,15 +179,32 @@ jobs:
           NEXUS_KEY: ${{ secrets.NEXUS_KEY }}
         run: node "$RUNNER_TEMP/EDGErepo/tools/nexus/nexus.mjs" release --version "${VERSION}" --zip "dist/EDGEfab-${VERSION}-nexus.zip" --notes "${RUNNER_TEMP}/nexus-notes.txt"
 
+  # npm_only (2026-11-25, after 0.2.1's Nexus upload failed and npm was skipped): this job alone, for a
+  # version whose GitHub release exists, built from main as the release run would have.
   npm:
     needs: build
-    if: inputs.release
+    if: ${{ !cancelled() && ((inputs.release && needs.build.result == 'success') || (inputs.npm_only && needs.build.result == 'skipped')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v5
+
+      - name: The version's release exists (npm only)
+        if: inputs.npm_only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./extensions/edgefab/package.json').version")
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "::error::Finish a release from main, not ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+          if ! gh release view "v${VERSION}" --repo "${GITHUB_REPOSITORY}" > /dev/null; then
+            echo "::error::v${VERSION} has no GitHub release: make the release first (Make a release), not npm only."
+            exit 1
+          fi
 
       - uses: actions/setup-node@v5
         with:
