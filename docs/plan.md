@@ -16,7 +16,7 @@ The owner, 2026-10-25:
 |---|---|---|
 | A **prop** | Mesh, materials and looks, entity, collision, LODs; placed in a scene by EDGEbuilder | First |
 | A piece of **clothing** | A mesh per body, looks, item record, name, icon, layering | |
-| A **character or NPC** | Body, head, hair, clothes (its appearances), rig and animations, voice, its records (who it is, how it behaves), where it stands | The big one |
+| A **character or NPC** | Body, head, hair, clothes (its appearances), rig and animations, voice, its records (who it is, how it behaves), where it stands | The big one. **Since 2026-11-26:** a **body** and an **NPC look** (body, head, face, hair, cyberware, clothes, and the records to spawn it); animation and voice stay with REDcode and EDGEwave ([below](#bodies-and-npc-looks-the-owner-2026-11-26)) |
 
 Blender, Unreal, Tripo and EDGEmat are tools EDGEfab orchestrates. EDGEfab itself owns the asset: what it is made of, that its files agree, and getting it into the game.
 
@@ -365,11 +365,69 @@ With characters and animation editing gone, EDGEfab has two kinds of asset: prop
 | F7a Animated props, now that animation editing is REDcode's | Keep it, narrowed to what makes a prop animated: a small rig on the prop, the entity that plays its clip, the prop in the game. The clip itself is made in Blender or REDcode's Animation Editor. After F2, as before |
 | 1.0 | Was "props whole: F1, F3 and F2" (2026-11-04). Proposed: **props and clothing whole**, F1, F3, F4a, F4b and F2, since that is EDGEfab's whole scope now |
 
+## Bodies and NPC looks (the owner, 2026-11-26)
+
+The owner, 2026-11-26:
+
+> One of the new responsibilities for EDGEfab is designing player and NPC bodies. The game supports different body types that can have different meshes, and clothing can be fitted for specific body types. So the key responsibilities are fabricating props, clothing and bodies, and then probably building NPC appearances that combine clothes and bodies with the other appearance features (gender, facial features, hair, cyberware such as arms) into one spawnable NPC look.
+
+So EDGEfab makes four kinds of asset: **props, clothing, bodies and NPC looks**. Animation stays REDcode's (2026-11-24), voice EDGEwave's, and lip sync REDcode's. An NPC look here is what the NPC looks like and the records needed to spawn it. Its behaviour, voice and lines are not part of it.
+
+### Bodies in the game
+
+Read from the game's files through REDbridge on 2026-11-26 (game 2.5). Lines marked unverified are not read yet.
+
+| What | Where | What it says |
+|---|---|---|
+| Body types | `base\characters\body_types_map.csv`: 13 rows, `engineBaseType`, a base entity, a short code | ManAverage `ma` (`base_entities\man_base\man_base.ent`), ManBig `mb`, ManMassive `mm`, ManFat `mf`, ManChild `mc`, WomanAverage `wa` (`woman_base.ent`), WomanBig `wf`, WomanChild `wc`. ManOld, ManSmall, WomanFat, WomanOld and WomanSmall have no code and share another type's entity |
+| Body meshes | `base\characters\common\base_bodies\`, one folder per body (`man_average` 433 files, `woman_average` 328, `man_big` 150, `man_fat` 40, `man_child` 20, `man_massive` 2, `woman_small` 1, `player_man_average` 3) and about 170 part entities beside them | A body is several meshes by part: `a0` arms, `t0` torso, `l0` legs, `g0` hands, `s0` feet, `h0` head pieces, `i0` intimate parts, `w0` (unverified). Each part has variants: `muscular`, `boxer`, `sumo`, `prostitute`, `_hq`, `_breast_big`, `_cyberarms` and more. Shorter codes appear too (`mba`, `wba`, `maf`, `waf`, `mao`): the "a" ones are likely bodies for cyberware, unverified |
+| V's bodies | `player_base_bodies\player_man_average` and `player_female_average` (`pma`, `pwa`; [design](design.html#the-bodies-in-the-game)) | V's body is its own mesh. Body mods (Hyst, Lush, Solo, Adonis and others) replace these files. Garments V wears have a mesh per body (`pma`, `pwa`) |
+| Garments per body | `base\characters\garment`: 1,522 meshes by body code (`ma` 504, `wa` 389, `pwa` 166, `pma` 163, `mb` 117) | An NPC on `mb` wears `mb` garments. A new body needs its garments fitted |
+| The parts of an NPC | `base\characters\head` (7,281 files), `cyberware` (1,814), `appearances` (27,969), `main_npc` (4,049) | An NPC's appearance (`.app`) puts the body parts, head, hair, eyes, teeth, cyberware and garments together on one rig. Which components and fields does it, exactly: unverified, read in the phase's first check |
+
+### What EDGEfab does with them
+
+| Kind | What the modder does | How EDGEfab does it |
+|---|---|---|
+| **A new body for V** (a body mod) | "More muscular, broader shoulders", sliders, or a sculpt from Blender (F3), on `pma` or `pwa` | The body keeps the game's topology, UVs, rig and weights, so skin textures, the seam to the head and every animation still work. The shape change is kept as an **offset field** from the base body. Delivered as a body mod that replaces V's body meshes, as Hyst and Lush do. Its skin through EDGEmat |
+| **A new NPC body** | The same, on any of the 13 types: a heavier `mb`, a wiry `wa` | At its own game path, used by an NPC look. The game's own variants (`muscular`, `boxer`) show the way |
+| **Clothing on that body** | Wear any garment on the new body | **The body brings its own refitter.** EDGEfab knows exactly how the new body differs from the base one (the offset field), so F4's fit moves any garment onto it, the game's and the modder's. Refits are what body mods cost the community most. How a refit ships so the game picks it for that body (ArchiveXL's body support, as the community does) is unverified, and the phase's first check |
+| **An NPC look** | Start from a game NPC ("a new fixer from this one") or from a body type. Choose the gender, body, head, facial features, eyes, hair, skin, cyberware (arms and others), tattoos and clothes, in plain words or picked | EDGEfab writes the look: an `.app` appearance with its parts on the body's rig, an `.ent` from the body type's base entity, and a TweakXL `Character` record that names it, so it spawns. Clothes come from the game for that body type, or from F4. Looks through EDGEmat. Shown whole in REDcode's 3D view, spawned beside V through REDnode, and placed through EDGEbuilder's `npc` scene kind. EDGEdir and EDGEquest can cast it |
+| **Facial features** | "An older face, a scar, a broken nose" | NPC heads are fixed meshes, so a face is chosen from the game's heads, then changed by EDGEmat (skin, scars, makeup). Whether NPC heads take morph targets as V's character creator does: unverified. A face shaped by words comes later |
+
+### Two new phases, proposed
+
+| Phase | Builds | The test proves |
+|---|---|---|
+| **FN NPC looks** | Open in EDGEfab on an NPC's `Character` record, `.ent` or `.app`: the NPC assembled whole in the 3D view, its parts listed in plain words (this brings back F5a's "see it whole", without its animation). Swap any part for another of the same body type: head, hair, eyes, cyberware, garments (the game's or F4's). A **new look** from it: the `.app`, the `.ent` and the `Character` record (TweakXL). On the Desk and in the Library as an `npc` asset. MCP `fab_npc`. The study of custom-NPC mods (moved from F0) first | "A new fixer from this one, in a leather coat, with a cyberarm" spawns beside V in the game, and stands in an EDGEbuilder scene |
+| **FB Bodies** | A body from a game body (V's `pma` and `pwa`, or any NPC type) by words, sliders or a Blender sculpt, kept on the game's topology and rig, as an offset field. **Its refitter**: any garment moved onto it through F4's fit. A body mod for V, or an NPC body used by FN's looks. Skin through EDGEmat. On the Desk and in the Library as a `body` asset. MCP `fab_body_make`, `fab_refit` | V on a new body wears a game jacket and an F4b coat, both refitted by EDGEfab, through a whole walk, in the game. An NPC look from FN uses a new NPC body |
+
+They take letters, as FA does: F5 and F6 named the character phases until 2026-11-22, and those rows stay in the table as the record.
+
+**Proposed order: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9.**
+
+| Why | |
+|---|---|
+| FN before FB | An NPC look from the game's parts needs no new body: putting it together is cheaper than making a body, and spawning one is the bigger win. FB then gives FN's looks new bodies |
+| Both after F4 | FB's refitter is F4's fit pointed at a new body, and FN dresses NPCs with F4's garments |
+| F2 before FN | F2 builds Open in EDGEfab and the asset page, and FN opens an NPC there |
+
+FB can come before FN if bodies matter more. Each then has a smaller first test.
+
+**For the owner to settle:**
+
+| Question | Proposed |
+|---|---|
+| The order | As above. Or FB before FN |
+| V's face and the character creator | Out of scope for now: an NPC look is an NPC, and V's look stays the game's character creator. A body mod for V is in FB |
+| 1.0 | Props, clothing and NPC looks whole (F1, F3, F4a, F4b, F2, FN). Bodies after 1.0 |
+| Gender | Set by the body type and the record. An NPC's voice to match is EDGEwave's |
+
 ## Phases
 
 Each phase ends with a test the owner runs, recorded in [Tests](testing.html). After it come the release gate and, from the first preview on, a release. The order goes from small assets to large ones. **Simple textured props come first**, because they are useful alone and every later asset reuses their path into the game. **Characters and NPCs are the big effort**, split into viewing them whole, then editing them.
 
-**Scope: props and clothing (the owner, 2026-11-22).** EDGEfab now covers props and clothing only. The character phases leave it: F5a, F5b and F6 (characters seen, heard and edited), F7b-1 and F7b-2 (character animation), and lip sync (moved to REDcode, above). Making clips from words had already moved to REDcode the same day. They stay in the table below, marked, as the record of what was proposed. **Kept, as read from "props and clothing":** F7a Animated props, F8's props (not its characters), FA The agent, F9.
+**Scope: props and clothing (the owner, 2026-11-22).** EDGEfab now covers props and clothing only. The character phases leave it: F5a, F5b and F6 (characters seen, heard and edited), F7b-1 and F7b-2 (character animation), and lip sync (moved to REDcode, above). Making clips from words had already moved to REDcode the same day. They stay in the table below, marked, as the record of what was proposed. **Kept, as read from "props and clothing":** F7a Animated props, F8's props (not its characters), FA The agent, F9. **Widened 2026-11-26 (the owner): bodies and NPC looks** join props and clothing, as FB and FN ([above](#bodies-and-npc-looks-the-owner-2026-11-26)), without animation, voice or behaviour.
 
 **Animation editing is REDcode's (the owner, 2026-11-24; [EDGEfab #11](https://github.com/Edgemodders/EDGEfab/issues/11)).** This settles [#7](https://github.com/Edgemodders/EDGEfab/issues/7)'s open question: EDGEfab keeps no editing of animation clips. REDcode's Animation Editor (Trim, Loop, Key with easings, Pin a foot, Layer, Hand pose, Join) takes it, shared with its Animation Tools REDnode pack, with MCP tools. The clip record agreed on #7 stays (the `id` kept, `edits` and `edited`, no remake without asking), so EDGEfab can still read an edited clip. EDGEfab makes **props (placeables) and clothing**, and EDGEmat restyles them (materials and looks).
 
@@ -381,6 +439,8 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F2 Workspace and prompts** | **Open in EDGEfab** on a `.mesh`, `.ent` or `.app` (REDcode's Game Assets and Project views, the Explorer, the editor's title menu, as EDGEmat's Open in EDGEmat is). The 3D view, parts and the part map, looks, history with undo. No agent here: Claude Code drives F2 through the MCP server, and the agent comes in FA (owner, 2026-11-04). **Try it**: pack, hot load (REDnode), put it on V or spawn it. **Reshape a prop by words** (views, an image service's change, Tripo's multiview model, a fit with no bones; [above](#reshape-built-in-edgemat-first-read-2026-11-03)). Proposed from the parallel session ([above](#asked-in-a-parallel-session-placed-after-f1-2026-10-27-to-30)): takes, a prop from words in named parts, the material planner, Game Assets with kinds, size on the page and versions, on REDcode's viewer | **A prop made from words comes back in named parts, its materials planned and applied, is resized on the page, and shows in the running game**; Claude Code does the same through the MCP server. **1.0** once F1, F3 and F2 have passed (owner, 2026-11-04) |
 | **F4a Reshape a game garment** (proposed 2026-11-25 right after F3, [above](#clothing-where-it-falls-proposed-2026-11-25)) | **Reshape moves in from EDGEmat** ([EDGEfab #3](https://github.com/Edgemodders/EDGEfab/issues/3)) and grows past one bone: weights from the original garment, out of V's body, garment support, both bodies, LODs; a game garment replaced at its own path. In Node, for Wardrobe Designer too | A jacket V wears, reshaped by words, moves with V on both bodies in the game |
 | **F4b New clothing** (proposed right after F4a) | Fitting to V's bodies and body mods ([design, "Clothing: fitting to the body"](design.html#clothing-fitting-to-the-body)): `fab_body`, `fab_fit`, `fab_refit`. A new item: its mesh per body, entity, appearances, record, name, icon | "Make an old worn trenchcoat" can be worn by V from the inventory, on both bodies |
+| **FN NPC looks** (proposed 2026-11-26 right after F2, [above](#bodies-and-npc-looks-the-owner-2026-11-26)) | Open in EDGEfab on an NPC: assembled whole, its parts in plain words, any part swapped for another of its body type (head, hair, eyes, cyberware, the game's or F4's garments); a new look as an `.app`, `.ent` and TweakXL `Character` record, an `npc` asset. MCP `fab_npc` | "A new fixer from this one, in a leather coat, with a cyberarm" spawns beside V and stands in an EDGEbuilder scene |
+| **FB Bodies** (proposed 2026-11-26 right after FN) | A body from a game body (V's or any NPC type) by words, sliders or a Blender sculpt, on the game's topology and rig, kept as an offset field; its own refitter through F4's fit; a body mod for V or an NPC body for FN; skin through EDGEmat; a `body` asset. MCP `fab_body_make`, `fab_refit` | V on a new body wears a game jacket and an F4b coat, refitted by EDGEfab, in the game; an FN look uses a new NPC body |
 | **F5a Characters, seen** **Left EDGEfab 2026-11-22** (props and clothing only) (split from F5, owner, 2026-11-04; proposed right after F7a) | Open in EDGEfab on an NPC or an object with animations: from its `Character` record, entity or appearance, EDGEfab assembles it (body, head, hair and clothes from its appearance parts, on its rig) and plays its animations (idle first, the others from its animation sets, listed). Its animations found through **EDGEdir's animation index** (EDGEdir's extension API; the index moved there 2026-11-16). Read-only. See [Rigs and animation](#rigs-and-animation-where-they-live-owner-2026-11-04) | Click an NPC asset and see the whole character standing in its idle, in EDGEfab; find the q001 Trauma Team animations and play one on a Trauma Team medic |
 | **F7b-1 Small animation edits** **Left EDGEfab 2026-11-22** (props and clothing only) (split from F7b, owner, 2026-11-04; right after F5a) | The animation tab: timing (trim, loop, speed, mirror) and offsets (the root's motion moved or scaled, a layer on one bone), on the subject from F5a, saved as an `anim` item ([below](#animations-the-split-with-edgedir-owner-2026-11-16)) and a new `.anims` through REDbridge; Try it on a character beside V (REDnode #39). In the UI and MCP (`fab_anim_edit`) | The owner's Trauma Team crew drops from the AV at its new height and lands on the ground, in the game |
 | **F5b Characters, heard and read** **Left EDGEfab 2026-11-22** (props and clothing only) (the rest of F5) | The character's **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
@@ -391,7 +451,7 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F8 Unreal assets** (props only since 2026-11-22; its characters left with the character phases) | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop and a garment from the docs alone (the NPC left with the character phases, 2026-11-22) |
 
-Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. **Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9** ([why](#clothing-where-it-falls-proposed-2026-11-25)). F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9 ([why](#clothing-where-it-falls-proposed-2026-11-25)). **Proposed 2026-11-26, with bodies and NPC looks: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9** ([why](#bodies-and-npc-looks-the-owner-2026-11-26)). F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What other repos need from EDGEfab
 
@@ -413,6 +473,7 @@ Filed as `request` issues when its phase starts, with the shape that would work:
 | EDGEbuilder | The Library's shared rules gain assets ([Library assets](library.html)); EDGEfab is the second tool to use the Library, which its Library page says moves the rules to the platform's wiki ([EDGEbuilder #4](https://github.com/Edgemodders/EDGEbuilder/issues/4), filed 2026-10-31) | F1 |
 | REDcode | The 3D view embeddable in another extension's webview (or a shared viewer package), with several meshes on one rig and animation playback; stable context values for `.mesh`, `.ent` and `.app` in its views. Its viewer already mounts with toolbar `actions` ([found](#found-in-that-session)): the need is a documented contract (where the script is, `mount` and its options) and a `snapshot()` for thumbnails | F2, F5 |
 | REDcode | Edit in Blender on a GLB outside the open project (the Desk, the Library), an event after each save is imported, and the Blender it found (`blenderPath()`) | F3 |
+| REDbridge, REDcode, EDGEmat, REDnode | For FN and FB (2026-11-26; filed when the phase starts): a whole NPC appearance exported with its rig (the character half of REDbridge #14, below), the 3D view with several meshes on one rig (below), skin materials (tone, tattoos, scars, makeup) from EDGEmat, a project's NPC spawned after a hot load (REDnode, below) | FN, FB |
 | REDbridge | Export of a whole character: an entity's or appearance's parts, with the rig and animation sets, to GLB. `.anims` export with its rig, and import from GLB onto a game rig or a prop's own rig (WolvenKit's `ExportAnim`, `ImportAnims`), and `.morphtarget` import. Anything F0's checks find missing (collision, LODs). The animation and character part filed 2026-11-04 as [REDbridge #14](https://github.com/Edgemodders/REDbridge/issues/14); `.anims` export already works through `project.export`, import does not ([Tests](testing.html#f5a-check-a-game-animation-through-redbridge)) | F1, F5a, F7a, F7b-1 |
 | REDcode | Play a game animation on its rig in the viewer, `openAnimation` ([REDcode #21](https://github.com/Edgemodders/REDcode/issues/21), filed by EDGEquest 2026-11-03); for EDGEfab also several meshes on one rig (above) | F5a |
 | REDnode | Play an animation or a workspot on a spawned character beside V ([REDnode #39](https://github.com/Edgemodders/REDnode/issues/39), filed by EDGEquest 2026-11-03) | F7b-1 |

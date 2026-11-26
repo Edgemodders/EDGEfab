@@ -18,7 +18,7 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-25. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 on 2026-11-22); the other phases are proposals ([build plan](plan.html)). EDGEfab covers **props and clothing** (the owner, 2026-11-22); animation editing is REDcode's (2026-11-24). The proposed order (2026-11-25, clothing up and split): F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9.
+As of 2026-11-26. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 on 2026-11-22, 0.2.1 on 2026-11-25); the other phases are proposals ([build plan](plan.html)). EDGEfab covers **props, clothing, bodies and NPC looks** (the owner, 2026-11-22 and 2026-11-26); animation editing is REDcode's (2026-11-24). The proposed order (2026-11-26): F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9.
 
 | Phase | Status |
 |---|---|
@@ -28,6 +28,8 @@ As of 2026-11-25. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 o
 | F2 Workspace and prompts | Not started |
 | F4a Reshape a game garment (from EDGEmat's Reshape, EDGEfab #3) | Not started. Proposed right after F3 |
 | F4b New clothing, fitted to both bodies | Not started. Proposed right after F4a |
+| FN NPC looks (an NPC assembled, its parts swapped, a new look that spawns) | Not started. Proposed 2026-11-26 right after F2 |
+| FB Bodies (a body for V or an NPC, with its own refitter for clothing) | Not started. Proposed 2026-11-26 right after FN |
 | F5a Characters, seen | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F5b Characters, heard and read | Left EDGEfab 2026-11-22 (props and clothing only) |
 | FA The agent (moved out of F2, 2026-11-04) | Not started |
