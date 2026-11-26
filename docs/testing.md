@@ -18,6 +18,7 @@ Last updated 2026-11-22. Each row links to its test. **0.2.0, 2026-11-22:** the 
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
+| [EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)](#edgefab_redbridge-reaches-the-game-bridge-edgechat-5) | Offline by Claude, against the real REDbridge | After 0.2.0 | 2026-11-25 | **Pass** (3 checks) |
 | [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). **Pass**: part A (13 checks, the real store, 8 checks of the no-key reasons) and part B (6 steps, the owner, step 6 Don't Allow included) |
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-17 | **Pass**: part A (23 checks) and part B (11 steps, the owner) |
 | [Check: Game materials on a prop's parts](#f1-check-game-materials-on-a-props-parts) | Prepared by Claude through MCP; in the game by the owner | F1 (may join 0.1.0) | 2026-11-17 | **Passed** (owner, in the game) |
@@ -45,6 +46,18 @@ Last updated 2026-11-22. Each row links to its test. **0.2.0, 2026-11-22:** the 
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
+
+## EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)
+
+EDGEchat's plugin passes its `redbridge_exe` to EDGEfab's MCP server as `EDGEFAB_REDBRIDGE`. Until 2026-11-25 only the key store read it; the REDbridge started for game files (`fab_add`, `fab_library_add`, `fab_refresh`) came from VS Code's `edgemat.bridgePath` or `redcode.bridgePath`, else PATH. Core `bridge.ts` now takes `EDGEFAB_REDBRIDGE` first (a file, or a folder with REDbridge.exe in it), then those.
+
+**Steps:** `npm run build` at the repo root, then in `extensions/edgefab`: `node scripts/bridge-env-check.mjs <REDbridge.exe>`.
+
+**Expected:** a path with no REDbridge is refused in plain words; the folder of a real REDbridge.exe finds it (the log names it); the game is loaded; `all passed`.
+
+### Run 1, 2026-11-25: passed
+
+REDbridge 0.19.0 from REDcode's folder, the game on E:. 3 checks passed: the refusal named the path; the log said `starting ...\bridge\0.19.0\REDbridge.exe for E:\SteamLibrary\steamapps\common\Cyberpunk 2077`; the game loaded. Typecheck clean.
 
 ## Keys in REDcode's Keys (EDGEfab #10)
 
