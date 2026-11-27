@@ -1,6 +1,6 @@
 # EDGEfab
 
-The EDGE asset maker for Cyberpunk 2077. **0.1.0, a preview: it makes props.** Clothing, characters and animation come in later versions.
+The EDGE asset maker for Cyberpunk 2077. **A preview: it makes props.** Clothing and NPC looks come in later versions.
 
 Turn a textured 3D model into a prop the game can use: one of your own (GLB, or a `.blend`, FBX or OBJ, opened in Blender), or one made from your words with your own OpenAI and Tripo keys.
 
