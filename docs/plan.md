@@ -363,7 +363,7 @@ With characters and animation editing gone, EDGEfab has two kinds of asset: prop
 | Question | Proposed |
 |---|---|
 | F7a Animated props, now that animation editing is REDcode's | Keep it, narrowed to what makes a prop animated: a small rig on the prop, the entity that plays its clip, the prop in the game. The clip itself is made in Blender or REDcode's Animation Editor. After F2, as before |
-| 1.0 | Was "props whole: F1, F3 and F2" (2026-11-04). Proposed: **props and clothing whole**, F1, F3, F4a, F4b and F2, since that is EDGEfab's whole scope now |
+| 1.0 | Was "props whole: F1, F3 and F2" (2026-11-04). Proposed: **props and clothing whole**, F1, F3, F4a, F4b and F2, since that is EDGEfab's whole scope now. **Settled 2026-11-26** with the bodies plan: props, clothing and NPC looks (F1, F3, F4a, F4b, F2, FN) ([below](#bodies-and-npc-looks-the-owner-2026-11-26)) |
 
 ## Bodies and NPC looks (the owner, 2026-11-26)
 
@@ -412,16 +412,14 @@ They take letters, as FA does: F5 and F6 named the character phases until 2026-1
 | Both after F4 | FB's refitter is F4's fit pointed at a new body, and FN dresses NPCs with F4's garments |
 | F2 before FN | F2 builds Open in EDGEfab and the asset page, and FN opens an NPC there |
 
-FB can come before FN if bodies matter more. Each then has a smaller first test.
+**Decided by the owner, 2026-11-26:**
 
-**For the owner to settle:**
-
-| Question | Proposed |
+| Question | Decided |
 |---|---|
-| The order | As above. Or FB before FN |
-| V's face and the character creator | Out of scope for now: an NPC look is an NPC, and V's look stays the game's character creator. A body mod for V is in FB |
-| 1.0 | Props, clothing and NPC looks whole (F1, F3, F4a, F4b, F2, FN). Bodies after 1.0 |
-| Gender | Set by the body type and the record. An NPC's voice to match is EDGEwave's |
+| The order | **FN before FB** (NPC looks first) |
+| V's face and the character creator | **Out of scope:** an NPC look is an NPC, and V's look stays the game's character creator. A body mod for V is in FB |
+| 1.0 | **Props, clothing and NPC looks whole** (F1, F3, F4a, F4b, F2, FN). Bodies after 1.0 |
+| Gender | Set by the body type and the record. An NPC's voice to match is EDGEwave's (proposed, not asked) |
 
 ## Phases
 
@@ -440,7 +438,7 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F4a Reshape a game garment** (proposed 2026-11-25 right after F3, [above](#clothing-where-it-falls-proposed-2026-11-25)) | **Reshape moves in from EDGEmat** ([EDGEfab #3](https://github.com/Edgemodders/EDGEfab/issues/3)) and grows past one bone: weights from the original garment, out of V's body, garment support, both bodies, LODs; a game garment replaced at its own path. In Node, for Wardrobe Designer too | A jacket V wears, reshaped by words, moves with V on both bodies in the game |
 | **F4b New clothing** (proposed right after F4a) | Fitting to V's bodies and body mods ([design, "Clothing: fitting to the body"](design.html#clothing-fitting-to-the-body)): `fab_body`, `fab_fit`, `fab_refit`. A new item: its mesh per body, entity, appearances, record, name, icon | "Make an old worn trenchcoat" can be worn by V from the inventory, on both bodies |
 | **FN NPC looks** (proposed 2026-11-26 right after F2, [above](#bodies-and-npc-looks-the-owner-2026-11-26)) | Open in EDGEfab on an NPC: assembled whole, its parts in plain words, any part swapped for another of its body type (head, hair, eyes, cyberware, the game's or F4's garments); a new look as an `.app`, `.ent` and TweakXL `Character` record, an `npc` asset. MCP `fab_npc` | "A new fixer from this one, in a leather coat, with a cyberarm" spawns beside V and stands in an EDGEbuilder scene |
-| **FB Bodies** (proposed 2026-11-26 right after FN) | A body from a game body (V's or any NPC type) by words, sliders or a Blender sculpt, on the game's topology and rig, kept as an offset field; its own refitter through F4's fit; a body mod for V or an NPC body for FN; skin through EDGEmat; a `body` asset. MCP `fab_body_make`, `fab_refit` | V on a new body wears a game jacket and an F4b coat, refitted by EDGEfab, in the game; an FN look uses a new NPC body |
+| **FB Bodies** (proposed 2026-11-26; after FN, the owner's call the same day) | A body from a game body (V's or any NPC type) by words, sliders or a Blender sculpt, on the game's topology and rig, kept as an offset field; its own refitter through F4's fit; a body mod for V or an NPC body for FN; skin through EDGEmat; a `body` asset. MCP `fab_body_make`, `fab_refit` | V on a new body wears a game jacket and an F4b coat, refitted by EDGEfab, in the game; an FN look uses a new NPC body |
 | **F5a Characters, seen** **Left EDGEfab 2026-11-22** (props and clothing only) (split from F5, owner, 2026-11-04; proposed right after F7a) | Open in EDGEfab on an NPC or an object with animations: from its `Character` record, entity or appearance, EDGEfab assembles it (body, head, hair and clothes from its appearance parts, on its rig) and plays its animations (idle first, the others from its animation sets, listed). Its animations found through **EDGEdir's animation index** (EDGEdir's extension API; the index moved there 2026-11-16). Read-only. See [Rigs and animation](#rigs-and-animation-where-they-live-owner-2026-11-04) | Click an NPC asset and see the whole character standing in its idle, in EDGEfab; find the q001 Trauma Team animations and play one on a Trauma Team medic |
 | **F7b-1 Small animation edits** **Left EDGEfab 2026-11-22** (props and clothing only) (split from F7b, owner, 2026-11-04; right after F5a) | The animation tab: timing (trim, loop, speed, mirror) and offsets (the root's motion moved or scaled, a layer on one bone), on the subject from F5a, saved as an `anim` item ([below](#animations-the-split-with-edgedir-owner-2026-11-16)) and a new `.anims` through REDbridge; Try it on a character beside V (REDnode #39). In the UI and MCP (`fab_anim_edit`) | The owner's Trauma Team crew drops from the AV at its new height and lands on the ground, in the game |
 | **F5b Characters, heard and read** **Left EDGEfab 2026-11-22** (props and clothing only) (the rest of F5) | The character's **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
@@ -451,7 +449,7 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F8 Unreal assets** (props only since 2026-11-22; its characters left with the character phases) | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop and a garment from the docs alone (the NPC left with the character phases, 2026-11-22) |
 
-Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9 ([why](#clothing-where-it-falls-proposed-2026-11-25)). **Proposed 2026-11-26, with bodies and NPC looks: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9** ([why](#bodies-and-npc-looks-the-owner-2026-11-26)). F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9 ([why](#clothing-where-it-falls-proposed-2026-11-25)). **Proposed 2026-11-26, with bodies and NPC looks: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9** ([why](#bodies-and-npc-looks-the-owner-2026-11-26)); the owner agreed FN before FB and 1.0 as F1, F3, F4a, F4b, F2 and FN the same day, while clothing's place and F7a are still to agree. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What other repos need from EDGEfab
 
