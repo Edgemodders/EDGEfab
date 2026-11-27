@@ -12,6 +12,7 @@ import { quiet } from "./quiet";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { drawViews, readPictures, takeWhat, type PictureCall, type PictureTake } from "./picture";
 import { generateModel, type TextToModel, type TripoCall, type TripoTask } from "./tripo";
+import { blenderToGlb, ModelExtensions, needsBlender, type BlenderReport } from "./blender";
 
 /** Tripo's settings for a model from an item's pictures (the words and views come from the item). */
 export type FromPictureRequest = Omit<TextToModel, "prompt" | "views">;
@@ -31,6 +32,8 @@ export interface MadeModel {
   prepared: PrepareResult;
   /** Tripo's preview render, for a generated model. */
   preview?: string;
+  /** For a .blend, .fbx or .obj: what Blender exported and left aside (also kept as blender.json). */
+  blender?: BlenderReport;
 }
 
 /** asset.json, the fields docs/library.md proposes, filled as far as a made model knows them. */
@@ -42,7 +45,8 @@ export interface AssetRecord {
   main: string | null;
   version: number;
   from:
-    | { file: string }
+    /** `blender`: the version that turned a .blend, .fbx or .obj into the GLB. */
+    | { file: string; blender?: string }
     | { picture: { words: string; model: string; take: number } }
     | {
         tripo: {
@@ -129,8 +133,19 @@ export async function drawPicture(
 
 export async function makeModel(
   req: MakeRequest,
-  opts: { version: string; base?: string; prepare?: PrepareOptions; call?: TripoCall; onProgress?: (step: string, task?: TripoTask) => void } = { version: "0.0.0" },
+  opts: {
+    version: string;
+    base?: string;
+    prepare?: PrepareOptions;
+    call?: TripoCall;
+    onProgress?: (step: string, task?: TripoTask) => void;
+    /** blender.exe for a .blend, .fbx or .obj; found as REDcode finds it when left out. */
+    blender?: string;
+  } = { version: "0.0.0" },
 ): Promise<MadeModel> {
+  if (req.from === "file" && !(ModelExtensions as readonly string[]).includes(path.extname(req.file).toLowerCase())) {
+    throw new Error(`EDGEfab makes props from ${ModelExtensions.join(", ")} files; ${path.basename(req.file)} is none of them.`);
+  }
   const base = opts.base ?? deskDir();
   let folder: string, name: string;
   if (req.from === "picture") {
@@ -149,14 +164,25 @@ export async function makeModel(
   let preview: string | undefined;
   let did: string;
   let paidFor = false;
+  let blender: BlenderReport | undefined;
   try {
     if (req.from === "file") {
       if (!fs.existsSync(req.file)) throw new Error(`There is no file at ${req.file}.`);
-      original = path.join(raw, `original${path.extname(req.file).toLowerCase()}`);
-      fs.copyFileSync(req.file, original);
-      from = { file: req.file };
+      const kept = path.join(raw, `original${path.extname(req.file).toLowerCase()}`);
+      fs.copyFileSync(req.file, kept);
+      if (needsBlender(req.file)) {
+        // Blender reads the file where it is, so textures beside it are found; the copy is the record.
+        progress(`Opening ${path.basename(req.file)} in Blender...`);
+        original = path.join(raw, "from_blender.glb");
+        blender = await blenderToGlb(req.file, original, { blender: opts.blender });
+        fs.writeFileSync(path.join(raw, "blender.json"), JSON.stringify(blender, null, 2));
+        from = { file: req.file, blender: blender.blender };
+      } else {
+        original = kept;
+        from = { file: req.file };
+      }
       license = { source: "own", note: "From a file on disk: record its source and terms (a store listing, your own work) before releasing it." };
-      did = `Made from ${path.basename(req.file)}`;
+      did = `Made from ${path.basename(req.file)}${blender ? ` (through Blender ${blender.blender})` : ""}`;
     } else {
       const plan = req.plan ?? readSettings().tripoPlan;
       if (!plan) throw new Error("Say first whether your Tripo plan is paid or free: on a free plan Tripo keeps the rights to the model (Tripo's terms, 5.2).");
@@ -212,10 +238,10 @@ export async function makeModel(
     };
     fs.writeFileSync(path.join(raw, "prepared.json"), JSON.stringify(prepared, null, 2));
     fs.writeFileSync(path.join(folder, "asset.json"), JSON.stringify(asset, null, 2));
-    return { folder, name, asset, prepared, preview };
+    return { folder, name, asset, prepared, preview, ...(blender ? { blender } : {}) };
   } catch (e) {
     // Tripo's model cost credits: keep it, so it can be prepared again once the problem is fixed.
-    if (paidFor) throw new Error(`${e instanceof Error ? e.message : String(e)} Tripo's model is kept at ${path.join(raw, "original.glb")}: Import a GLB takes it again.`);
+    if (paidFor) throw new Error(`${e instanceof Error ? e.message : String(e)} Tripo's model is kept at ${path.join(raw, "original.glb")}: Import a Model takes it again.`);
     // A picture item keeps its pictures; anything else made only now goes.
     if (req.from !== "picture") fs.rmSync(folder, { recursive: true, force: true });
     throw e;

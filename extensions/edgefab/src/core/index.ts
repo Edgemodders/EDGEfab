@@ -10,6 +10,7 @@ export {
   DefaultLods, MaxParts, MaxSubmeshVertices, prepareModel, readPrepared, PrepareError, type Facing, type PreparedPart,
   type LodLevel, type PrepareOptions, type PrepareResult, type PreparedSubmesh, type PreparedTexture, type PreparedGlow,
 } from "./prepare";
+export { blenderToGlb, describeReport, findBlender, needsBlender, BlenderError, BlenderExtensions, ModelExtensions, type BlenderReport } from "./blender";
 export { drawPicture, makeModel, renameItem, setSize, type AssetRecord, type FromPictureRequest, type MadeModel, type MakeRequest } from "./make";
 export {
   addToProject, deskItem, entityJson, fitMesh, projectFolders, readItem, AddError, DefaultCollision, DefaultTemplate,

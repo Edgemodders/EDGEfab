@@ -10,6 +10,11 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 
 ## Unreleased
 
+**New**
+
+- **Props from Blender, FBX and OBJ files.** Import a Model (it was Import a GLB), Make a Prop in the Explorer and in the Library, and the MCP server's `fab_make` now take `.blend`, `.fbx` and `.obj` files as well as GLB. EDGEfab opens the file in Blender in the background and exports its visible meshes as one model, with modifiers applied and object names kept as part names. From there it is the same path into the game as a GLB. Blender runs with its factory settings, so a `.blend` file's own scripts never run. You're told what was left out (armatures, animation, shape keys, cameras, lights, hidden objects), which materials are made from nodes with no picture (the game gets their plain color), and which texture files are missing.
+- **The Blender Path setting** (`edgefab.blenderPath`). Empty, EDGEfab uses REDcode's Blender Path, then the newest Blender installed from blender.org, then Blender on Steam.
+
 
 ## 0.2.1 (2026-11-25)
 

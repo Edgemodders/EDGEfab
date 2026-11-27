@@ -79,7 +79,7 @@
     "viewsWelcome": [
       {
         "view": "edgefab.desk",
-        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB), or one Tripo makes from your words with your own Tripo key.\n[Import a GLB...](command:edgefab.importGlb)\n[Generate from Words...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project or your Library."
+        "contents": "Make a prop for Cyberpunk 2077 from a textured 3D model: one of your own (GLB, or a .blend, FBX or OBJ opened in Blender), or one Tripo makes from your words with your own Tripo key.\n[Import a Model...](command:edgefab.importGlb)\n[Generate from Words...](command:edgefab.generate)\nEDGEfab gets it ready for the game: real size, standing on its base, three levels of detail, and its textures taken out for its materials. It waits here on your Desk, kept between sessions, until you put it in a project or your Library."
       },
       {
         "view": "edgefab.library",
@@ -90,7 +90,7 @@
     "commands": [
       {
         "command": "edgefab.importGlb",
-        "title": "Import a GLB...",
+        "title": "Import a Model...",
         "category": "EDGEfab",
         "icon": "$(folder-opened)"
       },
@@ -559,7 +559,7 @@
       "explorer/context": [
         {
           "command": "edgefab.makeProp",
-          "when": "resourceExtname =~ /^.(glb|gltf)$/i",
+          "when": "resourceExtname =~ /^\\.(glb|gltf|blend|fbx|obj)$/i",
           "group": "navigation@90"
         }
       ]
@@ -587,6 +587,11 @@
             "No collision: the prop only draws, and V walks through it"
           ],
           "markdownDescription": "How a prop added to a project is solid. Both kinds of box fit the prop's size, and both stop V in the game (tested 2026-11-09)."
+        },
+        "edgefab.blenderPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Where Blender is (`blender.exe` or its folder), for props from `.blend`, FBX and OBJ files. Empty: REDcode's `redcode.blenderPath`, else the newest Blender under Blender Foundation, else Blender on Steam. Blender runs in the background with its factory settings, so a `.blend` file's own scripts never run."
         },
         "edgefab.generateInParts": {
           "type": "boolean",

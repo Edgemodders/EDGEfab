@@ -106,8 +106,9 @@ export class LibraryView implements vscode.TreeDataProvider<LibraryNode> {
       t.resourceUri = vscode.Uri.file(node.file);
       t.iconPath = new vscode.ThemeIcon("file-binary");
       t.tooltip = `${node.file}\nA model kept to convert later`;
-      // GLB and glTF become props now; FBX and .blend come with Blender (F3).
-      t.contextValue = /\.(glb|gltf)$/i.test(node.name) ? "libmodel.glb" : "libmodel";
+      // Every model file becomes a prop: GLB and glTF as they are, .blend, FBX and OBJ through Blender (F3a).
+      // ("libmodel.glb" is the context value package.json's menus name: any model Make a Prop takes.)
+      t.contextValue = /\.(glb|gltf|blend|fbx|obj)$/i.test(node.name) ? "libmodel.glb" : "libmodel";
       if (/\.(glb|gltf)$/i.test(node.name)) t.command = { command: "vscode.openWith", title: "Open in 3D", arguments: [vscode.Uri.file(node.file), "redcode.mesh"] };
       return t;
     }

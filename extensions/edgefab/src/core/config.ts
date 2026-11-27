@@ -28,6 +28,8 @@ export interface SharedSettings {
   /** Add to Library's last choices, offered again: a folder under the root with `/`, and Use the game path. */
   libraryFolder?: string;
   useGamePath?: boolean;
+  /** blender.exe as the extension last found it (its setting, REDcode's, or the search), for the MCP server. */
+  blender?: string;
 }
 
 const settingsFile = () => path.join(dataDir(), "settings.json");

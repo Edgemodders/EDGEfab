@@ -133,7 +133,7 @@ export function libraryFolders(root: string, cap = 2000): string[] {
 // ---- what is in a folder ----------------------------------------------------------------------------
 
 /** Plain files EDGEfab knows: models kept to convert later. */
-export const ModelFiles = /\.(glb|gltf|fbx|blend)$/i;
+export const ModelFiles = /\.(glb|gltf|fbx|blend|obj)$/i;
 
 export interface LibraryAsset {
   /** The item's folder. */
@@ -158,7 +158,7 @@ export interface LibraryFolder {
   rel: string;
   folders: { name: string; rel: string }[];
   assets: LibraryAsset[];
-  /** Model files (GLB, FBX, .blend) in this folder. */
+  /** Model files (GLB, FBX, .blend, OBJ) in this folder. */
   files: { name: string; file: string }[];
 }
 

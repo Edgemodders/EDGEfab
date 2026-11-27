@@ -8,7 +8,7 @@ import * as path from "node:path";
 import {
   addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, renameItem, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
   addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, isInside, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
-  setModderFolder, suggestedLibraryRoot, LibraryError,
+  setModderFolder, suggestedLibraryRoot, LibraryError, describeReport, findBlender, needsBlender, ModelExtensions,
   DefaultCollision, DefaultGlowStrength, percent, DetailLevels, GlowLevels, ViewNames,
   type AssetRecord, type Collision, type Detail, type GlowResult, type LibraryAsset, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
@@ -148,6 +148,39 @@ function report(made: MadeModel): void {
   for (const s of p.submeshes) log(`  ${s.name}: ${s.triangles} triangles, ${s.vertices} vertices`);
   for (const t of p.textures) log(`  ${t.slot}: ${t.file}`);
   for (const n of p.notes) log(`  Note: ${n}`);
+  if (made.blender) for (const line of describeReport(made.blender)) log(`  Blender: ${line}`);
+}
+
+/** blender.exe: EDGEfab's Blender Path, else REDcode's, else found as REDcode finds it. Kept in EDGEfab's shared
+ *  settings, so the MCP server uses the same one. */
+async function blenderPath(): Promise<string | undefined> {
+  const configured = vscode.workspace.getConfiguration("edgefab").get<string>("blenderPath")?.trim() || vscode.workspace.getConfiguration("redcode").get<string>("blenderPath")?.trim();
+  const found = await findBlender(configured || undefined);
+  if (found && readSettings().blender !== found) writeSettings({ blender: found });
+  return found;
+}
+
+/** Make a prop from a model file on disk: a GLB, or a .blend, .fbx or .obj through Blender. */
+async function makeFromFile(file: string, view: DeskView): Promise<void> {
+  if (!ModelExtensions.includes(path.extname(file).toLowerCase() as (typeof ModelExtensions)[number])) {
+    void vscode.window.showWarningMessage(`EDGEfab: Make a Prop takes ${ModelExtensions.join(", ")} files.`);
+    return;
+  }
+  let blender: string | undefined;
+  if (needsBlender(file)) {
+    blender = await blenderPath();
+    if (!blender) {
+      const pick = await vscode.window.showErrorMessage(
+        `EDGEfab opens ${path.extname(file)} files with Blender, and Blender isn't found. Install it from blender.org or Steam, or point EDGEfab's Blender Path setting at blender.exe.`,
+        "Set Blender Path",
+        "Get Blender",
+      );
+      if (pick === "Set Blender Path") void vscode.commands.executeCommand("workbench.action.openSettings", "edgefab.blenderPath");
+      if (pick === "Get Blender") void vscode.env.openExternal(vscode.Uri.parse("https://www.blender.org/download/"));
+      return;
+    }
+  }
+  await make((progress) => makeModel({ from: "file", file }, { version: __VERSION__, onProgress: progress, blender }), view);
 }
 
 /** Opens a model in REDcode's 3D view, which shows its textures, its parts to show or hide, and its levels of detail. */
@@ -210,8 +243,9 @@ async function make(run: (progress: (step: string) => void, signal: AbortSignal)
     const lods = new Set(made.prepared.submeshes.map((s) => s.lod)).size;
     const parts = made.prepared.parts?.length ? `, in ${made.prepared.parts.length} parts` : "";
     const size = made.prepared.sizeUnknown ? "Its size is unknown: Set Size before adding it to a project." : `${made.prepared.size.height.toFixed(2)} m tall, ready for the game.`;
-    const pick = await vscode.window.showInformationMessage(
-      `EDGEfab made ${made.name}: ${lods} levels of detail${parts}. ${size}${made.prepared.notes.length ? " See its notes on the Desk." : ""}`,
+    const blender = made.blender ? describeReport(made.blender).slice(1) : [];
+    const pick = await (blender.length ? vscode.window.showWarningMessage : vscode.window.showInformationMessage)(
+      `EDGEfab made ${made.name}: ${lods} levels of detail${parts}. ${size}${blender.length ? ` ${blender.join(" ")}` : ""}${made.prepared.notes.length ? " See its notes on the Desk." : ""}`,
       ...(made.prepared.sizeUnknown ? ["Set Size"] : []),
       "Open in 3D",
       ...(made.preview ? ["Open Preview"] : []),
@@ -803,23 +837,28 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
     vscode.commands.registerCommand("edgefab.library.makeProp", async (node: unknown) => {
       const file = libraryPathOf(node);
-      if (file) await make((progress) => makeModel({ from: "file", file }, { version, onProgress: progress }), deskView);
+      if (file) await makeFromFile(file, deskView);
     }),
     vscode.commands.registerCommand("edgefab.makeProp", async (uri?: vscode.Uri) => {
       const file = uri?.fsPath ?? vscode.window.activeTextEditor?.document.uri.fsPath;
-      if (!file || !/\.(glb|gltf)$/i.test(file)) {
-        void vscode.window.showWarningMessage("EDGEfab: Make a Prop takes a .glb or .gltf file.");
+      if (!file) {
+        void vscode.window.showWarningMessage(`EDGEfab: Make a Prop takes ${ModelExtensions.join(", ")} files.`);
         return;
       }
-      await make((progress) => makeModel({ from: "file", file }, { version, onProgress: progress }), deskView);
+      await makeFromFile(file, deskView);
     }),
     vscode.commands.registerCommand("edgefab.refreshFromLibrary", refreshFromLibrary),
     ...registerWithEditor(version, log),
 
     vscode.commands.registerCommand("edgefab.importGlb", async () => {
-      const picked = await vscode.window.showOpenDialog({ title: "Import a textured 3D model", openLabel: "Import", filters: { "glTF models": ["glb", "gltf"] }, canSelectMany: false });
+      const picked = await vscode.window.showOpenDialog({
+        title: "Import a textured 3D model",
+        openLabel: "Import",
+        filters: { "3D models": ModelExtensions.map((e) => e.slice(1)), "glTF (GLB)": ["glb", "gltf"], "Blender, FBX and OBJ (opened in Blender)": ["blend", "fbx", "obj"] },
+        canSelectMany: false,
+      });
       if (!picked?.[0]) return;
-      await make((progress) => makeModel({ from: "file", file: picked[0].fsPath }, { version, onProgress: progress }), view);
+      await makeFromFile(picked[0].fsPath, view);
     }),
 
     vscode.commands.registerCommand("edgefab.generate", async () => {

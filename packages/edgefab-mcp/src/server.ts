@@ -21,6 +21,7 @@ import {
   addToProject, deskItem, drawPicture, envKey, readPrepared, renameItem, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
+  describeReport, findBlender, needsBlender,
 } from "../../../extensions/edgefab/src/core";
 import { findBridge, installedRedcodeDirs, KeysBridge, McpCaller } from "../../../extensions/edgefab/src/keyStore";
 import { KeyServices, type KeyService } from "../../../extensions/edgefab/src/core/keys";
@@ -52,6 +53,7 @@ function describe(made: MadeModel) {
     license: made.asset.license,
     preview: made.preview,
     notes: p.notes.length ? p.notes : undefined,
+    blender: made.blender ? { version: made.blender.blender, meshes: made.blender.meshes, said: describeReport(made.blender) } : undefined,
   };
 }
 
@@ -156,7 +158,8 @@ server.registerTool(
   {
     description:
       "Makes a prop for Cyberpunk 2077 from a textured 3D model and prepares it for the game: real size, standing on its base, three levels of detail (full, half, a fifth), MikkTSpace tangents, " +
-      "parts under the game's 65,535 vertices, and its textures written out for its materials. from 'file' takes a .glb or .gltf on disk. " +
+      "parts under the game's 65,535 vertices, and its textures written out for its materials. from 'file' takes a .glb or .gltf on disk, or a .blend, .fbx or .obj, which Blender opens in the background " +
+      "(its factory settings, the file's own scripts off) and exports as one GLB: the visible meshes with modifiers applied, object names as part names; armatures, animation, shape keys, cameras and lights are left aside, and the answer's blender.said says what was left and which materials have no picture. " +
       "from 'picture' (the extension's Generate 3D Model) asks Tripo for the model from a Desk item's last four-view picture (fab_picture): the usual way from words. from 'tripo' asks Tripo straight from words, without a picture. " +
       "With Tripo: the modder's own key; by default in parts (each part its own material, so EDGEmat can change one), with the detailed texture. Credits as of 2026-11-09: from a picture in parts 60 (High detail 80), " +
       "from words in parts 50 (70); about 3 to 4 minutes. Confirm the cost with the user first. Models in parts come without a real size: pass height in metres (ask the user), or set it after with fab_size. " +
@@ -164,7 +167,7 @@ server.registerTool(
       "Puts it on the Desk (fab_desk) and returns its folder, size, LODs, parts, textures and license. fab_add then puts it into a project.",
     inputSchema: {
       from: z.enum(["file", "picture", "tripo"]),
-      file: z.string().optional().describe("For from 'file': the .glb or .gltf."),
+      file: z.string().optional().describe("For from 'file': a .glb or .gltf, or a .blend, .fbx or .obj (through Blender)."),
       prop: z.string().optional().describe("For from 'picture': the Desk item fab_picture made (its name or folder)."),
       take: z.number().int().positive().optional().describe("For from 'picture': which of its pictures (fab_desk lists them). Default: the last."),
       prompt: z.string().optional().describe("For from 'tripo': one object, such as 'a rusty oil drum'."),
@@ -181,8 +184,11 @@ server.registerTool(
       const progress = (step: string) => log(step);
       const prepare = height ? { height } : undefined;
       if (from === "file") {
-        if (!file) throw new Error("Pass file: the .glb or .gltf to make the prop from.");
-        return text(describe(await makeModel({ from: "file", file, name }, { version, onProgress: progress, prepare })));
+        if (!file) throw new Error("Pass file: the .glb, .gltf, .blend, .fbx or .obj to make the prop from.");
+        // Blender: EDGEFAB_BLENDER, else the one the extension last found (its setting or REDcode's), else the search.
+        const blender = needsBlender(file) ? await findBlender(process.env.EDGEFAB_BLENDER || readSettings().blender) : undefined;
+        if (needsBlender(file) && !blender) throw new Error("Blender isn't found, and EDGEfab opens .blend, .fbx and .obj files with it. Ask the user to install Blender (blender.org or Steam), or set EDGEFAB_BLENDER to blender.exe.");
+        return text(describe(await makeModel({ from: "file", file, name }, { version, onProgress: progress, prepare, blender })));
       }
       const p = plan ?? readSettings().tripoPlan;
       if (!p) throw new Error("Ask the user whether their Tripo plan is paid or free (on a free plan Tripo keeps all rights to the model, Tripo's terms 5.2.1), then pass plan or call fab_tripo with action 'set_plan'.");

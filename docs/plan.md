@@ -445,10 +445,23 @@ How a skeleton is made from scratch is not settled yet. REDcode's Uthana makes c
 
 | Check | Why |
 |---|---|
-| REDcode's Animation Editor on a rig that is not human | Today its clips are made on `man_base` or `woman_base`, its key step names any bone but turns it "about the character", and its groups (hands, legs, upper body) are human. A request to REDcode when F7a starts: open the editor with a rig and its mesh, any rig, and start a clip from nothing (keys only) |
-| A `.rig` written by EDGEfab | REDbridge #14's rig import is not built (WolvenKit's rig import is unfinished). Either REDbridge builds it, or EDGEfab writes the rig's CR2W from JSON through REDbridge (field names to read from a game rig) |
+| REDcode's Animation Editor on a rig that is not human | **Answered by REDcode on [REDcode #37](https://github.com/Edgemodders/REDcode/issues/37), 2026-11-26:** the timeline's core already handles any rig (anim-core's check on a made-up AV). Drawing a prop's mesh, rigs beyond `man_base` and `woman_base`, and a clip from nothing (the rest pose for a chosen length, then moves and keys) come as REDcode's stage **TL7 Any rig**, timed before F7a. `openAnimationEditor({ rig, mesh, clip? })` suits REDcode. The clip goes in #7's layout with `anim.rig` the prop's `.rig` game path. When the skeleton tab is designed, send REDcode the bone names and hierarchy it writes and how its rest pose sits |
+| A `.rig` for the game | **Both, says REDcode:** the GLB with its skin for REDcode's editor (works today), and a `.rig` for the game, since the clip's import needs a rig path. The `.rig` comes from REDbridge (#14's rig import, from the same GLB), not anim-core. Placement: the `.rig` under `source\archive`, its skin GLB at the same path under `source\raw`. REDbridge's rig import is not built (WolvenKit's is unfinished): ask on #14 when F7a starts |
 | How the game plays a prop's clip | Most likely a skinned mesh, an animated component with the rig and the clip's set, and the clip started by the entity or a workspot. To read from a game prop that moves (a fan, a sign) |
 | Tripo's rigging | Tripo rigs some shapes (people, four-legged animals) itself. Might give creature props their skeleton |
+
+## F3 Blender sources, in stages (started 2026-11-26)
+
+The owner said "start F3" on 2026-11-26. Blender runs in the background (`blender --background`), found as REDcode finds it (EDGEfab's setting `edgefab.blenderPath`, else REDcode's `redcode.blenderPath`, else the newest under Blender Foundation, else a Steam install). It is opened with `--factory-startup --disable-autoexec`, so a `.blend` file's own Python never runs. The modder's Blender here is 5.2.3 (Steam).
+
+| Stage | Builds | Checked by |
+|---|---|---|
+| **F3a Blender files onto the Desk** | **Import a Model** (was Import a GLB) and Make a Prop take `.blend`, `.fbx` and `.obj` beside `.glb`. Blender opens the file, exports the visible meshes as one GLB (modifiers applied, object names kept as part names, no animation or armature), then F1's prepare runs as for any GLB. A report in plain words: what came, what was left aside (armatures, animation, shape keys, cameras, lights), materials made from nodes with no picture (the game gets their plain color), missing texture files. `fab_make` `from: "file"` takes the same files. The record keeps the file and Blender's version | A script: a `.blend` and an FBX made by Blender itself (textured parts, one procedural material, one missing texture), each onto a scratch Desk, prepared, added to a scratch project |
+| **F3b Fix Mesh** | The shape cleanup tried in F1 (doubled vertices merged, near-flat ripples flattened at 15°, the UVs kept), holes and flipped faces, loose bits. A Desk command on any prop and MCP `fab_fix`, a new version of the item | A script on a Tripo prop: the ripples gone, the UVs and parts kept |
+| **F3c Edit in Blender** | From the Desk: the item's prepared model opens in Blender by hand, each save comes back as a new version (REDcode's Edit in Blender works in a project only: EDGEfab's own, or REDcode's taking a GLB outside the project, asked when the stage starts). In a project: a hand edit merged back with each part's material put back by part name (REDbridge sorts submeshes by node name and keeps materials by position) | A hand test: a handle added in Blender, back on the Desk and in the project with its materials |
+| **F3d Assistants in Blender** | A Blender MCP server for "add a handle on each side", round-tripping through F3c. Mostly guidance and the round trip: which server, how it connects, what EDGEfab checks after | A hand test with an assistant |
+
+**F3's phase test** (unchanged): a prop from a `.blend` and one from an FBX end up in an EDGEbuilder scene.
 
 ## Phases
 

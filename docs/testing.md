@@ -12,12 +12,13 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-25. Each row links to its test. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
+Last updated 2026-11-26. Each row links to its test. **F3 started 2026-11-26:** F3a (Blender files onto the Desk) passed part A offline; its VS Code steps wait for the owner. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
 
 **Lip sync's six tests moved to REDcode on 2026-11-22**, with the Lip Sync editor (the owner: EDGEfab covers props and clothing only): FL1, the spikes LS1, LS2 and A2F, the head in the tab, and Add a Line, each with every run, are in REDcode's branch `lipsync`, `lipsync/docs/testing.md`. None of them counts for EDGEfab's release gate now.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
+| [F3a: Blender files onto the Desk](#f3a-blender-files-onto-the-desk) | Offline by Claude, Blender in the background and REDbridge; VS Code steps by the owner | F3 | 2026-11-26 | Part A **pass** (35 checks); part B not run |
 | [EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)](#edgefab_redbridge-reaches-the-game-bridge-edgechat-5) | Offline by Claude, against the real REDbridge | After 0.2.0 | 2026-11-25 | **Pass** (3 checks) |
 | [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). **Pass**: part A (13 checks, the real store, 8 checks of the no-key reasons) and part B (6 steps, the owner, step 6 Don't Allow included) |
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-25 | **Pass**: part A (23 checks), part B (11 steps, the owner), and the failed rename with a second window, by script on 0.2.1 |
@@ -46,6 +47,63 @@ Last updated 2026-11-25. Each row links to its test. **0.2.1, 2026-11-25:** the 
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
+
+## F3a: Blender files onto the Desk
+
+F3's first stage ([plan, "F3 Blender sources, in stages"](plan.html#f3-blender-sources-in-stages-started-2026-11-26)): a `.blend`, FBX or OBJ opened by Blender in the background (core `blender.ts`), exported as one GLB, then F1's prepare.
+
+### Part A, offline
+
+**Steps.** `npm run build`, then `node scripts/blender-check.mjs --add` in `extensions/edgefab` (Blender found by the search, or `--blender <blender.exe>`; `--add` needs the game's files for REDbridge, not the game running). Blender first makes a test crate with `scripts/blender-fixture.py` as `crate.blend`, `crate.fbx` and `crate.obj`. The crate has:
+
+- a textured body with a bevel modifier, and a plain-colored lid;
+- a part made from nodes with no picture, and a part pointing at a texture file that isn't there;
+- a front marker on Blender's front (-Y);
+- a hidden box, a camera, a light and an armature;
+- a script inside the `.blend` that would write a file if it ever ran.
+
+Each file goes onto a scratch Desk (`EDGEFAB_DATA`). The `.blend` and FBX props then go into scratch projects.
+
+**Expected.** For each file:
+
+- the five visible parts come by name, without the hidden box;
+- about 0.88 m tall, with a color texture for the body;
+- the record names Blender's version, and the source is kept.
+
+For the `.blend`:
+
+- the camera, light, armature and hidden object are named as left aside;
+- `pipe_noise` is named as having no picture, and `label_gone.png` as missing;
+- its own script never ran.
+
+A broken FBX fails in plain words and leaves no Desk item. A PNG is refused. With `--add`, both props have their mesh, entity and five applied materials in the project.
+
+### Run 1, 2026-11-26: part A passed
+
+Blender 5.3.0 (Steam, `L:`), found by the search through Steam's library list. **35 of 35.** About 2 seconds a file in Blender; the whole check, Add to Project included, about a minute.
+
+| File | What Blender said |
+|---|---|
+| `crate.blend` | 5 parts: body, lid, pipe, label, front_marker. Left aside: armature, camera, hidden object, light. No picture: pipe_noise. Missing: label_gone.png |
+| `crate.fbx` | 5 parts. Left aside: armature, camera, light. The node material comes back plain from FBX, so no "no picture" line |
+| `crate.obj` | 5 parts (OBJ has no camera, light or armature) |
+| `broken.fbx` | "Blender could not open the file: Error: ASCII FBX files are not supported ..." |
+
+**Found on the first run, fixed in the fixture:** Blender's own FBX export writes hidden objects as shown ones, so the hidden box came back visible at 2 m and made the crate 2.1 m tall. The fixture now exports visible objects only, as a modeller's export would.
+
+**Seen, not settled: which way a Blender model faces.** Blender's front (-Y, the side the Front view shows) lands at glTF's +Z. That is glTF's own convention for an asset's front, so a GLB from anywhere faces the same way. Prepare leaves both as they are. Tripo's models are turned to glTF's -Z, which the game showed is the entity's forward (2026-11-09). **So a Blender model, and a GLB, face the entity's back.** For the owner: turn both to face forward by default, or leave them. A game mesh exported from REDcode and changed in Blender already faces the game's way, so it must not be turned.
+
+The smoke test passed on the same build (a Tripo prop in parts from the Desk: 6 parts, back faces added, `ok`).
+
+### Part B, in VS Code (the owner)
+
+Not run. Use an Extension Development Host with REDcode.
+
+1. **Import a Model...** on the Desk's title bar. The picker offers 3D models, glTF and "Blender, FBX and OBJ". Pick a `.blend` of your own with textures: it comes onto the Desk. The message says what Blender left out, if anything.
+2. **Open in 3D** on it: its parts and textures show as they do in Blender.
+3. **Make a Prop (EDGEfab)** on an `.fbx` in VS Code's Explorer: it comes onto the Desk the same way.
+4. Set **EDGEfab: Blender Path** to a folder with no Blender, then import a `.blend`. The error says Blender isn't found, with **Set Blender Path** and **Get Blender**. Clear the setting afterwards.
+5. **Add to Project** on the `.blend` prop, then Pack and Play: it stands in the game, solid, with its textures.
 
 ## EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)
 
