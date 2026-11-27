@@ -18,7 +18,7 @@ EDGEfab is the EDGE fabricator for Cyberpunk 2077, a VS Code extension with an M
 
 ## Roadmap status
 
-As of 2026-11-26. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 on 2026-11-22, 0.2.1 on 2026-11-25); the other phases are proposals ([build plan](plan.html)). EDGEfab covers **props, clothing, bodies and NPC looks** (the owner, 2026-11-22 and 2026-11-26); animation editing is REDcode's (2026-11-24). The proposed order (2026-11-26): F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9.
+As of 2026-11-26. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 on 2026-11-22, 0.2.1 on 2026-11-25); the other phases are proposals ([build plan](plan.html)). EDGEfab covers **props, clothing, bodies and NPC looks** (the owner, 2026-11-22 and 2026-11-26); animation editing is REDcode's (2026-11-24). The order, agreed with the owner 2026-11-26: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9. 1.0 is props, clothing and NPC looks (F1, F3, F4a, F4b, F2, FN).
 
 | Phase | Status |
 |---|---|
@@ -34,7 +34,7 @@ As of 2026-11-26. The first build (F1) is released (0.1.0 on 2026-11-18, 0.2.0 o
 | F5b Characters, heard and read | Left EDGEfab 2026-11-22 (props and clothing only) |
 | FA The agent (moved out of F2, 2026-11-04) | Not started |
 | F6 Characters, edited | Left EDGEfab 2026-11-22 (props and clothing only) |
-| F7a Animated props (a prop's rig and the entity that plays its clip; the clip made in Blender or REDcode) | Not started |
+| F7a Animated props (a skeleton made in EDGEfab, the entity that plays its clip; the clip made in REDcode's Animation Editor or Blender) | Not started. Kept by the owner 2026-11-26, after FB |
 | F7b-1 Small animation edits (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F7b-2 Character animation (a key focus) | Left EDGEfab 2026-11-22 (props and clothing only) |
 | F8 Unreal assets | Not started |

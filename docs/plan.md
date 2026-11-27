@@ -356,13 +356,13 @@ With characters and animation editing gone, EDGEfab has two kinds of asset: prop
 | **F4a Reshape a game garment** | Reshape moves in from EDGEmat (#3, [above](#reshape-built-in-edgemat-first-read-2026-11-03)): the garment's views, a change by words, Tripo's multiview model, then the fit past one bone: each vertex takes the weights of the nearest point on the original garment, pushed out of V's body, garment support, both bodies (`pma`, `pwa`), LODs. It **replaces** a game garment at its own path, so its `.app` and records stay. In Node, no Blender, so Wardrobe Designer bundles EDGEfab's core (`fitToGarment`, MCP `fab_fit_to_garment`). EDGEmat gives it its look | A jacket V wears, reshaped by words, moves with V on both bodies in the game. Wardrobe Designer's Reshape runs on EDGEfab's core |
 | **F4b New clothing** | A garment from a GLB, Tripo or Blender (F3) fitted to V's bodies as a **new item**: `fab_body`, `fab_fit` (the body's weights), `fab_refit` (the other body, body mods, through the add-on's refitters in Blender's background), the item's mesh per body, `.ent`, `.app`, its TweakXL record and ArchiveXL file, name, icon, slot. EDGEmat's looks as the item's variants. On the Desk and in the Library as a `clothing` asset. The study of custom-item mods (moved from F0) first | "Make an old worn trenchcoat": V wears it from the inventory, on both bodies, beside the game's own coat |
 
-**Proposed order: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9.** F4a can go before F3 if the owner wants clothing sooner, since it needs no Blender.
+**Proposed order: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9.** F4a can go before F3 if the owner wants clothing sooner, since it needs no Blender. **Agreed by the owner 2026-11-26:** F3, then F4a and F4b, then F2.
 
-**Still the owner's to say:**
+**Decided by the owner, 2026-11-26:**
 
-| Question | Proposed |
+| Question | Decided |
 |---|---|
-| F7a Animated props, now that animation editing is REDcode's | Keep it, narrowed to what makes a prop animated: a small rig on the prop, the entity that plays its clip, the prop in the game. The clip itself is made in Blender or REDcode's Animation Editor. After F2, as before |
+| F7a Animated props, now that animation editing is REDcode's | **Kept, narrowed** to what makes a prop animated: a small rig on the prop, the entity that plays its clip, the prop in the game. The clip itself is made in Blender or REDcode's Animation Editor. Its shape, the owner's the same day: [Skeletons, made in EDGEfab](#skeletons-made-in-edgefab-the-owner-2026-11-26) |
 | 1.0 | Was "props whole: F1, F3 and F2" (2026-11-04). Proposed: **props and clothing whole**, F1, F3, F4a, F4b and F2, since that is EDGEfab's whole scope now. **Settled 2026-11-26** with the bodies plan: props, clothing and NPC looks (F1, F3, F4a, F4b, F2, FN) ([below](#bodies-and-npc-looks-the-owner-2026-11-26)) |
 
 ## Bodies and NPC looks (the owner, 2026-11-26)
@@ -404,7 +404,7 @@ Read from the game's files through REDbridge on 2026-11-26 (game 2.5). Lines mar
 
 They take letters, as FA does: F5 and F6 named the character phases until 2026-11-22, and those rows stay in the table as the record.
 
-**Proposed order: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9.**
+**Proposed order: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9.** Agreed by the owner 2026-11-26.
 
 | Why | |
 |---|---|
@@ -420,6 +420,35 @@ They take letters, as FA does: F5 and F6 named the character phases until 2026-1
 | V's face and the character creator | **Out of scope:** an NPC look is an NPC, and V's look stays the game's character creator. A body mod for V is in FB |
 | 1.0 | **Props, clothing and NPC looks whole** (F1, F3, F4a, F4b, F2, FN). Bodies after 1.0 |
 | Gender | Set by the body type and the record. An NPC's voice to match is EDGEwave's (proposed, not asked) |
+
+## Skeletons, made in EDGEfab (the owner, 2026-11-26)
+
+The owner, 2026-11-26, after keeping F7a: EDGEfab gives an asset its skeleton, and REDcode's Animation Editor animates it. The flow:
+
+1. **Make the asset.** A prop from words, or an existing one changed in Blender or through a service.
+2. **Give it a skeleton.** Pick one, make one from words, or build one by hand in EDGEfab: a 3D view of the prop, NPC or body, where bones are added inside the mesh and named.
+3. **Animate it.** EDGEfab opens REDcode's Animation Editor with the skeleton and the mesh, so the mesh plays with the clip.
+
+How a skeleton is made from scratch is not settled yet. REDcode's Uthana makes clips for the human skeleton only; the Animation Editor may animate any skeleton (to check, below).
+
+**By kind of asset:**
+
+| Asset | Its skeleton |
+|---|---|
+| A prop in named parts (Tripo's, grouped by `parts.ts`) | **A bone per moving part**, each part tied whole to its bone (one weight, no painting), so the work is where each bone pivots and turns: a fan's hub, a door's hinge, a lid's back edge. EDGEfab proposes the pivots from the parts' shapes and where they touch, the modder moves them in the view. From words ("the blades spin, the lid opens"), an assistant picks the parts, parents and axes from their names |
+| A prop in one piece | Bones placed by hand, and the mesh split or weighted to them. Harder: later, or in Blender (F3) |
+| A body (FB) or an NPC (FN) | **The body type's rig, picked for the modder** (`man_base`, `woman_base`, the big and massive ones), since the game's animations are shared by every body on a rig. Extra bones (a tail, a third arm) only on their own, beside the rig: later, and unverified how the game takes them |
+
+**The skeleton tab** is EDGEfab's: the 3D view with the bones drawn in it, add, name, parent and move a bone, a pivot snapped to a part. It works on the same Desk item as the prop, and the skeleton is kept in the item (a `rig` beside the mesh), so Add to Project and the Library carry it. **Animate** sends the rig and the mesh to REDcode's editor.
+
+**What has to be checked first** (unverified, read from REDcode's MCP tool descriptions on 2026-11-26, not tried):
+
+| Check | Why |
+|---|---|
+| REDcode's Animation Editor on a rig that is not human | Today its clips are made on `man_base` or `woman_base`, its key step names any bone but turns it "about the character", and its groups (hands, legs, upper body) are human. A request to REDcode when F7a starts: open the editor with a rig and its mesh, any rig, and start a clip from nothing (keys only) |
+| A `.rig` written by EDGEfab | REDbridge #14's rig import is not built (WolvenKit's rig import is unfinished). Either REDbridge builds it, or EDGEfab writes the rig's CR2W from JSON through REDbridge (field names to read from a game rig) |
+| How the game plays a prop's clip | Most likely a skinned mesh, an animated component with the rig and the clip's set, and the clip started by the entity or a workspot. To read from a game prop that moves (a fan, a sign) |
+| Tripo's rigging | Tripo rigs some shapes (people, four-legged animals) itself. Might give creature props their skeleton |
 
 ## Phases
 
@@ -444,12 +473,12 @@ Each phase ends with a test the owner runs, recorded in [Tests](testing.html). A
 | **F5b Characters, heard and read** **Left EDGEfab 2026-11-22** (props and clothing only) (the rest of F5) | The character's **voice** lines listed and playable (through EDGEwave), its records in plain words (name, affiliation, behaviour). Read-only | Click an NPC asset and see the whole character move and hear it speak, in EDGEfab |
 | **FA The agent** (moved out of F2 by the owner, 2026-11-04) | EDGEfab's own agent (the Claude Agent SDK with the modder's key) and the prompt bar on the asset page, with EDGEfab's and EDGEmat's tools, the Blender MCP server, the part map for words to parts. What Claude Code could already do through MCP, typed in EDGEfab | "Make the jacket green and the sleeves red" shows on V in the running game, typed in EDGEfab's prompt bar |
 | **F6 Characters, edited** **Left EDGEfab 2026-11-22** (props and clothing only) | Every aspect changed by orchestrating the EDGE tools: looks (EDGEmat), clothes swapped or made (F4), hair and head from the game's parts, animations (Blender, Unreal), voice (EDGEwave), records (TweakDB through TweakXL). A new NPC made from an existing one. Placed through EDGEbuilder's `npc` scene kind (its B3c, on REDnode's `world.load`) | "Make a new fixer from this one, in a leather coat, with a deeper voice" stands in a scene in the game |
-| **F7a Animated props** (proposed right after F2; narrowed 2026-11-25, to agree with the owner) | The prop in the view first, then "animate the pinwheel": a small rig on the prop and the entity that plays its looping clip. The clip is made in Blender's background or REDcode's Animation Editor (animation editing is REDcode's since 2026-11-24) | The pinwheel turns in the game |
+| **F7a Animated props** (narrowed 2026-11-25; kept by the owner 2026-11-26, after FB) | The prop in the view first, then "animate the pinwheel": **the skeleton tab** (a bone per moving part, pivots proposed from the parts, from words or by hand; [Skeletons](#skeletons-made-in-edgefab-the-owner-2026-11-26)), the `.rig`, and the entity that plays its looping clip. **Animate** opens the rig and the mesh in REDcode's Animation Editor (animation editing is REDcode's since 2026-11-24); Blender's background as the other way | The pinwheel turns in the game |
 | **F7b-2 Character animation** **Left EDGEfab 2026-11-22** (props and clothing only) (a key focus; proposed right after F5b) | The character in the view first (F5a), then keyframes (simple ones in the animation tab), animations brought in from Blender (actions on the game's rig, or retargeted) and played through workspots or added to its idles; text to motion is REDcode's since 2026-11-22, and EDGEfab edits its clips. Unreal clips join in F8 (U4 of [UE5 assets](ue-assets.html)) | A Blender idle plays on an NPC in the game, previewed on that NPC in EDGEfab first |
 | **F8 Unreal assets** (props only since 2026-11-22; its characters left with the character phases) | U1 to U3 of [UE5 assets](ue-assets.html): the headless export script, material mapping and baking, Nanite reduction, the license record (props, through F1's path), then characters moved onto the game's body rigs (through F5 and F6's path) | A free Fab prop stands in a scene in minutes. A Mannequin- or MetaHuman-based character walks and idles as an NPC |
 | **F9 Ship** | Docs and tutorials, the Nexus page (an extension: Mod Manager Download off), the EDGEkit and EDGEchat bundles | A non-coder makes a prop and a garment from the docs alone (the NPC left with the character phases, 2026-11-22) |
 
-Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9 ([why](#clothing-where-it-falls-proposed-2026-11-25)). **Proposed 2026-11-26, with bodies and NPC looks: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9** ([why](#bodies-and-npc-looks-the-owner-2026-11-26)); the owner agreed FN before FB and 1.0 as F1, F3, F4a, F4b, F2 and FN the same day, while clothing's place and F7a are still to agree. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
+Talking faces for Unreal characters (U5) stay research. With F7 split and Tripo in F1 (2026-10-30), FA added and F5 and F7b split (2026-11-04), the proposed order was F0, F1, F3, F2, F7a, F5a, F7b-1, F4, F5b, F7b-2, FA, F6, F8, F9. From 2026-11-22 (props and clothing only): F0, F1, F3, F2, F7a, F4, FA, F8, F9. Proposed 2026-11-25, clothing up and split: F0, F1, F3, F4a, F4b, F2, F7a, FA, F8, F9 ([why](#clothing-where-it-falls-proposed-2026-11-25)). **Proposed 2026-11-26, with bodies and NPC looks: F0, F1, F3, F4a, F4b, F2, FN, FB, F7a, FA, F8, F9** ([why](#bodies-and-npc-looks-the-owner-2026-11-26)); **agreed by the owner the same day**, with 1.0 as F1, F3, F4a, F4b, F2 and FN. F8's props can move up right after F1 if the owner wants Unreal sooner, since they reuse F1's path.
 
 ### What other repos need from EDGEfab
 
