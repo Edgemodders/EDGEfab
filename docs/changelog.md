@@ -18,6 +18,7 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 **Changed**
 
 - **A model of a few named pieces keeps their names as parts.** A model with up to ten pieces and more than one material, from Blender or a GLB from anywhere, gets one part per material, named after its object (`body`, `lid`), else after its material, so each can take a game material in EDGEmat. Before, only Tripo's models came in named parts, and these came as `crate_00`, `crate_01` and so on. Made-up names such as `Cube.001` don't count, and pieces that share a material become one part.
+- **Models from Blender, and GLBs from anywhere, are turned to face forward.** Their front (the side Blender's Front view shows, glTF's own front) used to land at the back of the game's object, so a placed prop showed its back. EDGEfab now turns them half round, and says so. A game mesh exported by WolvenKit or REDcode, also after an edit in Blender, already faces the game's way and is left as it is. Tripo's models are turned a quarter, as before.
 
 
 ## 0.2.1 (2026-11-25)

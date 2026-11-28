@@ -7,7 +7,8 @@
 // - LODs named in the mesh: submesh_00_LOD_1 (full), _LOD_2, _LOD_4.
 // And for a prop: its base at height 0, centred across, as the game's props stand, and its front toward the
 // game's forward: glTF's -Z, which the importer makes the game's +Y. Tripo's models face +X (checked on text to
-// model and multiview, docs/testing.md "Tripo's model and its front"), so they are turned a quarter.
+// model and multiview, docs/testing.md "Tripo's model and its front"), so they are turned a quarter. Other GLBs
+// (Blender's among them) face glTF's +Z and are turned half round; game meshes exported by WolvenKit are left.
 // The textures are written out as image files, for the materials (EDGEmat), and left out of the GLB.
 
 import * as fs from "node:fs";
@@ -64,7 +65,8 @@ export interface PrepareOptions {
   ground?: boolean;
   /**
    * Which way the model's front faces, in glTF's axes, so it is turned to face the game's forward (-Z).
-   * "auto" (the default): +X for a model Tripo made (its asset generator names Tripo), else left as it is.
+   * "auto" (the default): +X for a model Tripo made (its asset generator names Tripo), -Z (left as it is) for a
+   * game mesh WolvenKit exported, else +Z (glTF's front, and Blender's), turned half round.
    */
   front?: Facing | "auto";
   /** Its height in metres: the model is scaled to it. For a model with no real size (Tripo's in parts). */
@@ -263,18 +265,29 @@ function lockUnder(idx: ArrayLike<number>, t: number, pos: Float32Array, lock: U
   return added;
 }
 
-/** Whether Tripo made the file: its asset generator, read from the file itself (glTF-Transform replaces it on
- *  reading), or Tripo's node names (tripo_node_<task>). */
-function madeByTripo(input: string, doc: Document): boolean {
+/** Who made the file, for its front: its asset generator, read from the file itself (glTF-Transform replaces it
+ *  on reading), and its node names. "tripo": Tripo's generator or node names (tripo_node_<task>). "game": a game
+ *  mesh exported by WolvenKit (SharpGLTF, nodes named submesh_00_LOD_1), also after an edit in Blender, which keeps
+ *  the names. "other": anything else, such as Blender or another tool. */
+function madeBy(input: string, doc: Document): "tripo" | "game" | "other" {
+  let generator = "";
   try {
     const b = fs.readFileSync(input);
     const json = b.readUInt32LE(0) === 0x46546c67 ? b.subarray(20, 20 + b.readUInt32LE(12)).toString("utf8") : b.toString("utf8");
-    if (/tripo/i.test(JSON.parse(json).asset?.generator ?? "")) return true;
+    generator = String(JSON.parse(json).asset?.generator ?? "");
   } catch {
-    // fall back on the node names
+    // the node names alone
   }
-  return doc.getRoot().listNodes().some((n) => /^tripo_node_/i.test(n.getName()));
+  const names = doc.getRoot().listNodes().map((n) => n.getName());
+  if (/tripo/i.test(generator) || names.some((n) => /^tripo_node_/i.test(n))) return "tripo";
+  if (/wolvenkit|sharpgltf/i.test(generator) || names.some((n) => /^submesh_\d+_LOD_\d+/i.test(n))) return "game";
+  return "other";
 }
+
+/** The front a model has by who made it: Tripo's face +X; the game's already face its forward (-Z); a GLB from
+ *  anywhere else faces glTF's own front, +Z (Blender's front, -Y, lands there), so it is turned half round
+ *  (the owner, 2026-11-28). */
+const FrontBy: Record<ReturnType<typeof madeBy>, Facing> = { tripo: "+X", game: "-Z", other: "+Z" };
 
 const vertexCount = (prim: Primitive) => prim.getAttribute("POSITION")?.getCount() ?? 0;
 const triangleCount = (prim: Primitive) => (prim.getIndices()?.getCount() ?? vertexCount(prim)) / 3;
@@ -302,10 +315,11 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   if (!scene) throw new PrepareError("This GLB has no scene.");
 
   // Tripo puts the real size on the node (auto_size); its models in parts come without one.
-  const byTripo = madeByTripo(input, doc);
+  const by = madeBy(input, doc);
+  const byTripo = by === "tripo";
   const sized = root.listNodes().some((n) => n.getScale().some((v) => Math.abs(v - 1) > 1e-6));
   // Turn its front to the game's forward, under one parent node, which the baking below takes in.
-  const front = (options.front ?? "auto") === "auto" ? (byTripo ? "+X" : "-Z") : (options.front as Facing);
+  const front = (options.front ?? "auto") === "auto" ? FrontBy[by] : (options.front as Facing);
   const turn = TurnToForward[front];
   if (turn) {
     const half = (turn * Math.PI) / 360;
@@ -315,7 +329,11 @@ export async function prepareModel(input: string, outDir: string, name: string, 
       parent.addChild(child);
     }
     scene.addChild(parent);
-    notes.push(front === "+X" ? "Turned a quarter to face forward: Tripo's models face sideways." : `Turned ${Math.abs(turn)}° to face forward (its front was ${front}).`);
+    notes.push(
+      front === "+X" && byTripo ? "Turned a quarter to face forward: Tripo's models face sideways."
+      : front === "+Z" && by === "other" ? "Turned half round to face forward: its front was glTF's (Blender's front view), the back of a game object."
+      : `Turned ${Math.abs(turn)}° to face forward (its front was ${front}).`,
+    );
   }
 
   // Bake every node's transform into its mesh. A mesh used by several nodes is copied first, since each

@@ -1,7 +1,7 @@
 // F3a, Blender files onto the Desk (docs/testing.md, "F3a: Blender files onto the Desk"): Blender makes a test
 // crate as .blend, FBX and OBJ (scripts/blender-fixture.py), and each goes onto a scratch Desk through makeModel.
 // Checks the parts, what was left aside, materials with no picture, a missing texture, the size, the record, that
-// a .blend's own script never runs, and where Blender's front lands. With --add, the .blend and FBX props also go
+// a .blend's own script never runs, and that Blender's front is turned to the game's forward. With --add, the .blend and FBX props also go
 // into scratch projects through REDbridge (needs the game).
 // Usage (after npm run build): node scripts/blender-check.mjs [--blender <blender.exe>] [--add]
 import { execFileSync } from "node:child_process";
@@ -71,6 +71,14 @@ for (const ext of [".blend", ".fbx", ".obj"]) {
   const g = gltf(path.join(m.folder, "source", "raw", m.name, "from_blender.glb"));
   const marker = g.nodes.find((n) => n.name?.startsWith("front_marker"));
   if (marker) console.log(`     Blender's front marker in the GLB at ${JSON.stringify(marker.translation ?? "its vertices")}`);
+  // Prepare turns it half round, so the front faces the game's forward, glTF's -Z (the owner, 2026-11-28).
+  const v = gltf(path.join(m.folder, "source", "raw", m.name, "view.glb"));
+  const mi = v.materials.findIndex((x) => x.name === `${m.name}_front_marker`);
+  const prim = v.meshes.flatMap((x) => x.primitives).find((p) => p.material === mi);
+  const acc = prim && v.accessors[prim.attributes.POSITION];
+  const z = acc ? (acc.min[2] + acc.max[2]) / 2 : NaN;
+  check(`${ext}: its front turned to the game's forward (glTF -Z)`, z < -0.2, `the front marker at z ${z.toFixed(3)}`);
+  check(`${ext}: the turn said in the notes`, m.prepared.notes.some((n) => /half round/.test(n)), m.prepared.notes.join(" | "));
 }
 
 const b = made[".blend"];
