@@ -305,11 +305,14 @@ export interface LibraryAddResult {
   notes: string[];
 }
 
-/** A Desk item's own files: everything but what an earlier build put in it. */
+/** A Desk item's own files: everything but what an earlier build put in it, and the model kept on the Desk for
+ *  Undo Fix (before_fix/: Undo Fix is the Desk's, not the Library's). */
 function copyOwnFiles(from: string, to: string, name: string): void {
   fs.mkdirSync(to, { recursive: true });
   fs.copyFileSync(path.join(from, "asset.json"), path.join(to, "asset.json"));
-  fs.cpSync(path.join(from, "source", "raw", name), path.join(to, "source", "raw", name), { recursive: true });
+  const raw = path.join(from, "source", "raw", name);
+  const kept = path.join(raw, "before_fix");
+  fs.cpSync(raw, path.join(to, "source", "raw", name), { recursive: true, filter: (src) => path.resolve(src) !== path.resolve(kept) });
 }
 
 const filesUnder = (dir: string): string[] =>

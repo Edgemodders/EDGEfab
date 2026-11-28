@@ -231,6 +231,30 @@ export async function paintedLightsGlow(folder: string, opts: { amount?: number;
   return { glow: p.glow, lit, view: p.view, notes };
 }
 
+/**
+ * After the model was prepared again (Fix Mesh): the painted glow it had, put back on the materials that are
+ * still there. Its maps are of the same color textures, on the same UVs, so they still fit. Answers notes on any
+ * that couldn't be kept. Writes prepared.json and view.glb; the caller records what it did.
+ */
+export async function keepPaintedGlow(folder: string, painted: PreparedGlow[]): Promise<string[]> {
+  if (!painted.length) return [];
+  const item = readGlowItem(folder);
+  const p = item.prepared;
+  const notes: string[] = [];
+  for (const g of painted) {
+    const file = g.texture ? path.join(item.raw, path.basename(g.texture)) : undefined;
+    if (!p.materials.includes(g.material) || (file && !fs.existsSync(file))) {
+      notes.push(`${g.material} glowed from its painted lights, and its part changed: make the painted lights glow again.`);
+      continue;
+    }
+    if (file) p.textures = [...p.textures.filter((t) => !(t.material === g.material && t.slot === "emissive")), { material: g.material, slot: "emissive", file, mimeType: "image/png" }];
+    p.glow = [...p.glow.filter((x) => x.material !== g.material), { ...g, ...(file ? { texture: file } : {}) }];
+  }
+  await drawInView(item);
+  fs.writeFileSync(item.file, JSON.stringify(p, null, 2));
+  return notes;
+}
+
 /** Sets how strongly an item glows: one material, or all that glow. */
 export async function setGlowStrength(folder: string, strength: number, opts: { material?: string; version?: string } = {}): Promise<GlowResult> {
   checkStrength(strength);

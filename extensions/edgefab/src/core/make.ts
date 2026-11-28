@@ -294,7 +294,7 @@ const jsonFiles = (dir: string): string[] =>
  * as `<new>.mesh` with materials still named after the old one (the owner, 2026-11-17). What the files are named
  * now is read from the model's own file, so an item renamed before this existed is put right too.
  */
-async function renameInside(raw: string, name: string): Promise<void> {
+export async function renameInside(raw: string, name: string): Promise<void> {
   const prepared = readPrepared(raw);
   if (!prepared) return; // Only pictures so far.
   const was = path.basename(prepared.glb, ".glb");

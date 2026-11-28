@@ -69,6 +69,9 @@ export interface PrepareOptions {
    * game mesh WolvenKit exported, else +Z (glTF's front, and Blender's), turned half round.
    */
   front?: Facing | "auto";
+  /** Who made the model, when the file can't say: Fix Mesh passes the original's, since Blender writes its own
+   *  generator. Read from the file (whoMade) when left out. */
+  by?: MadeBy;
   /** Its height in metres: the model is scaled to it. For a model with no real size (Tripo's in parts). */
   height?: number;
   /** A model of more than MaxParts pieces grouped into named parts, each with one material. Default on. */
@@ -269,25 +272,38 @@ function lockUnder(idx: ArrayLike<number>, t: number, pos: Float32Array, lock: U
  *  on reading), and its node names. "tripo": Tripo's generator or node names (tripo_node_<task>). "game": a game
  *  mesh exported by WolvenKit (SharpGLTF, nodes named submesh_00_LOD_1), also after an edit in Blender, which keeps
  *  the names. "other": anything else, such as Blender or another tool. */
-function madeBy(input: string, doc: Document): "tripo" | "game" | "other" {
-  let generator = "";
+export type MadeBy = "tripo" | "game" | "other";
+
+function madeBy(input: string, doc: Document): MadeBy {
+  return madeByOf(generatorOf(input), doc.getRoot().listNodes().map((n) => n.getName()));
+}
+
+function generatorOf(input: string): string {
   try {
     const b = fs.readFileSync(input);
     const json = b.readUInt32LE(0) === 0x46546c67 ? b.subarray(20, 20 + b.readUInt32LE(12)).toString("utf8") : b.toString("utf8");
-    generator = String(JSON.parse(json).asset?.generator ?? "");
+    return String(JSON.parse(json).asset?.generator ?? "");
   } catch {
-    // the node names alone
+    return ""; // the node names alone
   }
-  const names = doc.getRoot().listNodes().map((n) => n.getName());
+}
+
+function madeByOf(generator: string, names: string[]): MadeBy {
   if (/tripo/i.test(generator) || names.some((n) => /^tripo_node_/i.test(n))) return "tripo";
   if (/wolvenkit|sharpgltf/i.test(generator) || names.some((n) => /^submesh_\d+_LOD_\d+/i.test(n))) return "game";
   return "other";
 }
 
+/** Who made a GLB or glTF file, read from the file alone (its generator and node names). */
+export async function whoMade(input: string): Promise<MadeBy> {
+  const doc = await new NodeIO().setLogger(quiet).registerExtensions(ALL_EXTENSIONS).read(input);
+  return madeBy(input, doc);
+}
+
 /** The front a model has by who made it: Tripo's face +X; the game's already face its forward (-Z); a GLB from
  *  anywhere else faces glTF's own front, +Z (Blender's front, -Y, lands there), so it is turned half round
  *  (the owner, 2026-11-28). */
-const FrontBy: Record<ReturnType<typeof madeBy>, Facing> = { tripo: "+X", game: "-Z", other: "+Z" };
+const FrontBy: Record<MadeBy, Facing> = { tripo: "+X", game: "-Z", other: "+Z" };
 
 const vertexCount = (prim: Primitive) => prim.getAttribute("POSITION")?.getCount() ?? 0;
 const triangleCount = (prim: Primitive) => (prim.getIndices()?.getCount() ?? vertexCount(prim)) / 3;
@@ -315,7 +331,7 @@ export async function prepareModel(input: string, outDir: string, name: string, 
   if (!scene) throw new PrepareError("This GLB has no scene.");
 
   // Tripo puts the real size on the node (auto_size); its models in parts come without one.
-  const by = madeBy(input, doc);
+  const by = options.by ?? madeBy(input, doc);
   const byTripo = by === "tripo";
   const sized = root.listNodes().some((n) => n.getScale().some((v) => Math.abs(v - 1) > 1e-6));
   // Turn its front to the game's forward, under one parent node, which the baking below takes in.

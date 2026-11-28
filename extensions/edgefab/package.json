@@ -125,6 +125,18 @@
         "icon": "$(symbol-ruler)"
       },
       {
+        "command": "edgefab.fixMesh",
+        "title": "Fix Mesh",
+        "category": "EDGEfab",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "edgefab.undoFix",
+        "title": "Undo Fix Mesh",
+        "category": "EDGEfab",
+        "icon": "$(discard)"
+      },
+      {
         "command": "edgefab.setTripoKey",
         "title": "Set Tripo Key",
         "category": "EDGEfab"
@@ -412,6 +424,16 @@
           "group": "1@2"
         },
         {
+          "command": "edgefab.fixMesh",
+          "when": "view == edgefab.desk && viewItem =~ /^desk/",
+          "group": "1@6"
+        },
+        {
+          "command": "edgefab.undoFix",
+          "when": "view == edgefab.desk && viewItem =~ /\\.fixed/",
+          "group": "1@7"
+        },
+        {
           "command": "edgefab.addToLibrary",
           "when": "view == edgefab.desk && viewItem =~ /^desk/",
           "group": "1@0"
@@ -517,6 +539,14 @@
         },
         {
           "command": "edgefab.setSize",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.fixMesh",
+          "when": "false"
+        },
+        {
+          "command": "edgefab.undoFix",
           "when": "false"
         },
         {

@@ -8,7 +8,7 @@ import * as path from "node:path";
 import {
   addToProject, callOf, drawPicture, glowOff, glowWords, makeModel, paintedLightsGlow, projectFolders, readSettings, renameItem, setGlowStrength, setSize, slug, startBridge, tripoBalance, tripoCredits, writeSettings,
   addFromLibrary, addToLibrary, assetById, editOnDesk, gameFolder, isInside, libraryFolders, libraryRoot, modderFolder, propGameFolder, readAsset, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot,
-  setModderFolder, suggestedLibraryRoot, LibraryError, describeReport, findBlender, needsBlender, ModelExtensions,
+  setModderFolder, suggestedLibraryRoot, LibraryError, describeReport, findBlender, needsBlender, ModelExtensions, fixMesh, undoFix,
   DefaultCollision, DefaultGlowStrength, percent, DetailLevels, GlowLevels, ViewNames,
   type AssetRecord, type Collision, type Detail, type GlowResult, type LibraryAsset, type MadeModel, type ProjectFolders, type TextToModel, type TripoPlan, type ViewName,
 } from "./core";
@@ -168,19 +168,59 @@ async function makeFromFile(file: string, view: DeskView): Promise<void> {
   }
   let blender: string | undefined;
   if (needsBlender(file)) {
-    blender = await blenderPath();
-    if (!blender) {
-      const pick = await vscode.window.showErrorMessage(
-        `EDGEfab opens ${path.extname(file)} files with Blender, and Blender isn't found. Install it from blender.org or Steam, or point EDGEfab's Blender Path setting at blender.exe.`,
-        "Set Blender Path",
-        "Get Blender",
-      );
-      if (pick === "Set Blender Path") void vscode.commands.executeCommand("workbench.action.openSettings", "edgefab.blenderPath");
-      if (pick === "Get Blender") void vscode.env.openExternal(vscode.Uri.parse("https://www.blender.org/download/"));
-      return;
-    }
+    blender = await blenderOrSay(`EDGEfab opens ${path.extname(file)} files with Blender`);
+    if (!blender) return;
   }
   await make((progress) => makeModel({ from: "file", file }, { version: __VERSION__, onProgress: progress, blender }), view);
+}
+
+/** blender.exe, or undefined after saying it isn't found, with Set Blender Path and Get Blender. */
+async function blenderOrSay(why: string): Promise<string | undefined> {
+  const blender = await blenderPath();
+  if (blender) return blender;
+  const pick = await vscode.window.showErrorMessage(
+    `${why}, and Blender isn't found. Install it from blender.org or Steam, or point EDGEfab's Blender Path setting at blender.exe.`,
+    "Set Blender Path",
+    "Get Blender",
+  );
+  if (pick === "Set Blender Path") void vscode.commands.executeCommand("workbench.action.openSettings", "edgefab.blenderPath");
+  if (pick === "Get Blender") void vscode.env.openExternal(vscode.Uri.parse("https://www.blender.org/download/"));
+  return undefined;
+}
+
+/** Fix Mesh: the prop's shape cleaned up by Blender in the background, then prepared again. */
+async function fixDeskMesh(entry: DeskEntry, view: DeskView): Promise<void> {
+  const blender = await blenderOrSay("EDGEfab fixes meshes with Blender");
+  if (!blender) return;
+  try {
+    const fixed = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `EDGEfab: fixing ${entry.title}` }, (progress) =>
+      fixMesh(entry.folder, { version: __VERSION__, blender, onProgress: (step) => progress.report({ message: step }) }),
+    );
+    log(`Fixed ${fixed.name}: ${fixed.said.join(" ")}`);
+    for (const n of fixed.notes) log(`  Note: ${n}`);
+    view.refresh();
+    const pick = await (fixed.notes.length ? vscode.window.showWarningMessage : vscode.window.showInformationMessage)(
+      `EDGEfab fixed ${entry.title}'s mesh: ${fixed.said.join(" ")}${fixed.notes.length ? ` ${fixed.notes.join(" ")}` : ""} If it's in a project already, Add to Project again to carry it over.`,
+      "Open in 3D",
+      "Undo Fix",
+    );
+    if (pick === "Open in 3D") await openIn3D(fixed.prepared.view);
+    if (pick === "Undo Fix") await undoDeskFix(entry, view);
+  } catch (e) {
+    log(`Fix Mesh failed: ${message(e)}`);
+    const pick = await vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`, "Show Log");
+    if (pick) output.show();
+  }
+}
+
+async function undoDeskFix(entry: DeskEntry, view: DeskView): Promise<void> {
+  try {
+    await undoFix(entry.folder, { version: __VERSION__ });
+    view.refresh();
+    void vscode.window.showInformationMessage(`EDGEfab: ${entry.title}'s mesh is as it was before Fix Mesh. If it's in a project already, Add to Project again to carry it over.`);
+  } catch (e) {
+    void vscode.window.showErrorMessage(`EDGEfab: ${message(e)}`);
+  }
 }
 
 /** Opens a model in REDcode's 3D view, which shows its textures, its parts to show or hide, and its levels of detail. */
@@ -906,6 +946,14 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("edgefab.setSize", async (item: unknown) => {
       const entry = entryOf(item);
       if (entry?.prepared) await askSize(entry.folder, entry.title, entry.prepared.size.height, view);
+    }),
+    vscode.commands.registerCommand("edgefab.fixMesh", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry?.prepared) await fixDeskMesh(entry, view);
+    }),
+    vscode.commands.registerCommand("edgefab.undoFix", async (item: unknown) => {
+      const entry = entryOf(item);
+      if (entry) await undoDeskFix(entry, view);
     }),
     vscode.commands.registerCommand("edgefab.setOpenAIKey", async () => {
       if (await setKey("openai")) void vscode.window.showInformationMessage(`EDGEfab: the OpenAI key is set, ${await keysPlace()}.`);

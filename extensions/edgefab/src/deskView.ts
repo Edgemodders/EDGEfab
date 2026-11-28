@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { deskDir, glowWords, readPictures, readPrepared, type PictureTake, type PrepareResult } from "./core";
+import { deskDir, fixState, glowWords, readPictures, readPrepared, type FixRecord, type PictureTake, type PrepareResult } from "./core";
 
 export interface DeskEntry {
   folder: string;
@@ -21,6 +21,8 @@ export interface DeskEntry {
   picture?: PictureTake;
   /** Where Add to Library put it, under the Library's root, and its version there. */
   library?: { path: string; version: number };
+  /** Its mesh fixed (Fix Mesh), while Undo Fix Mesh can put it back. */
+  fixed?: FixRecord;
 }
 
 /** Reads the asset folders on the Desk, newest first. */
@@ -38,7 +40,8 @@ export function listDesk(base = deskDir()): DeskEntry[] {
       const preview = ["preview.webp", "preview.png", "preview.jpg", "preview.jpeg"].map((f) => path.join(raw, f)).find((f) => fs.existsSync(f));
       const model = [prepared?.view, path.join(raw, "view.glb"), path.join(raw, "original.glb")].find((f): f is string => !!f && fs.existsSync(f));
       const picture = readPictures(raw)?.takes.at(-1);
-      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, model, picture, library: asset.library, at: fs.statSync(folder).mtimeMs });
+      const fixed = prepared ? fixState(folder) : undefined;
+      entries.push({ folder, name, title: asset.name ?? name, license: asset.license, from: asset.from, prepared, preview, model, picture, library: asset.library, fixed, at: fs.statSync(folder).mtimeMs });
     } catch {
       // not one of ours, or half written
     }
@@ -126,8 +129,9 @@ Add to Library again updates it there, one version up.` });
     t.iconPath = new vscode.ThemeIcon(!entry.prepared && entry.picture ? "file-media" : entry.license?.source === "tripo" ? "sparkle" : "package");
     t.tooltip = new vscode.MarkdownString(`**${entry.title}**\n\n${entry.folder}`);
     // "picture" for a picture waiting for Make 3D; "desk" for a model, with what it has: .preview for Tripo's
-    // picture, .glow when it glows, .views when it has four views to make again from (package.json's menus match these).
-    t.contextValue = !entry.prepared && entry.picture ? "picture" : `desk${entry.preview ? ".preview" : ""}${entry.prepared?.glow?.length ? ".glow" : ""}${entry.picture ? ".views" : ""}`;
+    // picture, .glow when it glows, .views when it has four views to make again from, .fixed when Undo Fix Mesh can
+    // put its mesh back (package.json's menus match these).
+    t.contextValue = !entry.prepared && entry.picture ? "picture" : `desk${entry.preview ? ".preview" : ""}${entry.prepared?.glow?.length ? ".glow" : ""}${entry.picture ? ".views" : ""}${entry.fixed ? ".fixed" : ""}`;
     t.resourceUri = vscode.Uri.file(entry.folder);
     if (entry.model) t.command = { command: "edgefab.view", title: "Open in 3D", arguments: [item] };
     else if (entry.picture) t.command = { command: "edgefab.openPicture", title: "Open the Pictures", arguments: [item] };

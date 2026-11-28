@@ -21,7 +21,7 @@ import {
   addToProject, deskItem, drawPicture, envKey, readPrepared, renameItem, glowOff, makeModel, paintedLightsGlow, projectFolders, readPictures, readSettings, setGlowStrength, setSize, startBridge, tripoBalance, tripoCredits, deskDir, writeSettings,
   addFromLibrary, addToLibrary, editOnDesk, gameFolder, libraryFolder, libraryProp, libraryRoot, modderFolder, recordedLibraryRoot, refreshList, safeFolder, setLibraryRoot, setModderFolder, suggestedLibraryRoot,
   DefaultCollision, DefaultFaceLimit, DetailLevels, type Detail, type MadeModel, type TextToModel,
-  describeReport, findBlender, needsBlender,
+  describeReport, findBlender, needsBlender, fixMesh, undoFix,
 } from "../../../extensions/edgefab/src/core";
 import { findBridge, installedRedcodeDirs, KeysBridge, McpCaller } from "../../../extensions/edgefab/src/keyStore";
 import { KeyServices, type KeyService } from "../../../extensions/edgefab/src/core/keys";
@@ -218,6 +218,39 @@ server.registerTool(
     try {
       const p = await setSize(deskItem(prop), height, { version: __VERSION__ });
       return text({ size: p.size, notes: p.notes });
+    } catch (e) {
+      return failure(e);
+    }
+  },
+);
+
+server.registerTool(
+  "fab_fix",
+  {
+    description:
+      "Fix Mesh on a Desk prop (the extension's Fix Mesh): Blender in the background cleans up its shape, then it is prepared again with " +
+      "the same size, facing, parts and painted glow. It merges doubled vertices, turns faces flipped against their surface back, fills small " +
+      "holes, drops tiny loose bits, and presses near-flat ripples flat (Tripo's flat panels), keeping the model's own normals elsewhere. " +
+      "It always starts from the model the prop was made from, so fixing again doesn't stack; the model before the first fix is kept for " +
+      "undo: true. Free and offline, a few seconds to a minute. Needs Blender. A prop already added to a project needs fab_add again.",
+    inputSchema: {
+      prop: z.string().describe("The Desk prop: its name (fab_desk lists them) or its folder."),
+      undo: z.boolean().default(false).describe("Put the mesh back as it was before Fix Mesh."),
+      angle: z.number().positive().max(45).optional().describe("How bent a near-flat area may be and still count as rippled, in degrees. Default 15."),
+    },
+  },
+  async ({ prop, undo, angle }) => {
+    try {
+      const folder = deskItem(prop);
+      if (undo) {
+        const p = await undoFix(folder, { version: __VERSION__ });
+        return text({ undone: true, size: p.size, notes: p.notes });
+      }
+      const blender = await findBlender(process.env.EDGEFAB_BLENDER || readSettings().blender);
+      if (!blender) throw new Error("Blender isn't found, and EDGEfab fixes meshes with it. Ask the user to install Blender (blender.org or Steam), or set EDGEFAB_BLENDER to blender.exe.");
+      const f = await fixMesh(folder, { version: __VERSION__, blender, angle, onProgress: (s) => log(s) });
+      const lods = (lod: number) => f.prepared.submeshes.filter((s) => s.lod === lod).reduce((a, s) => a + s.triangles, 0);
+      return text({ fixed: f.said, report: f.report, notes: f.notes, size: f.prepared.size, triangles: { lod1: lods(1), lod2: lods(2), lod4: lods(4) }, view: f.prepared.view, undo: "fab_fix with undo: true" });
     } catch (e) {
       return failure(e);
     }

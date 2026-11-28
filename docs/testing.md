@@ -12,12 +12,13 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-28. Each row links to its test. **F3 started 2026-11-26:** F3a (Blender files onto the Desk) passed part A offline. Its VS Code steps 1 to 4 ran by script on 2026-11-27 and found the parts unnamed, fixed on 2026-11-28 (part A 37 checks, the smoke test passed). The same day, at the owner's word, Blender models and GLBs from anywhere are turned to face forward (part A 47 checks with `--add`, the facing check 3 of 3, the smoke test passed). Step 2 is to see again on a build with both, and step 5 is the owner's. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
+Last updated 2026-11-28. Each row links to its test. **F3b Fix Mesh built 2026-11-28:** part A passed offline (34 checks); its VS Code steps wait. **F3 started 2026-11-26:** F3a (Blender files onto the Desk) passed part A offline. Its VS Code steps 1 to 4 ran by script on 2026-11-27 and found the parts unnamed, fixed on 2026-11-28 (part A 37 checks, the smoke test passed). The same day, at the owner's word, Blender models and GLBs from anywhere are turned to face forward (part A 47 checks with `--add`, the facing check 3 of 3, the smoke test passed). Step 2 is to see again on a build with both, and step 5 is the owner's. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
 
 **Lip sync's six tests moved to REDcode on 2026-11-22**, with the Lip Sync editor (the owner: EDGEfab covers props and clothing only): FL1, the spikes LS1, LS2 and A2F, the head in the tab, and Add a Line, each with every run, are in REDcode's branch `lipsync`, `lipsync/docs/testing.md`. None of them counts for EDGEfab's release gate now.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
+| [F3b: Fix Mesh](#f3b-fix-mesh) | Offline by Claude, Blender in the background and REDbridge; VS Code steps by the owner (or scripted) | F3 | 2026-11-28 | Part A **pass** (34 checks with `--library` and a Tripo prop, after a fix: normals kept; `fab_fix` through the MCP server). Part B **not run** |
 | [F3a: Blender files onto the Desk](#f3a-blender-files-onto-the-desk) | Offline by Claude, Blender in the background and REDbridge; VS Code steps 1 to 4 by script (EDGEweb), step 5 by the owner | F3 | 2026-11-28 | Part A **pass** (47 checks with `--add`, after a fix: part names; the facing check 3 of 3, after the turn forward). Part B **partly run**: steps 1 to 4 as expected on `e38806c` (EDGEweb, 2026-11-27), but the parts came unnamed, fixed after; step 2 to see again on a build with both changes, step 5 not run |
 | [EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)](#edgefab_redbridge-reaches-the-game-bridge-edgechat-5) | Offline by Claude, against the real REDbridge | After 0.2.0 | 2026-11-25 | **Pass** (3 checks) |
 | [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). **Pass**: part A (13 checks, the real store, 8 checks of the no-key reasons) and part B (6 steps, the owner, step 6 Don't Allow included) |
@@ -47,6 +48,65 @@ Last updated 2026-11-28. Each row links to its test. **F3 started 2026-11-26:** 
 | [Check: A GLB imported over a game prop](#f0-check-a-glb-imported-over-a-game-prop) | With REDbridge | F0 | 2026-11-01 | Pass |
 | [Check: Which collision is solid in the game](#f0-check-which-collision-is-solid-in-the-game) | In the game | F0 | 2026-11-09 | Settled by the vending machines: both solid |
 | [Check: A game animation through REDbridge](#f5a-check-a-game-animation-through-redbridge) | With REDbridge | F5a | 2026-11-04 | Export passed; import refused (REDbridge #14). Not a release test |
+
+## F3b: Fix Mesh
+
+F3's second stage ([plan, "F3 Blender sources, in stages"](plan.html#f3-blender-sources-in-stages-started-2026-11-26)): core `fix.ts`. Blender in the background (`--factory-startup --disable-autoexec`) cleans up a Desk prop's source model (`original.glb`, or `from_blender.glb` for a Blender file), then prepare runs again with the same maker, size and facing, and a painted glow is put back. The model before the first fix is kept in `before_fix\` for Undo Fix Mesh. What it does, in order:
+
+| Fix | How | Left alone |
+|---|---|---|
+| Doubled vertices | Merged when closer than a ten-thousandth of the model's size | |
+| Loose bits | An island of 8 faces or fewer, under 0.3% of the model's size, dropped | The last island of a mesh |
+| Flipped faces | Per island, the faces turned against most of it turned back | Islands that aren't one sheet (an edge with 3 or more faces) |
+| Small holes | A boundary loop of 3 to 12 edges, under 2% of the model's size and under a fifth of its island's, filled; its UVs from its edges | The rim of a small open piece, big openings |
+| Ripples | Regions of faces within 15° of their first face: their inner vertices pressed onto the region's plane; then the flattened faces dissolved at 1° (kept apart by material and UVs) and triangulated | Regions under 6 faces or about 2% of the model's size squared; already flat; more than 3% bent across their narrow width; or one smooth bend (a quadric fit takes over 80% of their spread: a strip of a cylinder, a dome) |
+| Normals | The model's own, taken back from a copy of each mesh as it came (Data Transfer, nearest face) | Flattened vertices: their normals come from the new shape |
+
+### Part A, offline
+
+**Steps.** `npm run build`, then in `extensions/edgefab`: `node scripts/fix-check.mjs --library --item "<a Desk prop>"`. It makes its own test model on a scratch Desk: a 1 m plate of 2.5 cm squares with 3 mm ripples, a doubled seam down its middle, a missing square, three squares turned the wrong way and a 1 mm loose speck, with a block and a pipe (an open cylinder) beside it that must not change. `--item` copies a real Desk prop to the scratch Desk (the original is only read). `--library` puts the fixed test model in a scratch Library through REDbridge (needs the game's files). Then a look: `fixMesh` on a copy of a Tripo prop, both `view.glb`s drawn lit and untextured in Blender, front and back.
+
+**Expected.** On the test model:
+
+- every fault is fixed and no more: the seam merged, the 6 turned triangles turned back, the 1 hole filled, the 1 speck dropped, the ripples flattened by at most their 3 mm;
+- the plate's inner vertices are on its plane, the pipe still round, the block's corners where they were;
+- its parts, size and facing are kept, the note and the history say it was fixed, and the model before is kept;
+- fixing again gives the same report and keeps the first model before;
+- Undo puts every file back byte for byte, leaving no `fixed.glb` or `before_fix\`;
+- renamed after a fix, then undone, the model put back takes the new name;
+- Add to Library takes the fixed model without `before_fix\`, and Undo still works on the Desk;
+- a prop with no model is refused, and so is a missing Blender, in plain words.
+
+On the real prop: its parts, size, facing, textures (byte for byte) and painted glow are kept, it stays under the game's vertex limit with tangents, and Undo puts it back. In the drawings it looks as it did, with flat areas flatter.
+
+### Run 1, 2026-11-28: part A passed
+
+Blender 5.3.0 (Steam, `L:`). The real prop: a copy of the Desk's `neon_vending_box2` (Tripo's multiview model in parts, with painted glow at strength 3, set to 2.2 m).
+
+| What | Result |
+|---|---|
+| The test model | 2.1 s in Blender. "Merged 62 doubled vertices, flattened 1 rippled area (1,521 vertices moved, at most 3 mm), turned 6 flipped faces back, filled 1 small hole, dropped 1 loose bit (1 face). 3,467 triangles became 3,124." The plate's 1,167 inner vertices within 0.5 mm of its plane; the pipe 0.000 mm off round |
+| The vending machine | 15 to 17 s. "Merged 11,017 doubled vertices, flattened 50 rippled areas (831 vertices moved, at most 2.3 mm), filled 16 small holes." LOD 1 26,569 triangles became 25,651. Its 6 parts, 2.2 m, the quarter turn, its textures byte for byte and its glow on 5 parts kept |
+| `fab_fix` through the built MCP server (a copy of `vending_small`, a scratch Desk) | Fixed, then `undo: true` put it back; a second undo refused: "vending_small's mesh hasn't been fixed, so there is nothing to undo." |
+| `fix-check.mjs --library --item` | **34 of 34**, after the fixes below. Add to Library through REDbridge: the fixed model in the Library item, no `before_fix\`, Undo still works on the Desk |
+| Typecheck | Clean (extension and MCP server) |
+| The earlier checks on the same build | `blender-check.mjs --add` all passed; `front-check.mjs` 3 of 3; the smoke test `ok` on the Tripo vending machine; `rename-check.mjs` on a copy of `vending_small` all passed |
+
+**Found on the first look, fixed the same day.** The first build made every normal again from the shape (smooth, creases over 30°). Drawn beside the original, the vending machine came out faceted: sharper cans, rough sides, its side vents lost. Tripo's own normals had been hiding the shape's roughness. Now every vertex not flattened takes back the normal it came with (Blender's Data Transfer from an untouched copy of each mesh, with the flattened vertices masked out), and the drawings match the original.
+
+**Also found while writing it:** a strip of a cylinder two segments wide is nearly flat across its width (2.5% against the 3% limit), so the first rule would have faceted round shapes. The quadric fit now leaves any region that one smooth bend explains. The test's pipe checks it.
+
+**What it does to Tripo's models, honestly:** on this multiview model the ripple pass is gentle (at most 2.3 mm). Its other big change is the 16 small holes filled. F1's check saw ripple bands on a model made with Tripo's detailed shape (`geometry_quality` detailed), not this one. **Unverified:** how it looks in the game, and whether any of the 16 holes were openings meant to be there.
+
+### Part B, in VS Code
+
+Use an Extension Development Host with REDcode, on a Tripo prop of your own on the Desk (with painted lights glowing, if it has them).
+
+1. Right-click the prop, **Fix Mesh**. A progress note, then a message: what was fixed, with **Open in 3D** and **Undo Fix**. Its notes on the Desk end with "Mesh fixed: ...".
+2. **Open in 3D**: it looks as it did, with its textures, parts, levels of detail and glow; flat panels are flatter, if it had ripples.
+3. Right-click it again: **Undo Fix Mesh** is in the menu. Run it: the message says it's as it was, the note is gone, and Undo Fix Mesh leaves the menu.
+4. Set **EDGEfab: Blender Path** to a folder with no Blender, then Fix Mesh. The error says Blender isn't found, with **Set Blender Path** and **Get Blender**. Clear the setting afterwards.
+5. Fix Mesh again, then **Add to Project** and Pack and Play: it stands in the game as before, its panels no worse, no holes or dark patches.
 
 ## F3a: Blender files onto the Desk
 
