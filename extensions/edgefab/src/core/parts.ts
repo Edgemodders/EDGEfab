@@ -87,6 +87,41 @@ interface Group {
   /** Made of small pieces together, not around a large one. */
   cluster: boolean;
   kind: string;
+  /** The model's own name for it (an object in Blender), when it has one. */
+  name?: string;
+}
+
+/** Blender's and other tools' made-up names (Cube.001, mesh_0, Object_3): not names a modder gave. */
+const Generic = /^(node|mesh|object|obj|geometry|default|primitive|material|mat|tripo_part|cube|sphere|uv_sphere|cylinder|plane|cone|torus|circle|icosphere|untitled|scene|group)?_*\d*$/;
+
+/** A name as a part's name (lowercase letters, digits and _), or "" when it says nothing. */
+function plainName(s: string): string {
+  const n = s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 32).replace(/_+$/, "");
+  return Generic.test(n) ? "" : n;
+}
+
+/**
+ * A few pieces with their own names and materials (a model from Blender: body, lid, pipe): one part per
+ * material, named by its object, else by its material. Pieces that share a material are one part, so a part is
+ * still one material. Undefined when there is one material, or a part would have no name of its own.
+ */
+function ownGroups(prims: Primitive[], nodeNames: string[]): Group[] | undefined {
+  const byMaterial = new Map<Material | null, number[]>();
+  prims.forEach((p, i) => byMaterial.set(p.getMaterial(), [...(byMaterial.get(p.getMaterial()) ?? []), i]));
+  if (byMaterial.size < 2) return undefined;
+  const groups: Group[] = [];
+  for (const [material, members] of byMaterial) {
+    const name = [...members.map((i) => nodeNames[i]), material?.getName() ?? ""].map(plainName).find(Boolean);
+    if (!name) return undefined;
+    groups.push({ members, cluster: false, kind: material?.getAlphaMode() ?? "OPAQUE", name });
+  }
+  const seen = new Map<string, number>();
+  for (const g of groups) {
+    const k = (seen.get(g.name!) ?? 0) + 1;
+    seen.set(g.name!, k);
+    if (k > 1) g.name = `${g.name}_${k}`;
+  }
+  return groups;
 }
 
 /** The pieces in at most MaxParts groups. */
@@ -394,13 +429,16 @@ export function groupParts(doc: Document, notes: string[], opts: { nameFew?: boo
   const scene = root.getDefaultScene() ?? root.listScenes()[0];
   const nodes = root.listNodes().filter((n) => n.getMesh());
   const prims = nodes.flatMap((n) => n.getMesh()!.listPrimitives());
-  // Few enough pieces: kept as they are, but Tripo's (tripo_part_0...) are named by place, so each is a part to change.
+  const nodeNames = nodes.flatMap((n) => n.getMesh()!.listPrimitives().map(() => n.getName()));
+  // Few enough pieces: kept as they are, but Tripo's (tripo_part_0...) are named by place, so each is a part to change,
+  // and a model whose pieces have their own names and materials (from Blender) keeps those names as parts.
   const few = prims.length <= MaxParts;
-  if (few && (!opts.nameFew || prims.length < 2)) return undefined;
+  const own = few && !opts.nameFew ? ownGroups(prims, nodeNames) : undefined;
+  if (few && !own && (!opts.nameFew || prims.length < 2)) return undefined;
   const pieces = prims.map(pieceOf);
   // Largest first, so the largest of parts named alike gets the plain name (top, then top_2...).
-  const groups = (few ? pieces.map((p, i): Group => ({ members: [i], cluster: false, kind: p.kind })) : groupPieces(pieces)).sort((a, b) => areaOf(pieces, b.members) - areaOf(pieces, a.members));
-  const names = nameGroups(pieces, groups);
+  const groups = (own ?? (few ? pieces.map((p, i): Group => ({ members: [i], cluster: false, kind: p.kind })) : groupPieces(pieces))).sort((a, b) => areaOf(pieces, b.members) - areaOf(pieces, a.members));
+  const names = own ? groups.map((g) => g.name!) : nameGroups(pieces, groups);
   const total = pieces.reduce((s, p) => s + p.area, 0);
   const order = groups.map((_, i) => i).sort((a, b) => areaOf(pieces, groups[b].members) - areaOf(pieces, groups[a].members));
   const parts: PreparedPart[] = [];
@@ -419,7 +457,7 @@ export function groupParts(doc: Document, notes: string[], opts: { nameFew?: boo
   }
   for (const m of oldMaterials) m.dispose();
   for (const t of root.listTextures()) if (!root.listMaterials().some((m) => [m.getBaseColorTexture(), m.getMetallicRoughnessTexture(), m.getNormalTexture(), m.getOcclusionTexture(), m.getEmissiveTexture()].includes(t))) t.dispose();
-  notes.push(few ? `Its ${parts.length} parts were named by where they sit, each with its own material: ${parts.map((p) => p.name).join(", ")}.` : `Its ${pieces.length} pieces were grouped into ${parts.length} parts, each with its own material: ${parts.map((p) => p.name).join(", ")}.`);
+  notes.push(own ? `Its ${parts.length} parts keep the model's own names, each with its own material: ${parts.map((p) => p.name).join(", ")}.` : few ? `Its ${parts.length} parts were named by where they sit, each with its own material: ${parts.map((p) => p.name).join(", ")}.` : `Its ${pieces.length} pieces were grouped into ${parts.length} parts, each with its own material: ${parts.map((p) => p.name).join(", ")}.`);
   return parts;
 }
 

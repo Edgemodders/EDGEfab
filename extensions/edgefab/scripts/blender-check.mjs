@@ -57,6 +57,11 @@ for (const ext of [".blend", ".fbx", ".obj"]) {
   const names = m.blender.meshes.map((x) => x.name).sort();
   check(`${ext}: the five visible parts, by name`, ["body", "front_marker", "label", "lid", "pipe"].every((n) => names.some((x) => x === n || x.startsWith(`${n}.`) || x.startsWith(n))), names.join(", "));
   check(`${ext}: the hidden box left out`, !names.some((n) => n.startsWith("hidden")), names.join(", "));
+  // The Desk item's own parts keep those names, and its materials take them (found by EDGEweb's VS Code run, 2026-11-27).
+  const parts = (m.prepared.parts ?? []).map((p) => p.name).sort();
+  check(`${ext}: the Desk's parts keep Blender's names`, parts.join(",") === "body,front_marker,label,lid,pipe", parts.join(", ") || "no parts");
+  const mats = gltf(path.join(m.folder, "source", "raw", m.name, "view.glb")).materials.map((x) => x.name).sort();
+  check(`${ext}: its materials named by part`, mats.join(",") === ["body", "front_marker", "label", "lid", "pipe"].map((n) => `${m.name}_${n}`).join(","), mats.join(", "));
   const h = m.prepared.size.height;
   check(`${ext}: about 0.88 m tall`, h > 0.84 && h < 0.92, `${h.toFixed(3)} m`);
   check(`${ext}: a color texture for the body`, m.prepared.textures.some((t) => /color|base/i.test(t.slot)), JSON.stringify(m.prepared.textures.map((t) => t.slot)));

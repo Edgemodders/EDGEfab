@@ -12,13 +12,13 @@ F1's tests come first, then F0's checks.
 
 ## At a glance
 
-Last updated 2026-11-26. Each row links to its test. **F3 started 2026-11-26:** F3a (Blender files onto the Desk) passed part A offline; its VS Code steps wait for the owner. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
+Last updated 2026-11-28. Each row links to its test. **F3 started 2026-11-26:** F3a (Blender files onto the Desk) passed part A offline. Its VS Code steps 1 to 4 ran by script on 2026-11-27 and found the parts unnamed, fixed on 2026-11-28 (part A 37 checks, the smoke test passed). Step 2 is to see again on the fixed build, and step 5 is the owner's. **0.2.1, 2026-11-25:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks, the bridge check and the package check: 11 files, no PowerShell, the fix in the bundled server), and the one test since 0.2.0 passed (EDGEFAB_REDBRIDGE reaches the game bridge). **0.2.0, 2026-11-22:** the release tests passed on its build (the core package, the smoke test, the typecheck, both keys checks and the package check: 11 files, no PowerShell), and every test since 0.1.0 has passed (the keys test, all 6 steps). **Every test for 0.1.0 has passed; the release waits for part materials in EDGEmat's UI** (EDGEmat #12; the owner, 2026-11-18). The Pictures tab passed (offline, and the owner's 11 VS Code steps), and the three release tests (the smoke test, the core package, the keys test's package check) passed again on main `af59fb8` on 2026-11-18 (after Add to Project learned to keep what didn't change), with that change's own check, Rename's check and the Pictures tab's offline check. They run once more on the build that is released. A failed rename's message naming another window's 3D view, and its closed tabs put back, was seen in VS Code on 2026-11-25 (the Pictures tab's Run 3, scripted by the EDGEweb session on 0.2.1): passed.
 
 **Lip sync's six tests moved to REDcode on 2026-11-22**, with the Lip Sync editor (the owner: EDGEfab covers props and clothing only): FL1, the spikes LS1, LS2 and A2F, the head in the tab, and Add a Line, each with every run, are in REDcode's branch `lipsync`, `lipsync/docs/testing.md`. None of them counts for EDGEfab's release gate now.
 
 | Test | Kind | Phase | Last run | Result |
 |---|---|---|---|---|
-| [F3a: Blender files onto the Desk](#f3a-blender-files-onto-the-desk) | Offline by Claude, Blender in the background and REDbridge; VS Code steps by the owner | F3 | 2026-11-26 | Part A **pass** (35 checks); part B not run |
+| [F3a: Blender files onto the Desk](#f3a-blender-files-onto-the-desk) | Offline by Claude, Blender in the background and REDbridge; VS Code steps 1 to 4 by script (EDGEweb), step 5 by the owner | F3 | 2026-11-28 | Part A **pass** (37 checks, after a fix: part names). Part B **partly run**: steps 1 to 4 as expected on `e38806c` (EDGEweb, 2026-11-27), but the parts came unnamed, fixed after; step 2 to see again on the fixed build, step 5 not run |
 | [EDGEFAB_REDBRIDGE reaches the game bridge (EDGEchat #5)](#edgefab_redbridge-reaches-the-game-bridge-edgechat-5) | Offline by Claude, against the real REDbridge | After 0.2.0 | 2026-11-25 | **Pass** (3 checks) |
 | [Keys in REDcode's Keys (EDGEfab #10)](#keys-in-redcodes-keys-edgefab-10) | Offline and against the real store by Claude; VS Code steps by the owner | Keys (K4d) | 2026-11-22 | Part A **pass** (13 checks, the real store, and 8 checks of the no-key reasons). **Pass**: part A (13 checks, the real store, 8 checks of the no-key reasons) and part B (6 steps, the owner, step 6 Don't Allow included) |
 | [The Pictures tab](#f1-the-pictures-tab) | Offline by Claude (stand-ins for OpenAI and Tripo); VS Code steps by the owner | F1 | 2026-11-25 | **Pass**: part A (23 checks), part B (11 steps, the owner), and the failed rename with a second window, by script on 0.2.1 |
@@ -66,7 +66,7 @@ Each file goes onto a scratch Desk (`EDGEFAB_DATA`). The `.blend` and FBX props 
 
 **Expected.** For each file:
 
-- the five visible parts come by name, without the hidden box;
+- the five visible parts come by name, without the hidden box, and the Desk item's parts and materials keep those names;
 - about 0.88 m tall, with a color texture for the body;
 - the record names Blender's version, and the source is kept.
 
@@ -95,12 +95,30 @@ Blender 5.3.0 (Steam, `L:`), found by the search through Steam's library list. *
 
 The smoke test passed on the same build (a Tripo prop in parts from the Desk: 6 parts, back faces added, `ok`).
 
-### Part B, in VS Code (the owner)
+### Run 2, 2026-11-27: part B steps 1 to 4, by script (EDGEweb)
 
-Not run. Use an Extension Development Host with REDcode.
+The EDGEweb session ran steps 1 to 4 in its trial EDGEkit (VS Code 1.143.2) on `dist\edgefab-0.2.1-e38806c.vsix`, with REDcode main `d21b9a6` (0.10.17), REDbridge 0.19.0, a scratch profile, Desk and Library, and the crate from `blender-fixture.py`. EDGEfab found Blender 5.3.0 with its own Blender Path empty (that profile has `redcode.blenderPath` set; the search without it was not tried there). No key used.
+
+| Step | Result |
+|---|---|
+| 1 | As expected, about 2 s: "EDGEfab made crate: 3 levels of detail. 0.88 m tall, ready for the game. Left aside: armature, camera, hidden object, light...", `pipe_noise` and `label_gone.png` named, Open in 3D and Reveal. No `autoexec_ran.txt`. The record names `crate.blend` and Blender 5.3.0 and keeps `original.blend`. **Not seen:** the picker's three kinds, since that profile uses VS Code's simple file dialog, which lists no kinds |
+| 2 | 5 submeshes, 268 triangles, 0.92 × 0.88 × 0.72 m, LOD 1, 2 and 4; the body checkered, the lid blue, the pipe plain, the marker red. **Found: the parts listed as `crate_00` to `crate_04`, not by Blender's names.** Facing: the front marker at glTF +Z, as Run 1 says |
+| 3 | As expected: "Opening crate.fbx in Blender...", then "EDGEfab made crate_2 ...", left aside armature, camera, light |
+| 4 | As expected: "EDGEfab opens .blend files with Blender, and Blender isn't found..." with Set Blender Path and Get Blender (neither pressed); no Desk item; the setting cleared again |
+| 5 | Not run (the owner's, in the game) |
+
+**The finding, fixed 2026-11-28.** Prepare keeps a model of ten pieces or fewer as it is, and named parts only for Tripo's, so Blender's object names were dropped and the materials came out as `crate_00` and so on. Part A checked Blender's report, not the Desk item, so it missed this. Now (core `parts.ts`, `ownGroups`), a model of ten pieces or fewer with at least two materials gets one part per material, named by its object, else by its material. Made-up names (`Cube.001`, `mesh_0`, `Object_3`) don't count, and pieces that share a material are one part. A model with one material, or a part with no name of its own, stays as before. Part A gained two checks: the Desk item's parts are `body, front_marker, label, lid, pipe`, and its materials `<name>_body` and so on.
+
+### Run 3, 2026-11-28: part A passed again
+
+After the fix: **37 of 37** without `--add`, and all passed with `--add` (both props into scratch projects). The smoke test passed on the same build (the Tripo vending machine in parts: 70 pieces into 6 parts, back faces on 5, `ok`), so Tripo's models are named as before.
+
+### Part B, in VS Code
+
+Steps 1 to 4 ran by script (Run 2). Step 2 is to see again on a build with the fix, and step 5 is the owner's. Use an Extension Development Host with REDcode.
 
 1. **Import a Model...** on the Desk's title bar. The picker offers 3D models, glTF and "Blender, FBX and OBJ". Pick a `.blend` of your own with textures: it comes onto the Desk. The message says what Blender left out, if anything.
-2. **Open in 3D** on it: its parts and textures show as they do in Blender.
+2. **Open in 3D** on it: its parts and textures show as they do in Blender, the parts by their names in Blender (each material one part).
 3. **Make a Prop (EDGEfab)** on an `.fbx` in VS Code's Explorer: it comes onto the Desk the same way.
 4. Set **EDGEfab: Blender Path** to a folder with no Blender, then import a `.blend`. The error says Blender isn't found, with **Set Blender Path** and **Get Blender**. Clear the setting afterwards.
 5. **Add to Project** on the `.blend` prop, then Pack and Play: it stands in the game, solid, with its textures.

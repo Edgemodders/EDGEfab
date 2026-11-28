@@ -15,6 +15,10 @@ With the rename, write the section's **Nexus summary** under its heading: an HTM
 - **Props from Blender, FBX and OBJ files.** Import a Model (it was Import a GLB), Make a Prop in the Explorer and in the Library, and the MCP server's `fab_make` now take `.blend`, `.fbx` and `.obj` files as well as GLB. EDGEfab opens the file in Blender in the background and exports its visible meshes as one model, with modifiers applied and object names kept as part names. From there it is the same path into the game as a GLB. Blender runs with its factory settings, so a `.blend` file's own scripts never run. You're told what was left out (armatures, animation, shape keys, cameras, lights, hidden objects), which materials are made from nodes with no picture (the game gets their plain color), and which texture files are missing.
 - **The Blender Path setting** (`edgefab.blenderPath`). Empty, EDGEfab uses REDcode's Blender Path, then the newest Blender installed from blender.org, then Blender on Steam.
 
+**Changed**
+
+- **A model of a few named pieces keeps their names as parts.** A model with up to ten pieces and more than one material, from Blender or a GLB from anywhere, gets one part per material, named after its object (`body`, `lid`), else after its material, so each can take a game material in EDGEmat. Before, only Tripo's models came in named parts, and these came as `crate_00`, `crate_01` and so on. Made-up names such as `Cube.001` don't count, and pieces that share a material become one part.
+
 
 ## 0.2.1 (2026-11-25)
 
